@@ -21,7 +21,6 @@ export const metadata: Metadata = {
   description: "Your AI matchmaking platform.",
 };
 
-// Root layout
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,8 +31,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Menu Bar */}
-        <header className="bg-gray-800 text-white shadow-md">
+        {/* Sticky Menu Bar */}
+        <header className="sticky top-0 z-50 bg-gray-800 text-white shadow-md">
           <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               {/* Logo */}
@@ -63,7 +62,7 @@ export default function RootLayout({
                 </Link>
               </div>
 
-              {/* Optional: Add a call-to-action button */}
+              {/* Call-to-Action Button */}
               <Link
                 href="/get-started"
                 className="hidden sm:inline-block bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded"
