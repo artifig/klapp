@@ -28,7 +28,26 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <header className="bg-gray-800 text-white p-4">
+          <div className="container mx-auto flex justify-between items-center">
+            <h1 className="text-xl font-bold">Tehnopal</h1>
+            <nav>
+              <a href="/" className="px-4 hover:underline">
+                Home
+              </a>
+              <a href="/profile" className="px-4 hover:underline">
+                Profile
+              </a>
+              <a href="/assessment" className="px-4 hover:underline">
+                Assessment
+              </a>
+            </nav>
+          </div>
+        </header>
+        <main className="flex-grow">{children}</main>
+        <footer className="bg-gray-800 text-white text-center p-4">
+          <p>© {new Date().getFullYear()} Tehnopal. All rights reserved.</p>
+        </footer>
       </body>
     </html>
   );
