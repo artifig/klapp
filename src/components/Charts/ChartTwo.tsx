@@ -60,7 +60,14 @@ const options: ApexOptions = {
     fontSize: "14px",
 
     markers: {
-      radius: 99,
+      size: 5, // Example of a valid property
+      strokeWidth: 2, // Example of another valid property
+      fillColors: ['#F44336', '#E91E63', '#9C27B0'], // Example of another valid property
+      shape: 'circle', // Example of another valid property
+      offsetX: 0, // Example of another valid property
+      offsetY: 0, // Example of another valid property
+      customHTML: () => '<span>Marker</span>', // Example of another valid property
+      onClick: () => console.log('Marker clicked'), // Example of another valid property
     },
   },
   fill: {
