@@ -9,6 +9,7 @@ if (isGithubActions) {
   nextConfig = {
     assetPrefix: `/${repo}`,
     basePath: `/${repo}`,
+    output: 'export',
   };
 }
 
