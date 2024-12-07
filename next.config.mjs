@@ -10,6 +10,9 @@ if (isGithubActions) {
     assetPrefix: `/${repo}`,
     basePath: `/${repo}`,
     output: 'export',
+    images: {
+        unoptimized: true,
+      },
   };
 }
 
