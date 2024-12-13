@@ -1,18 +1,18 @@
-import ECommerce from "@/components/Dashboard/E-commerce";
+import Assessments from "@/components/Dashboard/Assessments";
 import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 
 export const metadata: Metadata = {
   title:
-    "Next.js E-commerce Dashboard | TailAdmin - Next.js Dashboard Template",
-  description: "This is Next.js Home for TailAdmin Dashboard Template",
+    "Tehnopal Dashboard | Tehnopol",
+  description: "This is Tehnopal Home for Tehnopol's AI Matchmaking Platform",
 };
 
 export default function Home() {
   return (
     <>
       <DefaultLayout>
-        <ECommerce />
+        <Assessments />
       </DefaultLayout>
     </>
   );
