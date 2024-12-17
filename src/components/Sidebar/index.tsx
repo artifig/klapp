@@ -14,9 +14,11 @@ interface SidebarProps {
 }
 
 const menuGroups = [
+  // MENU
   {
     name: "MENU",
     menuItems: [
+      // Dashboard
       {
         icon: (
           <svg
@@ -49,6 +51,7 @@ const menuGroups = [
         route: "#",
         children: [{ label: "Assessments", route: "/" }],
       },
+      // Calendar
       {
         icon: (
           <svg
@@ -68,6 +71,7 @@ const menuGroups = [
         label: "Calendar",
         route: "/calendar",
       },
+      // Profile
       {
         icon: (
           <svg
@@ -91,6 +95,7 @@ const menuGroups = [
         label: "Profile",
         route: "/profile",
       },
+      // Forms
       {
         icon: (
           <svg
@@ -130,6 +135,7 @@ const menuGroups = [
           { label: "Form Layout", route: "/forms/form-layout" },
         ],
       },
+      // Tables
       {
         icon: (
           <svg
@@ -161,6 +167,7 @@ const menuGroups = [
         label: "Tables",
         route: "/tables",
       },
+      // Settings
       {
         icon: (
           <svg
@@ -198,9 +205,11 @@ const menuGroups = [
       },
     ],
   },
+  // OTHERS
   {
     name: "OTHERS",
     menuItems: [
+      // Chart
       {
         icon: (
           <svg
@@ -236,6 +245,7 @@ const menuGroups = [
         label: "Chart",
         route: "/chart",
       },
+      // UI Elements
       {
         icon: (
           <svg
@@ -279,6 +289,7 @@ const menuGroups = [
           { label: "Buttons", route: "/ui/buttons" },
         ],
       },
+      // Authentication
       {
         icon: (
           <svg
