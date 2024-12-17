@@ -5,16 +5,16 @@ import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Profile | Tehnopal",
+  title: "Tehnopal | Statistics",
   description:
-    "This is Next.js Profile page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
+    "Tehnopal Statistics page for Tehnopol's AI Matchmaking Platform",
 };
 
-const Profile = () => {
+const Statistics = () => {
   return (
     <DefaultLayout>
       <div className="mx-auto max-w-242.5">
-        <Breadcrumb pageName="Profile" />
+        <Breadcrumb pageName="Statistics" />
 
         <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="relative z-20 h-35 md:h-65">
@@ -313,4 +313,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default Statistics;
