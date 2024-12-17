@@ -15,10 +15,12 @@ interface SidebarProps {
 
 const menuGroups = [
   // MENU
+  //////////////////////////////////////////
   {
     name: "MENU",
     menuItems: [
       // Dashboard
+      //////////////////////////////////////////
       {
         icon: (
           <svg
@@ -52,6 +54,7 @@ const menuGroups = [
         children: [{ label: "Assessments", route: "/" }],
       },
       // Calendar
+      //////////////////////////////////////////
       {
         icon: (
           <svg
@@ -72,6 +75,7 @@ const menuGroups = [
         route: "/calendar",
       },
       // Profile
+      //////////////////////////////////////////
       {
         icon: (
           <svg
@@ -96,6 +100,7 @@ const menuGroups = [
         route: "/profile",
       },
       // Forms
+      //////////////////////////////////////////
       {
         icon: (
           <svg
@@ -136,6 +141,7 @@ const menuGroups = [
         ],
       },
       // Tables
+      //////////////////////////////////////////
       {
         icon: (
           <svg
@@ -168,6 +174,7 @@ const menuGroups = [
         route: "/tables",
       },
       // Settings
+      //////////////////////////////////////////
       {
         icon: (
           <svg
@@ -206,10 +213,12 @@ const menuGroups = [
     ],
   },
   // OTHERS
+  //////////////////////////////////////////
   {
     name: "OTHERS",
     menuItems: [
       // Chart
+      //////////////////////////////////////////
       {
         icon: (
           <svg
@@ -246,6 +255,7 @@ const menuGroups = [
         route: "/chart",
       },
       // UI Elements
+      //////////////////////////////////////////
       {
         icon: (
           <svg
@@ -290,6 +300,7 @@ const menuGroups = [
         ],
       },
       // Authentication
+      //////////////////////////////////////////
       {
         icon: (
           <svg
