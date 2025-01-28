@@ -1,23 +1,22 @@
 {
   "app": {
-    "title": "Ettevõtte AI-valmiduse hindamise tööriist",
-    "description": "Hinda oma ettevõtte võimekust ja saa soovitusi AI-lahenduste rakendamiseks"
+    "title": "Digitaliseerimise Küpsuse Hindamine",
+    "description": "Hinda oma ettevõtte digitaliseerimise taset ja saa personaalsed soovitused"
   },
   "nav": {
     "home": "Avaleht",
-    "intro": "Alusta",
+    "intro": "Sissejuhatus",
     "assessment": "Hindamine",
     "results": "Tulemused",
     "back": "Tagasi"
   },
   "home": {
-    "title": "Tere tulemast!",
-    "goalLabel": "Mis on teie eesmärk?",
-    "goalPlaceholder": "Nt: Suurendada äritulu...",
+    "goalLabel": "Teie eesmärk",
+    "goalPlaceholder": "Kirjeldage oma ettevõtte digitaliseerimise eesmärke...",
     "startButton": "Alusta hindamist"
   },
   "intro": {
-    "title": "Põhiinfo",
+    "title": "Alustame",
     "nameLabel": "Teie nimi",
     "companyLabel": "Ettevõtte nimi",
     "emailLabel": "E-posti aadress",
@@ -30,26 +29,22 @@
     "continue": "Jätka hindamisega"
   },
   "assessment": {
-    "progress": "Progress",
-    "categoryProgress": "Kategooria progress",
-    "overallProgress": "Üldine progress",
-    "nextQuestion": "Järgmine küsimus",
+    "title": "Digitaliseerimise Hindamine",
+    "progress": "Läbitud",
     "previousQuestion": "Eelmine küsimus",
     "complete": "Lõpeta hindamine"
   },
   "results": {
-    "title": "Teie tulemused",
-    "summary": "Kokkuvõte",
-    "urgentAction": "Kiireloomulised tegevused",
+    "title": "Teie Digitaliseerimise Küpsuse Tase",
+    "summary": "Teie ettevõtte digitaliseerimise küpsuse analüüs",
+    "categories": "Valdkondade Ülevaade",
     "recommendations": "Soovitused",
-    "categories": "Kategooriad",
-    "downloadReport": "Laadi alla PDF raport",
-    "sendEmail": "Saada raport e-postile",
     "levels": {
       "red": "Madal",
       "yellow": "Keskmine",
       "green": "Kõrge"
-    }
+    },
+    "downloadReport": "Laadi alla raport"
   },
   "common": {
     "loading": "Laadimine...",
@@ -60,6 +55,6 @@
     "save": "Salvesta",
     "cancel": "Tühista",
     "continue": "Jätka",
-    "languageSwitch": "Switch to English"
+    "languageSwitch": "Vaheta keelt"
   }
 } 

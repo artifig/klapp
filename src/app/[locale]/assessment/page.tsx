@@ -3,6 +3,8 @@
 import {useTranslations} from 'next-intl';
 import {Link, routes} from '@/navigation';
 import {useState} from 'react';
+import {PageWrapper} from '@/components/ui/PageWrapper';
+import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} from '@/components/ui/Card';
 
 type Question = {
   id: string;
@@ -65,7 +67,7 @@ export default function AssessmentPage() {
   const isComplete = Object.keys(answers).length === questions.length;
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-4xl">
+    <PageWrapper>
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-4xl font-bold">
@@ -81,7 +83,7 @@ export default function AssessmentPage() {
           </div>
         </div>
 
-        <div className="w-full bg-gray-700 h-2">
+        <div className="w-full bg-gray-800 h-2">
           <div 
             className="bg-orange-500 h-2 transition-all duration-300"
             style={{width: `${progress}%`}}
@@ -89,53 +91,53 @@ export default function AssessmentPage() {
         </div>
 
         {currentQuestion && (
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <div className="text-sm text-orange-500 uppercase tracking-wider">
+          <Card animate>
+            <CardHeader>
+              <div className="text-sm text-orange-500 uppercase tracking-wider mb-2">
                 {currentQuestion.category}
               </div>
-              <h2 className="text-2xl">
-                {currentQuestion.text}
-              </h2>
-            </div>
-
-            <div className="space-y-4">
-              {currentQuestion.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleAnswer(currentQuestion.id, option.id)}
-                  className={`w-full p-4 text-left border transition-colors ${
-                    answers[currentQuestion.id] === option.id
-                      ? 'border-orange-500 bg-orange-500/10'
-                      : 'border-gray-700 hover:border-gray-600'
-                  }`}
+              <CardTitle>{currentQuestion.text}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {currentQuestion.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(currentQuestion.id, option.id)}
+                    className={`w-full p-4 text-left border transition-all duration-300 ${
+                      answers[currentQuestion.id] === option.id
+                        ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10'
+                        : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800/50'
+                    }`}
+                  >
+                    {option.text}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <button
+                onClick={handlePrevious}
+                disabled={currentQuestionIndex === 0}
+                className="px-6 py-2 bg-gray-800 text-white font-medium 
+                  hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {t('assessment.previousQuestion')}
+              </button>
+              
+              {isComplete && (
+                <Link
+                  href={routes.results}
+                  className="px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
+                    shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
                 >
-                  {option.text}
-                </button>
-              ))}
-            </div>
-          </div>
+                  {t('assessment.complete')}
+                </Link>
+              )}
+            </CardFooter>
+          </Card>
         )}
-
-        <div className="flex justify-between pt-6">
-          <button
-            onClick={handlePrevious}
-            disabled={currentQuestionIndex === 0}
-            className="px-6 py-3 bg-gray-700 text-white font-bold hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {t('assessment.previousQuestion')}
-          </button>
-          
-          {isComplete && (
-            <Link
-              href={routes.results}
-              className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-bold shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
-            >
-              {t('assessment.complete')}
-            </Link>
-          )}
-        </div>
       </div>
-    </main>
+    </PageWrapper>
   );
 } 

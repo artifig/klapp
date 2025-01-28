@@ -1,29 +1,41 @@
 import {Inter} from 'next/font/google';
 import {notFound} from 'next/navigation';
-import {NextIntlClientProvider, useMessages} from 'next-intl';
+import {NextIntlClientProvider} from 'next-intl';
 import {ReactNode} from 'react';
 import {locales} from '@/config';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import {getMessages} from '@/i18n';
 
-const inter = Inter({subsets: ['latin']});
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 type Props = {
   children: ReactNode;
-  params: {locale: string};
+  params: Promise<{locale: string}>;
 };
 
 export function generateStaticParams() {
   return locales.map((locale) => ({locale}));
 }
 
-export default function LocaleLayout({children, params: {locale}}: Props) {
-  if (!locales.includes(locale as any)) notFound();
+export default async function LocaleLayout({
+  children,
+  params,
+}: Props) {
+  const {locale} = await params;
 
-  const messages = useMessages();
+  // Ensure that the incoming locale is valid
+  if (!locale || !locales.includes(locale as any)) {
+    notFound();
+  }
+
+  const messages = await getMessages(locale);
 
   return (
-    <html lang={locale} className={inter.className}>
-      <body className="bg-black text-white min-h-screen">
+    <html lang={locale} suppressHydrationWarning>
+      <body className={`${inter.className} bg-black text-white min-h-screen antialiased`}>
         <NextIntlClientProvider messages={messages} locale={locale}>
           <LanguageSwitcher />
           {children}
