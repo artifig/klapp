@@ -1,0 +1,65 @@
+{
+  "app": {
+    "title": "Company AI Readiness Assessment Tool",
+    "description": "Assess your company's capabilities and get recommendations for AI solutions"
+  },
+  "nav": {
+    "home": "Home",
+    "intro": "Start",
+    "assessment": "Assessment",
+    "results": "Results",
+    "back": "Back"
+  },
+  "home": {
+    "title": "Welcome!",
+    "goalLabel": "What is your goal?",
+    "goalPlaceholder": "E.g., Increase business revenue...",
+    "startButton": "Start Assessment"
+  },
+  "intro": {
+    "title": "Basic Information",
+    "nameLabel": "Your Name",
+    "companyLabel": "Company Name",
+    "emailLabel": "Email Address",
+    "companyType": {
+      "label": "Company Type",
+      "startup": "Startup",
+      "sme": "SME",
+      "corporation": "Corporation"
+    },
+    "continue": "Continue to Assessment"
+  },
+  "assessment": {
+    "progress": "Progress",
+    "categoryProgress": "Category Progress",
+    "overallProgress": "Overall Progress",
+    "nextQuestion": "Next Question",
+    "previousQuestion": "Previous Question",
+    "complete": "Complete Assessment"
+  },
+  "results": {
+    "title": "Your Results",
+    "summary": "Summary",
+    "urgentAction": "Urgent Actions",
+    "recommendations": "Recommendations",
+    "categories": "Categories",
+    "downloadReport": "Download PDF Report",
+    "sendEmail": "Send Report to Email",
+    "levels": {
+      "red": "Low",
+      "yellow": "Medium",
+      "green": "High"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "required": "Required field",
+    "invalidEmail": "Invalid email address",
+    "save": "Save",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "languageSwitch": "Vaheta eesti keelele"
+  }
+} 

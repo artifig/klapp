@@ -1,0 +1,65 @@
+{
+  "app": {
+    "title": "Ettevõtte AI-valmiduse hindamise tööriist",
+    "description": "Hinda oma ettevõtte võimekust ja saa soovitusi AI-lahenduste rakendamiseks"
+  },
+  "nav": {
+    "home": "Avaleht",
+    "intro": "Alusta",
+    "assessment": "Hindamine",
+    "results": "Tulemused",
+    "back": "Tagasi"
+  },
+  "home": {
+    "title": "Tere tulemast!",
+    "goalLabel": "Mis on teie eesmärk?",
+    "goalPlaceholder": "Nt: Suurendada äritulu...",
+    "startButton": "Alusta hindamist"
+  },
+  "intro": {
+    "title": "Põhiinfo",
+    "nameLabel": "Teie nimi",
+    "companyLabel": "Ettevõtte nimi",
+    "emailLabel": "E-posti aadress",
+    "companyType": {
+      "label": "Ettevõtte tüüp",
+      "startup": "Idufirma",
+      "sme": "VKE",
+      "corporation": "Suurettevõte"
+    },
+    "continue": "Jätka hindamisega"
+  },
+  "assessment": {
+    "progress": "Progress",
+    "categoryProgress": "Kategooria progress",
+    "overallProgress": "Üldine progress",
+    "nextQuestion": "Järgmine küsimus",
+    "previousQuestion": "Eelmine küsimus",
+    "complete": "Lõpeta hindamine"
+  },
+  "results": {
+    "title": "Teie tulemused",
+    "summary": "Kokkuvõte",
+    "urgentAction": "Kiireloomulised tegevused",
+    "recommendations": "Soovitused",
+    "categories": "Kategooriad",
+    "downloadReport": "Laadi alla PDF raport",
+    "sendEmail": "Saada raport e-postile",
+    "levels": {
+      "red": "Madal",
+      "yellow": "Keskmine",
+      "green": "Kõrge"
+    }
+  },
+  "common": {
+    "loading": "Laadimine...",
+    "error": "Viga",
+    "success": "Õnnestus",
+    "required": "Kohustuslik väli",
+    "invalidEmail": "Vigane e-posti aadress",
+    "save": "Salvesta",
+    "cancel": "Tühista",
+    "continue": "Jätka",
+    "languageSwitch": "Switch to English"
+  }
+} 
