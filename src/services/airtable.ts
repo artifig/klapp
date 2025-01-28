@@ -11,7 +11,7 @@ export interface AssessmentRecord {
 
 // Configure Airtable globally
 Airtable.configure({
-  apiKey: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN,
   endpointUrl: 'https://api.airtable.com',
   requestTimeout: 300000, // default is 5 minutes
 });
