@@ -5,7 +5,7 @@
   },
   "nav": {
     "home": "Home",
-    "intro": "Introduction",
+    "setup": "Setup",
     "assessment": "Assessment",
     "results": "Results",
     "back": "Back"
@@ -15,7 +15,7 @@
     "goalPlaceholder": "Describe your company's digitalization goals...",
     "startButton": "Start Assessment"
   },
-  "intro": {
+  "setup": {
     "title": "Let's Get Started",
     "nameLabel": "Your Name",
     "companyLabel": "Company Name",

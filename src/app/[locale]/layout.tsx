@@ -5,6 +5,7 @@ import {ReactNode} from 'react';
 import {locales} from '@/config';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import {getMessages} from '@/i18n';
+import {AssessmentProvider} from '@/context/AssessmentContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -37,8 +38,10 @@ export default async function LocaleLayout({
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.className} bg-black text-white min-h-screen antialiased`}>
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <LanguageSwitcher />
-          {children}
+          <AssessmentProvider>
+            <LanguageSwitcher />
+            {children}
+          </AssessmentProvider>
         </NextIntlClientProvider>
       </body>
     </html>

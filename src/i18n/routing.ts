@@ -10,4 +10,11 @@ export const routing = defineRouting({
   localePrefix: 'as-needed'
 });
 
+export const routes = {
+  home: '/',
+  setup: '/setup',
+  assessment: '/assessment',
+  results: '/results'
+} as const;
+
 export const {Link, redirect, usePathname, useRouter} = createNavigation(routing); 

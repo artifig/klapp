@@ -5,19 +5,20 @@ import {Link, routes} from '@/navigation';
 import {useState} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} from '@/components/ui/Card';
+import {useAssessment} from '@/context/AssessmentContext';
 
-export default function IntroPage() {
+export default function SetupPage() {
   const t = useTranslations();
-  const [formData, setFormData] = useState({
-    name: '',
-    company: '',
-    email: '',
-    companyType: ''
-  });
+  const {state, setFormData} = useAssessment();
+  const [formData, setLocalFormData] = useState(state.formData);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const {name, value} = e.target;
-    setFormData(prev => ({...prev, [name]: value}));
+    setLocalFormData(prev => ({...prev, [name]: value}));
+  };
+
+  const handleSubmit = () => {
+    setFormData(formData);
   };
 
   return (
@@ -25,13 +26,13 @@ export default function IntroPage() {
       <div className="space-y-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">
-            {t('intro.title')}
+            {t('setup.title')}
           </h1>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>{t('intro.title')}</CardTitle>
+            <CardTitle>{t('setup.title')}</CardTitle>
             <CardDescription>
               {t('app.description')}
             </CardDescription>
@@ -42,7 +43,7 @@ export default function IntroPage() {
                 {/* Name Input */}
                 <div className="space-y-2">
                   <label htmlFor="name" className="block text-sm font-medium text-gray-300">
-                    {t('intro.nameLabel')}
+                    {t('setup.nameLabel')}
                   </label>
                   <input
                     type="text"
@@ -59,7 +60,7 @@ export default function IntroPage() {
                 {/* Company Input */}
                 <div className="space-y-2">
                   <label htmlFor="company" className="block text-sm font-medium text-gray-300">
-                    {t('intro.companyLabel')}
+                    {t('setup.companyLabel')}
                   </label>
                   <input
                     type="text"
@@ -77,7 +78,7 @@ export default function IntroPage() {
               {/* Email Input */}
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-                  {t('intro.emailLabel')}
+                  {t('setup.emailLabel')}
                 </label>
                 <input
                   type="email"
@@ -94,7 +95,7 @@ export default function IntroPage() {
               {/* Company Type Select */}
               <div className="space-y-2">
                 <label htmlFor="companyType" className="block text-sm font-medium text-gray-300">
-                  {t('intro.companyType.label')}
+                  {t('setup.companyType.label')}
                 </label>
                 <select
                   id="companyType"
@@ -105,10 +106,10 @@ export default function IntroPage() {
                     focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
                   required
                 >
-                  <option value="">{t('intro.companyType.label')}</option>
-                  <option value="startup">{t('intro.companyType.startup')}</option>
-                  <option value="sme">{t('intro.companyType.sme')}</option>
-                  <option value="corporation">{t('intro.companyType.corporation')}</option>
+                  <option value="">{t('setup.companyType.label')}</option>
+                  <option value="startup">{t('setup.companyType.startup')}</option>
+                  <option value="sme">{t('setup.companyType.sme')}</option>
+                  <option value="corporation">{t('setup.companyType.corporation')}</option>
                 </select>
               </div>
             </form>
@@ -122,10 +123,11 @@ export default function IntroPage() {
             </Link>
             <Link
               href={routes.assessment}
+              onClick={handleSubmit}
               className="px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
                 shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
             >
-              {t('intro.continue')}
+              {t('setup.continue')}
             </Link>
           </CardFooter>
         </Card>

@@ -5,7 +5,7 @@
   },
   "nav": {
     "home": "Avaleht",
-    "intro": "Sissejuhatus",
+    "setup": "Seadistamine",
     "assessment": "Hindamine",
     "results": "Tulemused",
     "back": "Tagasi"
@@ -15,7 +15,7 @@
     "goalPlaceholder": "Kirjeldage oma ettevõtte digitaliseerimise eesmärke...",
     "startButton": "Alusta hindamist"
   },
-  "intro": {
+  "setup": {
     "title": "Alustame",
     "nameLabel": "Teie nimi",
     "companyLabel": "Ettevõtte nimi",

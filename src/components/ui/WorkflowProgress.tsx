@@ -5,7 +5,7 @@ import {useTranslations} from 'next-intl';
 
 const steps = [
   {id: 'home', path: '/'},
-  {id: 'intro', path: '/intro'},
+  {id: 'setup', path: '/setup'},
   {id: 'assessment', path: '/assessment'},
   {id: 'results', path: '/results'}
 ];

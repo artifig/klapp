@@ -8,7 +8,7 @@ export const {Link, redirect, usePathname, useRouter} = createSharedPathnamesNav
 
 export const routes = {
   home: '/',
-  intro: '/intro',
+  setup: '/setup',
   assessment: '/assessment',
   results: '/results'
 } as const; 
