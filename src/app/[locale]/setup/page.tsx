@@ -15,7 +15,9 @@ export default function SetupPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const {name, value} = e.target;
+    console.log('Input changed:', { name, value });
     const newFormData = {...formData, [name]: value};
+    console.log('New form data:', newFormData);
     setLocalFormData(newFormData);
     if (errors[name]) {
       setErrors(prev => ({...prev, [name]: false}));
@@ -24,6 +26,7 @@ export default function SetupPage() {
   };
 
   const handleNext = (e: React.MouseEvent) => {
+    console.log('Submitting form data:', formData);
     // Validate all required fields
     const newErrors: Record<string, boolean> = {};
     let hasErrors = false;
@@ -46,11 +49,13 @@ export default function SetupPage() {
     }
 
     if (hasErrors) {
+      console.log('Form validation failed:', newErrors);
       e.preventDefault();
       setErrors(newErrors);
       return;
     }
 
+    console.log('Form validation passed, proceeding with:', formData);
     setFormData(formData);
   };
 

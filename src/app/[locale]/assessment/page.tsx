@@ -28,17 +28,25 @@ export default function AssessmentPage() {
   useEffect(() => {
     async function loadAssessmentData() {
       try {
+        console.log('Starting to load assessment data');
+        console.log('Company type:', state.formData.companyType);
+        
         setIsLoading(true);
         setError(null);
         
         // Get assessment structure for the company type
         const structure = await AirtableService.getAssessmentStructure(state.formData.companyType as CompanyType);
+        console.log('Received structure:', structure);
         setAssessmentStructure(structure);
 
         // Transform structure into flat list of questions
         const allQuestions: AssessmentQuestion[] = [];
         for (const category of structure) {
+          console.log(`Processing category: ${category.category.categoryId}`);
+          console.log('Questions in category:', category.questions);
           for (const question of category.questions) {
+            console.log(`Processing question: ${question.questionId}`);
+            console.log('Available answers:', category.answers[question.questionId]);
             allQuestions.push({
               categoryId: category.category.categoryId,
               question,
@@ -46,8 +54,10 @@ export default function AssessmentPage() {
             });
           }
         }
+        console.log('Final questions array:', allQuestions);
         setQuestions(allQuestions);
       } catch (err) {
+        console.error('Error loading assessment data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load assessment data');
       } finally {
         setIsLoading(false);
@@ -56,6 +66,16 @@ export default function AssessmentPage() {
 
     loadAssessmentData();
   }, [state.formData.companyType]);
+
+  // Add logging for render-time variables
+  console.log('Current render state:', {
+    isLoading,
+    error,
+    questionsCount: questions.length,
+    currentQuestionIndex,
+    currentQuestion: questions[currentQuestionIndex],
+    progress: questions.length > 0 ? (currentQuestionIndex / questions.length) * 100 : 0
+  });
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = questions.length > 0 ? (currentQuestionIndex / questions.length) * 100 : 0;

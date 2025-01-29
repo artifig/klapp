@@ -181,16 +181,22 @@ export class AirtableService {
   // Method Categories
   static async getMethodCategories(companyType?: CompanyType): Promise<MethodCategory[]> {
     try {
+      console.log('getMethodCategories called with company type:', companyType);
+      
       const filterFormula = companyType 
         ? `AND({isActive}, FIND("${companyType}", ARRAYJOIN({companyType}, ",")))`
         : '{isActive}';
+      
+      console.log('Using filter formula:', filterFormula);
       
       const query = base(TABLES.METHOD_CATEGORIES).select({
         filterByFormula: filterFormula
       });
 
       const records = await query.all();
-      return records.map(record => ({
+      console.log(`Retrieved ${records.length} categories`);
+      
+      const categories = records.map(record => ({
         id: record.id,
         categoryId: record.fields.categoryId as string,
         categoryText: record.fields.categoryText as string,
@@ -199,8 +205,11 @@ export class AirtableService {
         isActive: record.fields.isActive as boolean,
         questionId: record.fields.questionId as string[]
       }));
+      
+      console.log('Processed categories:', categories);
+      return categories;
     } catch (error) {
-      console.error('Error fetching method categories:', error);
+      console.error('Error in getMethodCategories:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch method categories');
     }
   }
@@ -208,12 +217,16 @@ export class AirtableService {
   // Method Questions
   static async getQuestionsForCategory(categoryId: string): Promise<MethodQuestion[]> {
     try {
+      console.log('getQuestionsForCategory called with categoryId:', categoryId);
+      
       const query = base(TABLES.METHOD_QUESTIONS).select({
         filterByFormula: `AND({isActive}, FIND("${categoryId}", ARRAYJOIN({categoryId}, ",")))`
       });
 
       const records = await query.all();
-      return records.map(record => ({
+      console.log(`Retrieved ${records.length} questions for category ${categoryId}`);
+      
+      const questions = records.map(record => ({
         id: record.id,
         questionId: record.fields.questionId as string,
         questionText: record.fields.questionText as string,
@@ -221,8 +234,11 @@ export class AirtableService {
         answerId: record.fields.answerId as string[],
         categoryId: record.fields.categoryId as string[]
       }));
+      
+      console.log('Processed questions:', questions);
+      return questions;
     } catch (error) {
-      console.error('Error fetching questions:', error);
+      console.error('Error in getQuestionsForCategory:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch questions');
     }
   }
@@ -230,12 +246,16 @@ export class AirtableService {
   // Get answers for a question
   static async getAnswersForQuestion(questionId: string): Promise<MethodAnswer[]> {
     try {
+      console.log('getAnswersForQuestion called with questionId:', questionId);
+      
       const query = base(TABLES.METHOD_ANSWERS).select({
         filterByFormula: `FIND("${questionId}", ARRAYJOIN({questionId}, ","))`
       });
 
       const records = await query.all();
-      return records.map(record => ({
+      console.log(`Retrieved ${records.length} answers for question ${questionId}`);
+      
+      const answers = records.map(record => ({
         id: record.id,
         answerId: record.fields.answerId as string,
         answerText: record.fields.answerText as AnswerLevel,
@@ -243,8 +263,11 @@ export class AirtableService {
         answerScore: record.fields.answerScore as StandardScore,
         questionId: record.fields.questionId as string[]
       }));
+      
+      console.log('Processed answers:', answers);
+      return answers;
     } catch (error) {
-      console.error('Error fetching answers:', error);
+      console.error('Error in getAnswersForQuestion:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch answers');
     }
   }
@@ -498,17 +521,24 @@ export class AirtableService {
   // Get complete assessment structure for a company type
   static async getAssessmentStructure(companyType: CompanyType): Promise<CategoryWithQuestions[]> {
     try {
+      console.log('getAssessmentStructure called with company type:', companyType);
+      
       // Get all active categories for the company type
       const categories = await this.getMethodCategories(companyType);
+      console.log('Retrieved categories:', categories);
       
       // Get questions and answers for each category
       const structurePromises = categories.map(async category => {
+        console.log(`Getting questions for category: ${category.categoryId}`);
         const questions = await this.getQuestionsForCategory(category.categoryId);
+        console.log(`Retrieved ${questions.length} questions for category ${category.categoryId}`);
         
         // Get answers for each question
         const answersMap: { [questionId: string]: MethodAnswer[] } = {};
         for (const question of questions) {
+          console.log(`Getting answers for question: ${question.questionId}`);
           answersMap[question.questionId] = await this.getAnswersForQuestion(question.questionId);
+          console.log(`Retrieved ${answersMap[question.questionId].length} answers for question ${question.questionId}`);
         }
 
         return {
@@ -518,9 +548,11 @@ export class AirtableService {
         };
       });
 
-      return Promise.all(structurePromises);
+      const result = await Promise.all(structurePromises);
+      console.log('Final assessment structure:', result);
+      return result;
     } catch (error) {
-      console.error('Error getting assessment structure:', error);
+      console.error('Error in getAssessmentStructure:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to get assessment structure');
     }
   }
