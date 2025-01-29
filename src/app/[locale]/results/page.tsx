@@ -63,9 +63,19 @@ export default function ResultsPage() {
 
   return (
     <PageWrapper>
-      <div className="space-y-8">
-        {/* Radar Chart */}
-        <Card animate>
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {/* Page Title */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold">
+            {t('results.title')}
+          </h1>
+          <p className="text-gray-400">
+            {t('results.summary')}
+          </p>
+        </div>
+
+        {/* Main Content Card - Radar Chart */}
+        <Card>
           <CardHeader>
             <CardTitle>{t('results.categories')}</CardTitle>
             <CardDescription>Your AI readiness scores across different categories</CardDescription>
@@ -92,15 +102,15 @@ export default function ResultsPage() {
           </CardContent>
         </Card>
 
-        {/* Recommendations */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">
+        {/* Recommendations Section */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-center">
             {t('results.recommendations')}
           </h2>
           
-          <div className="grid gap-6">
+          <div className="space-y-4">
             {recommendations.map((rec, index) => (
-              <Card key={index} animate>
+              <Card key={index}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>{rec.category}</CardTitle>
@@ -125,7 +135,7 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Actions Card */}
         <Card>
           <CardContent className="flex justify-between py-4">
             <Link

@@ -31,19 +31,19 @@ export default function Home() {
 
   return (
     <PageWrapper>
-      <div className="space-y-8">
-        {/* Hero Section */}
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {/* Page Title */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold">
             {t('app.title')}
           </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          <p className="text-gray-400">
             {t('app.description')}
           </p>
         </div>
 
-        {/* Goal Input Card */}
-        <Card animate className="mt-12">
+        {/* Main Content Card */}
+        <Card>
           <CardHeader>
             <CardTitle>{t('home.goalLabel')}</CardTitle>
             <CardDescription>
@@ -71,11 +71,12 @@ export default function Home() {
               )}
             </div>
           </CardContent>
-          <CardFooter className="justify-end">
+          <CardFooter className="flex justify-between">
+            <div /> {/* Empty div for consistent spacing */}
             <Link
               href={routes.setup}
               onClick={handleSubmit}
-              className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-bold 
+              className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
                 shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
             >
               {t('home.startButton')}

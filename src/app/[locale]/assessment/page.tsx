@@ -83,9 +83,20 @@ export default function AssessmentPage() {
 
   return (
     <PageWrapper>
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {/* Page Title */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold">
+            {t('assessment.title')}
+          </h1>
+          <p className="text-gray-400">
+            {t('assessment.progress')}: {Math.round(progress)}%
+          </p>
+        </div>
+
+        {/* Main Content Card */}
         {currentQuestion && (
-          <Card animate>
+          <Card>
             <CardHeader>
               <div className="text-sm text-orange-500 uppercase tracking-wider mb-2">
                 {currentQuestion.category}

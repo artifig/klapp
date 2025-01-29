@@ -54,7 +54,18 @@ export default function SetupPage() {
 
   return (
     <PageWrapper>
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {/* Page Title */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold">
+            {t('setup.title')}
+          </h1>
+          <p className="text-gray-400">
+            {t('app.description')}
+          </p>
+        </div>
+
+        {/* Main Content Card */}
         <Card>
           <CardHeader>
             <CardTitle>{t('setup.title')}</CardTitle>
