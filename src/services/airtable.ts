@@ -7,6 +7,13 @@ export enum CompanyType {
   Enterprise = 'Enterprise'
 }
 
+// Add a mapping for form values to enum values
+export const CompanyTypeMapping = {
+  'startup': CompanyType.Startup,
+  'sme': CompanyType.SME,
+  'corporation': CompanyType.Enterprise
+} as const;
+
 export enum ResponseStatus {
   InProgress = 'InProgress',
   Completed = 'Completed'
@@ -182,9 +189,17 @@ export class AirtableService {
   static async getMethodCategories(companyType?: CompanyType): Promise<MethodCategory[]> {
     try {
       console.log('getMethodCategories called with company type:', companyType);
+      console.log('Airtable base ID:', process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID);
+      console.log('Airtable table name:', TABLES.METHOD_CATEGORIES);
       
+      // First, try to get all records to verify connection
+      const allRecords = await base(TABLES.METHOD_CATEGORIES).select().all();
+      console.log('Total records in table:', allRecords.length);
+      console.log('Sample record fields:', allRecords[0]?.fields);
+      
+      // Then apply the filter
       const filterFormula = companyType 
-        ? `AND({isActive}, FIND("${companyType}", ARRAYJOIN({companyType}, ",")))`
+        ? `AND({isActive}, FIND("${companyType}", {companyType}))`
         : '{isActive}';
       
       console.log('Using filter formula:', filterFormula);
@@ -194,7 +209,8 @@ export class AirtableService {
       });
 
       const records = await query.all();
-      console.log(`Retrieved ${records.length} categories`);
+      console.log(`Retrieved ${records.length} filtered categories`);
+      console.log('Raw records:', records.map(r => ({ id: r.id, fields: r.fields })));
       
       const categories = records.map(record => ({
         id: record.id,
@@ -210,6 +226,12 @@ export class AirtableService {
       return categories;
     } catch (error) {
       console.error('Error in getMethodCategories:', error);
+      // Log more details about the error
+      if (error instanceof Error) {
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch method categories');
     }
   }

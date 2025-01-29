@@ -6,6 +6,7 @@ import {useState} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
+import {CompanyType} from '@/services/airtable';
 
 export default function SetupPage() {
   const t = useTranslations();

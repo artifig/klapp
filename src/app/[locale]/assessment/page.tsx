@@ -6,7 +6,14 @@ import {useState, useEffect} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
-import {AirtableService, CategoryWithQuestions, MethodQuestion, MethodAnswer, CompanyType} from '@/services/airtable';
+import {
+  AirtableService,
+  CategoryWithQuestions,
+  MethodQuestion,
+  MethodAnswer,
+  CompanyType,
+  CompanyTypeMapping
+} from '@/services/airtable';
 
 type AssessmentQuestion = {
   categoryId: string;
@@ -29,24 +36,42 @@ export default function AssessmentPage() {
     async function loadAssessmentData() {
       try {
         console.log('Starting to load assessment data');
-        console.log('Company type:', state.formData.companyType);
+        const formCompanyType = state.formData.companyType;
+        console.log('Form company type:', formCompanyType);
+        
+        if (!formCompanyType) {
+          throw new Error('Company type not selected');
+        }
+
+        const mappedCompanyType = CompanyTypeMapping[formCompanyType as keyof typeof CompanyTypeMapping];
+        console.log('Mapped company type:', mappedCompanyType);
         
         setIsLoading(true);
         setError(null);
         
         // Get assessment structure for the company type
-        const structure = await AirtableService.getAssessmentStructure(state.formData.companyType as CompanyType);
+        const structure = await AirtableService.getAssessmentStructure(mappedCompanyType);
         console.log('Received structure:', structure);
         setAssessmentStructure(structure);
 
         // Transform structure into flat list of questions
         const allQuestions: AssessmentQuestion[] = [];
+        const seenQuestionIds = new Set<string>(); // Track seen question IDs
+
         for (const category of structure) {
           console.log(`Processing category: ${category.category.categoryId}`);
           console.log('Questions in category:', category.questions);
+          
           for (const question of category.questions) {
+            if (seenQuestionIds.has(question.questionId)) {
+              console.warn(`Duplicate question ID found: ${question.questionId}`);
+              continue; // Skip duplicate questions
+            }
+            
+            seenQuestionIds.add(question.questionId);
             console.log(`Processing question: ${question.questionId}`);
             console.log('Available answers:', category.answers[question.questionId]);
+            
             allQuestions.push({
               categoryId: category.category.categoryId,
               question,
@@ -54,6 +79,14 @@ export default function AssessmentPage() {
             });
           }
         }
+        
+        // Sort questions by their ID to ensure consistent order
+        allQuestions.sort((a, b) => {
+          const aNum = parseInt(a.question.questionId.replace('Q', ''));
+          const bNum = parseInt(b.question.questionId.replace('Q', ''));
+          return aNum - bNum;
+        });
+        
         console.log('Final questions array:', allQuestions);
         setQuestions(allQuestions);
       } catch (err) {
