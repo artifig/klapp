@@ -11,13 +11,44 @@ export default function SetupPage() {
   const t = useTranslations();
   const {state, setFormData} = useAssessment();
   const [formData, setLocalFormData] = useState(state.formData);
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const {name, value} = e.target;
     setLocalFormData(prev => ({...prev, [name]: value}));
+    if (errors[name]) {
+      setErrors(prev => ({...prev, [name]: false}));
+    }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.MouseEvent) => {
+    // Validate all required fields
+    const newErrors: Record<string, boolean> = {};
+    let hasErrors = false;
+
+    if (!formData.name?.trim()) {
+      newErrors.name = true;
+      hasErrors = true;
+    }
+    if (!formData.company?.trim()) {
+      newErrors.company = true;
+      hasErrors = true;
+    }
+    if (!formData.email?.trim()) {
+      newErrors.email = true;
+      hasErrors = true;
+    }
+    if (!formData.companyType) {
+      newErrors.companyType = true;
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      e.preventDefault();
+      setErrors(newErrors);
+      return;
+    }
+
     setFormData(formData);
   };
 
@@ -45,10 +76,14 @@ export default function SetupPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full p-3 bg-gray-800/50 border border-gray-700 text-white
-                      focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                    className={`w-full p-3 bg-gray-800/50 border text-white
+                      focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
+                      ${errors.name ? 'border-red-500' : 'border-gray-700'}`}
                     required
                   />
+                  {errors.name && (
+                    <p className="text-red-500 text-sm">{t('common.required')}</p>
+                  )}
                 </div>
 
                 {/* Company Input */}
@@ -62,10 +97,14 @@ export default function SetupPage() {
                     name="company"
                     value={formData.company}
                     onChange={handleInputChange}
-                    className="w-full p-3 bg-gray-800/50 border border-gray-700 text-white
-                      focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                    className={`w-full p-3 bg-gray-800/50 border text-white
+                      focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
+                      ${errors.company ? 'border-red-500' : 'border-gray-700'}`}
                     required
                   />
+                  {errors.company && (
+                    <p className="text-red-500 text-sm">{t('common.required')}</p>
+                  )}
                 </div>
               </div>
 
@@ -80,10 +119,14 @@ export default function SetupPage() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full p-3 bg-gray-800/50 border border-gray-700 text-white
-                    focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                  className={`w-full p-3 bg-gray-800/50 border text-white
+                    focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
+                    ${errors.email ? 'border-red-500' : 'border-gray-700'}`}
                   required
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{t('common.required')}</p>
+                )}
               </div>
 
               {/* Company Type Select */}
@@ -96,8 +139,9 @@ export default function SetupPage() {
                   name="companyType"
                   value={formData.companyType}
                   onChange={handleInputChange}
-                  className="w-full p-3 bg-gray-800/50 border border-gray-700 text-white
-                    focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                  className={`w-full p-3 bg-gray-800/50 border text-white
+                    focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
+                    ${errors.companyType ? 'border-red-500' : 'border-gray-700'}`}
                   required
                 >
                   <option value="">{t('setup.companyType.label')}</option>
@@ -105,6 +149,9 @@ export default function SetupPage() {
                   <option value="sme">{t('setup.companyType.sme')}</option>
                   <option value="corporation">{t('setup.companyType.corporation')}</option>
                 </select>
+                {errors.companyType && (
+                  <p className="text-red-500 text-sm">{t('common.required')}</p>
+                )}
               </div>
             </form>
           </CardContent>

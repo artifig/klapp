@@ -5,6 +5,7 @@ import {Link, routes} from '@/navigation';
 import {useState} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} from '@/components/ui/Card';
+import {useAssessment} from '@/context/AssessmentContext';
 
 type Question = {
   id: string;
@@ -45,14 +46,19 @@ const questions: Question[] = [
 
 export default function AssessmentPage() {
   const t = useTranslations();
+  const {state, setAnswer} = useAssessment();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>(state.answers);
+  const [showError, setShowError] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = (currentQuestionIndex / questions.length) * 100;
 
   const handleAnswer = (questionId: string, optionId: string) => {
-    setAnswers(prev => ({...prev, [questionId]: optionId}));
+    const newAnswers = {...answers, [questionId]: optionId};
+    setAnswers(newAnswers);
+    setAnswer(questionId, optionId);
+    setShowError(false);
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     }
@@ -61,6 +67,15 @@ export default function AssessmentPage() {
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
+      setShowError(false);
+    }
+  };
+
+  const handleComplete = (e: React.MouseEvent) => {
+    if (Object.keys(answers).length < questions.length) {
+      e.preventDefault();
+      setShowError(true);
+      return;
     }
   };
 
@@ -76,6 +91,11 @@ export default function AssessmentPage() {
                 {currentQuestion.category}
               </div>
               <CardTitle>{currentQuestion.text}</CardTitle>
+              {showError && (
+                <p className="text-red-500 text-sm mt-2">
+                  {t('assessment.completeAllQuestions')}
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
@@ -107,6 +127,7 @@ export default function AssessmentPage() {
               {isComplete && (
                 <Link
                   href={routes.results}
+                  onClick={handleComplete}
                   className="px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
                     shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
                 >

@@ -1,7 +1,7 @@
 'use client';
 
 import {useTranslations} from 'next-intl';
-import {Link, routes} from '@/navigation';
+import {Link, routes, useRouter} from '@/navigation';
 import {useState} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} from '@/components/ui/Card';
@@ -9,10 +9,18 @@ import {useAssessment} from '@/context/AssessmentContext';
 
 export default function Home() {
   const t = useTranslations();
+  const router = useRouter();
   const {setGoal} = useAssessment();
   const [goal, setLocalGoal] = useState('');
+  const [showError, setShowError] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.MouseEvent) => {
+    if (!goal.trim()) {
+      e.preventDefault();
+      setShowError(true);
+      return;
+    }
+    setShowError(false);
     setGoal(goal);
   };
 
@@ -38,14 +46,25 @@ export default function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <textarea
-              id="goal"
-              value={goal}
-              onChange={(e) => setLocalGoal(e.target.value)}
-              className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-none text-white min-h-[100px]
-                focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-              placeholder={t('home.goalPlaceholder')}
-            />
+            <div className="space-y-2">
+              <textarea
+                id="goal"
+                value={goal}
+                onChange={(e) => {
+                  setLocalGoal(e.target.value);
+                  if (showError) setShowError(false);
+                }}
+                className={`w-full p-4 bg-gray-800/50 border rounded-none text-white min-h-[100px]
+                  focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
+                  ${showError ? 'border-red-500' : 'border-gray-700'}`}
+                placeholder={t('home.goalPlaceholder')}
+              />
+              {showError && (
+                <p className="text-red-500 text-sm">
+                  {t('common.required')}
+                </p>
+              )}
+            </div>
           </CardContent>
           <CardFooter className="justify-end">
             <Link
