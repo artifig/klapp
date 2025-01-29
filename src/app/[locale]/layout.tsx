@@ -1,4 +1,3 @@
-import {Inter} from 'next/font/google';
 import {notFound} from 'next/navigation';
 import {NextIntlClientProvider} from 'next-intl';
 import {ReactNode} from 'react';
@@ -7,11 +6,6 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import {Navbar} from '@/components/ui/Navbar';
 import {getMessages} from '@/i18n';
 import {AssessmentProvider} from '@/context/AssessmentContext';
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-});
 
 type Props = {
   children: ReactNode;
@@ -37,7 +31,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${inter.className} bg-black text-white min-h-screen antialiased`}>
+      <body className="bg-black text-white min-h-screen antialiased font-[Arial]">
         <NextIntlClientProvider messages={messages} locale={locale}>
           <AssessmentProvider>
             <LanguageSwitcher />
