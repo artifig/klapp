@@ -161,6 +161,21 @@ function calculateAverageScore(answers: { [questionId: string]: QuestionAnswer }
   return 100;
 }
 
+// Add these new interfaces after the existing interfaces
+export interface InitialAssessmentData {
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  companyType: CompanyType;
+  initialGoal: string;
+}
+
+export interface CategoryWithQuestions {
+  category: MethodCategory;
+  questions: MethodQuestion[];
+  answers: { [questionId: string]: MethodAnswer[] };
+}
+
 // Service class for Airtable operations
 export class AirtableService {
   // Method Categories
@@ -444,5 +459,141 @@ export class AirtableService {
     );
 
     return { overallScore, categoryScores };
+  }
+
+  // Initialize a new assessment
+  static async initializeAssessment(data: InitialAssessmentData): Promise<AssessmentResponse> {
+    try {
+      // Get all applicable categories and their questions
+      const assessmentStructure = await this.getAssessmentStructure(data.companyType);
+      
+      // Create initial response content
+      const initialContent: ResponseContent = {};
+      
+      // Initialize each category with empty answers
+      for (const { category } of assessmentStructure) {
+        initialContent[category.categoryId] = {
+          metadata: {
+            isApplicable: true,
+            averageScore: 0,
+            level: CategoryLevel.Red,
+            lastUpdated: new Date().toISOString()
+          },
+          answers: {}
+        };
+      }
+
+      // Create the assessment response
+      return this.createAssessmentResponse({
+        ...data,
+        responseStatus: ResponseStatus.InProgress,
+        responseContent: JSON.stringify(initialContent)
+      });
+    } catch (error) {
+      console.error('Error initializing assessment:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to initialize assessment');
+    }
+  }
+
+  // Get complete assessment structure for a company type
+  static async getAssessmentStructure(companyType: CompanyType): Promise<CategoryWithQuestions[]> {
+    try {
+      // Get all active categories for the company type
+      const categories = await this.getMethodCategories(companyType);
+      
+      // Get questions and answers for each category
+      const structurePromises = categories.map(async category => {
+        const questions = await this.getQuestionsForCategory(category.categoryId);
+        
+        // Get answers for each question
+        const answersMap: { [questionId: string]: MethodAnswer[] } = {};
+        for (const question of questions) {
+          answersMap[question.questionId] = await this.getAnswersForQuestion(question.questionId);
+        }
+
+        return {
+          category,
+          questions,
+          answers: answersMap
+        };
+      });
+
+      return Promise.all(structurePromises);
+    } catch (error) {
+      console.error('Error getting assessment structure:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to get assessment structure');
+    }
+  }
+
+  // Get current assessment progress
+  static async getAssessmentProgress(id: string): Promise<{
+    totalQuestions: number;
+    answeredQuestions: number;
+    categoryProgress: { [categoryId: string]: { total: number; answered: number } };
+  }> {
+    try {
+      const response = await this.getAssessmentResponse(id);
+      const content: ResponseContent = JSON.parse(response.responseContent);
+      
+      const structure = await this.getAssessmentStructure(response.companyType);
+      const progress = {
+        totalQuestions: 0,
+        answeredQuestions: 0,
+        categoryProgress: {} as { [categoryId: string]: { total: number; answered: number } }
+      };
+
+      // Calculate progress for each category
+      for (const { category, questions } of structure) {
+        const categoryAnswers = content[category.categoryId]?.answers || {};
+        const answeredCount = Object.keys(categoryAnswers).length;
+        const totalCount = questions.length;
+
+        progress.categoryProgress[category.categoryId] = {
+          total: totalCount,
+          answered: answeredCount
+        };
+
+        progress.totalQuestions += totalCount;
+        progress.answeredQuestions += answeredCount;
+      }
+
+      return progress;
+    } catch (error) {
+      console.error('Error getting assessment progress:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to get assessment progress');
+    }
+  }
+
+  // Get next unanswered question
+  static async getNextQuestion(id: string): Promise<{
+    categoryId: string;
+    question: MethodQuestion;
+    answers: MethodAnswer[];
+  } | null> {
+    try {
+      const response = await this.getAssessmentResponse(id);
+      const content: ResponseContent = JSON.parse(response.responseContent);
+      const structure = await this.getAssessmentStructure(response.companyType);
+
+      // Look for the first unanswered question
+      for (const { category, questions, answers } of structure) {
+        const categoryAnswers = content[category.categoryId]?.answers || {};
+        
+        for (const question of questions) {
+          if (!categoryAnswers[question.questionId]) {
+            return {
+              categoryId: category.categoryId,
+              question,
+              answers: answers[question.questionId]
+            };
+          }
+        }
+      }
+
+      return null; // All questions answered
+    } catch (error) {
+      console.error('Error getting next question:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to get next question');
+    }
   }
 } 

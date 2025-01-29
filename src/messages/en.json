@@ -32,7 +32,11 @@
     "title": "AI Readiness Assessment",
     "progress": "Progress",
     "previousQuestion": "Previous Question",
-    "complete": "Complete Assessment"
+    "nextQuestion": "Next Question",
+    "completeAllQuestions": "Please answer all questions before proceeding",
+    "notAnswered": "Not answered yet",
+    "yourAnswers": "Your Answers",
+    "loadingQuestions": "Loading assessment questions..."
   },
   "results": {
     "title": "Your AI Readiness Level",

@@ -2,47 +2,17 @@
 
 import {useTranslations} from 'next-intl';
 import {Link, routes} from '@/navigation';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
+import {AirtableService, CategoryWithQuestions, MethodQuestion, MethodAnswer, CompanyType} from '@/services/airtable';
 
-type Question = {
-  id: string;
-  category: string;
-  text: string;
-  options: {
-    id: string;
-    text: string;
-    value: number;
-  }[];
+type AssessmentQuestion = {
+  categoryId: string;
+  question: MethodQuestion;
+  answers: MethodAnswer[];
 };
-
-// Example questions - in production these would come from an API/database
-const questions: Question[] = [
-  {
-    id: '1',
-    category: 'data',
-    text: 'How do you currently manage and prepare data for AI/ML applications?',
-    options: [
-      { id: '1a', text: 'No systematic data collection or preparation', value: 0 },
-      { id: '1b', text: 'Basic data collection but no standardization', value: 1 },
-      { id: '1c', text: 'Structured data collection with some preprocessing', value: 2 },
-      { id: '1d', text: 'Advanced data pipelines with quality controls', value: 3 }
-    ]
-  },
-  {
-    id: '2',
-    category: 'ai_expertise',
-    text: 'What is your current AI/ML expertise level?',
-    options: [
-      { id: '2a', text: 'No AI/ML expertise in-house', value: 0 },
-      { id: '2b', text: 'Basic understanding of AI/ML concepts', value: 1 },
-      { id: '2c', text: 'Dedicated AI/ML team or specialists', value: 2 },
-      { id: '2d', text: 'Advanced AI/ML capabilities and experience', value: 3 }
-    ]
-  }
-];
 
 export default function AssessmentPage() {
   const t = useTranslations();
@@ -50,14 +20,50 @@ export default function AssessmentPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>(state.answers);
   const [showError, setShowError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [assessmentStructure, setAssessmentStructure] = useState<CategoryWithQuestions[]>([]);
+  const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
+
+  useEffect(() => {
+    async function loadAssessmentData() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Get assessment structure for the company type
+        const structure = await AirtableService.getAssessmentStructure(state.formData.companyType as CompanyType);
+        setAssessmentStructure(structure);
+
+        // Transform structure into flat list of questions
+        const allQuestions: AssessmentQuestion[] = [];
+        for (const category of structure) {
+          for (const question of category.questions) {
+            allQuestions.push({
+              categoryId: category.category.categoryId,
+              question,
+              answers: category.answers[question.questionId] || []
+            });
+          }
+        }
+        setQuestions(allQuestions);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load assessment data');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadAssessmentData();
+  }, [state.formData.companyType]);
 
   const currentQuestion = questions[currentQuestionIndex];
-  const progress = (currentQuestionIndex / questions.length) * 100;
+  const progress = questions.length > 0 ? (currentQuestionIndex / questions.length) * 100 : 0;
 
-  const handleAnswer = (questionId: string, optionId: string) => {
-    const newAnswers = {...answers, [questionId]: optionId};
+  const handleAnswer = (questionId: string, answerId: string) => {
+    const newAnswers = {...answers, [questionId]: answerId};
     setAnswers(newAnswers);
-    setAnswer(questionId, optionId);
+    setAnswer(questionId, answerId);
     setShowError(false);
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
@@ -79,7 +85,38 @@ export default function AssessmentPage() {
     }
   };
 
-  const isComplete = Object.keys(answers).length === questions.length;
+  if (isLoading) {
+    return (
+      <PageWrapper>
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-2xl font-semibold mb-4">{t('common.loading')}</div>
+            <div className="text-gray-400">{t('assessment.loadingQuestions')}</div>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageWrapper>
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-2xl font-semibold mb-4 text-red-500">{t('common.error')}</div>
+            <div className="text-gray-400">{error}</div>
+            <Link
+              href={routes.setup}
+              className="mt-6 inline-block px-6 py-2 bg-gray-800 text-white font-medium 
+                hover:bg-gray-700 transition-colors"
+            >
+              {t('nav.back')}
+            </Link>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper>
@@ -113,11 +150,11 @@ export default function AssessmentPage() {
                   <h3 className="font-semibold text-lg">{t('assessment.yourAnswers')}</h3>
                   <div className="space-y-3">
                     {questions.map((q, index) => {
-                      const answered = answers[q.id];
-                      const option = q.options.find(opt => opt.id === answered);
+                      const answered = answers[q.question.questionId];
+                      const answer = q.answers.find(a => a.answerId === answered);
                       return (
                         <div 
-                          key={q.id}
+                          key={q.question.questionId}
                           className={`p-3 border rounded-sm transition-colors
                             ${index === currentQuestionIndex 
                               ? 'border-orange-500 bg-orange-500/10' 
@@ -125,10 +162,10 @@ export default function AssessmentPage() {
                                 ? 'border-gray-700 bg-gray-800/50'
                                 : 'border-gray-800 bg-gray-900/50'}`}
                         >
-                          <div className="text-sm font-medium text-gray-300">{q.category}</div>
+                          <div className="text-sm font-medium text-gray-300">{q.categoryId}</div>
                           <div className="mt-1 text-sm">
                             {answered ? (
-                              <span className="text-orange-500">{option?.text}</span>
+                              <span className="text-orange-500">{answer?.answerText}</span>
                             ) : (
                               <span className="text-gray-500">{t('assessment.notAnswered')}</span>
                             )}
@@ -156,9 +193,9 @@ export default function AssessmentPage() {
             <Card className="flex flex-col">
               <CardHeader>
                 <div className="text-sm text-orange-500 uppercase tracking-wider mb-2">
-                  {currentQuestion.category}
+                  {currentQuestion.categoryId}
                 </div>
-                <CardTitle>{currentQuestion.text}</CardTitle>
+                <CardTitle>{currentQuestion.question.questionText}</CardTitle>
                 {showError && (
                   <p className="text-red-500 text-sm mt-2">
                     {t('assessment.completeAllQuestions')}
@@ -168,22 +205,21 @@ export default function AssessmentPage() {
               <CardContent className="flex-1 flex flex-col">
                 <div className="flex-1 overflow-y-auto">
                   <div className="grid gap-3">
-                    {currentQuestion.options.map(option => (
+                    {currentQuestion.answers.map(answer => (
                       <button
-                        key={option.id}
-                        onClick={() => handleAnswer(currentQuestion.id, option.id)}
+                        key={answer.answerId}
+                        onClick={() => handleAnswer(currentQuestion.question.questionId, answer.answerId)}
                         className={`w-full p-4 text-left border transition-all duration-300 ${
-                          answers[currentQuestion.id] === option.id
+                          answers[currentQuestion.question.questionId] === answer.answerId
                             ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10'
                             : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800/50'
                         }`}
                       >
-                        {option.text}
+                        {answer.answerText}
                       </button>
                     ))}
                   </div>
                 </div>
-
                 <div className="mt-6">
                   {Object.keys(answers).length === questions.length ? (
                     <Link
@@ -195,14 +231,27 @@ export default function AssessmentPage() {
                       {t('nav.results')}
                     </Link>
                   ) : (
-                    <button
-                      onClick={() => handleAnswer(currentQuestion.id, currentQuestion.options[0].id)}
-                      className="w-full px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                        shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
-                      disabled={!currentQuestion}
-                    >
-                      {t('assessment.nextQuestion')}
-                    </button>
+                    <div className="flex space-x-4">
+                      {currentQuestionIndex > 0 && (
+                        <button
+                          onClick={handlePrevious}
+                          className="flex-1 px-8 py-3 bg-gray-800 text-white font-medium
+                            hover:bg-gray-700 transition-all text-center"
+                        >
+                          {t('assessment.previousQuestion')}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleAnswer(
+                          currentQuestion.question.questionId,
+                          currentQuestion.answers[0].answerId
+                        )}
+                        className="flex-1 px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
+                          shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
+                      >
+                        {t('assessment.nextQuestion')}
+                      </button>
+                    </div>
                   )}
                 </div>
               </CardContent>
