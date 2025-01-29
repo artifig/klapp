@@ -2,7 +2,6 @@ import {notFound} from 'next/navigation';
 import {NextIntlClientProvider} from 'next-intl';
 import {ReactNode} from 'react';
 import {locales} from '@/config';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import {Navbar} from '@/components/ui/Navbar';
 import {getMessages} from '@/i18n';
 import {AssessmentProvider} from '@/context/AssessmentContext';
@@ -41,26 +40,14 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages} locale={locale}>
           <AssessmentProvider>
             <div className="relative flex flex-col min-h-screen">
-              <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-sm border-b border-gray-800">
-                <div className="container mx-auto max-w-4xl relative">
-                  <div className="grid grid-cols-[1fr_auto]">
-                    <Navbar />
-                    <LanguageSwitcher />
-                  </div>
-                </div>
+              <header className="sticky top-0 z-50">
+                <Navbar />
               </header>
               <main className="flex-1 container mx-auto px-4 py-6">
                 {children}
               </main>
-              <footer className="relative h-24 mt-auto">
+              <footer className="relative h-16 mt-auto">
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
-                <div className="relative h-full flex items-center justify-center">
-                  <img
-                    src="/Tehnopol_logo_RGB.png"
-                    alt="Tehnopol"
-                    className="h-12 w-auto opacity-80 hover:opacity-100 transition-opacity"
-                  />
-                </div>
               </footer>
             </div>
           </AssessmentProvider>
