@@ -1,6 +1,7 @@
 'use client';
 
 import {useTranslations} from 'next-intl';
+import {Link, routes} from '@/navigation';
 import {useState} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
@@ -70,7 +71,7 @@ export default function AssessmentPage() {
     }
   };
 
-  const handleComplete = (e: React.MouseEvent) => {
+  const handleNext = (e: React.MouseEvent) => {
     if (Object.keys(answers).length < questions.length) {
       e.preventDefault();
       setShowError(true);
@@ -138,6 +139,15 @@ export default function AssessmentPage() {
                   </div>
                 </div>
               </div>
+              <div className="mt-6">
+                <Link
+                  href={routes.setup}
+                  className="w-full px-6 py-2 bg-gray-800 text-white font-medium 
+                    hover:bg-gray-700 transition-colors text-center"
+                >
+                  {t('nav.back')}
+                </Link>
+              </div>
             </CardContent>
           </Card>
 
@@ -155,8 +165,8 @@ export default function AssessmentPage() {
                   </p>
                 )}
               </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto">
-                <div className="space-y-4">
+              <CardContent className="flex-1 flex flex-col">
+                <div className="flex-1 overflow-y-auto">
                   <div className="grid gap-3">
                     {currentQuestion.options.map(option => (
                       <button
@@ -172,14 +182,26 @@ export default function AssessmentPage() {
                       </button>
                     ))}
                   </div>
+                </div>
 
-                  {currentQuestionIndex > 0 && (
-                    <button
-                      onClick={handlePrevious}
-                      className="w-full mt-4 px-6 py-2 bg-gray-800 text-white font-medium 
-                        hover:bg-gray-700 transition-colors text-center"
+                <div className="mt-6">
+                  {Object.keys(answers).length === questions.length ? (
+                    <Link
+                      href={routes.results}
+                      onClick={handleNext}
+                      className="w-full px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
+                        shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
                     >
-                      {t('assessment.previousQuestion')}
+                      {t('nav.results')}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => handleAnswer(currentQuestion.id, currentQuestion.options[0].id)}
+                      className="w-full px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
+                        shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
+                      disabled={!currentQuestion}
+                    >
+                      {t('assessment.nextQuestion')}
                     </button>
                   )}
                 </div>

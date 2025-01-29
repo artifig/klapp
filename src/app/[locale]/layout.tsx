@@ -31,14 +31,22 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="bg-black text-white min-h-screen antialiased font-[Arial]">
+      <body className="bg-black text-white min-h-screen antialiased font-[Arial] relative">
+        <div className="fixed inset-0 bg-gradient-to-b from-gray-900 to-black">
+          <div 
+            className="absolute -top-[500px] left-1/2 -translate-x-1/2 w-[800px] h-[800px] 
+              bg-orange-500/20 rounded-full blur-3xl opacity-20 pointer-events-none"
+          />
+        </div>
         <NextIntlClientProvider messages={messages} locale={locale}>
           <AssessmentProvider>
-            <LanguageSwitcher />
-            <Navbar />
-            <main className="pt-4">
-              {children}
-            </main>
+            <div className="relative flex flex-col min-h-screen">
+              <LanguageSwitcher />
+              <Navbar />
+              <main className="flex-1 flex flex-col">
+                {children}
+              </main>
+            </div>
           </AssessmentProvider>
         </NextIntlClientProvider>
       </body>

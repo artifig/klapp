@@ -2,6 +2,7 @@
 
 import {useTranslations} from 'next-intl';
 import {Link, routes} from '@/navigation';
+import {useState} from 'react';
 import {
   Radar,
   RadarChart,
@@ -11,6 +12,7 @@ import {
 } from 'recharts';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
+import {useAssessment} from '@/context/AssessmentContext';
 
 // Example data - in production this would come from the assessment results
 const data = [
@@ -145,6 +147,35 @@ const recommendations = [
 
 export default function ResultsPage() {
   const t = useTranslations();
+  const {state} = useAssessment();
+  const [email, setEmail] = useState(state.formData.email || '');
+  const [editedEmail, setEditedEmail] = useState(email);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditedEmail(e.target.value);
+  };
+
+  const handleSaveEmail = () => {
+    setEmail(editedEmail);
+    setIsEditing(false);
+  };
+
+  const handleSendEmail = async () => {
+    setIsSending(true);
+    // TODO: Implement email sending logic
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    setIsSending(false);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
+  };
+
+  const handleDownloadPDF = () => {
+    // TODO: Implement PDF download logic
+    window.print(); // Temporary using print for now
+  };
 
   return (
     <PageWrapper>
@@ -182,18 +213,20 @@ export default function ResultsPage() {
                 </ResponsiveContainer>
               </div>
 
-              {/* Download Report Button */}
-              <button
-                onClick={() => window.print()}
-                className="w-full mt-6 px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                  shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
-              >
-                {t('results.downloadReport')}
-              </button>
+              {/* Back Button */}
+              <div className="mt-6">
+                <Link
+                  href={routes.assessment}
+                  className="w-full px-6 py-2 bg-gray-800 text-white font-medium 
+                    hover:bg-gray-700 transition-colors text-center"
+                >
+                  {t('nav.back')}
+                </Link>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Right Column - Recommendations */}
+          {/* Right Column - Recommendations and Report Actions */}
           <Card className="flex flex-col">
             <CardHeader>
               <CardTitle>{t('results.recommendations')}</CardTitle>
@@ -227,14 +260,59 @@ export default function ResultsPage() {
                 </div>
               </div>
 
-              {/* Back Button */}
-              <Link
-                href={routes.assessment}
-                className="block w-full px-6 py-2 bg-gray-800 text-white font-medium 
-                  hover:bg-gray-700 transition-colors text-center mt-6"
-              >
-                {t('nav.back')}
-              </Link>
+              {/* Report Actions */}
+              <div className="mt-6 space-y-4 border-t border-gray-800 pt-6">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="email"
+                    value={isEditing ? editedEmail : email}
+                    onChange={handleEmailChange}
+                    disabled={!isEditing}
+                    className={`flex-1 p-2 bg-gray-800/50 border border-gray-700 text-white
+                      focus:border-orange-500 focus:ring-1 focus:ring-orange-500
+                      disabled:opacity-50 disabled:cursor-not-allowed`}
+                    placeholder="your@email.com"
+                  />
+                  {isEditing ? (
+                    <button
+                      onClick={handleSaveEmail}
+                      className="px-4 py-2 bg-orange-500 text-white font-medium 
+                        hover:bg-orange-600 transition-colors"
+                    >
+                      {t('common.save')}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="px-4 py-2 bg-gray-800 text-white font-medium 
+                        hover:bg-gray-700 transition-colors"
+                    >
+                      {t('results.updateEmail')}
+                    </button>
+                  )}
+                </div>
+                
+                <div className="grid gap-2">
+                  <button
+                    onClick={handleSendEmail}
+                    disabled={isSending}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-700 
+                      text-white font-medium shadow-lg hover:from-orange-600 hover:to-orange-800 
+                      transition-all text-center disabled:opacity-50"
+                  >
+                    {isSending ? t('results.sendingEmail') : 
+                     showSuccess ? t('results.emailSent') : 
+                     t('results.emailReport')}
+                  </button>
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="w-full px-6 py-2 bg-gray-800 text-white font-medium 
+                      hover:bg-gray-700 transition-colors text-center"
+                  >
+                    {t('results.downloadPDF')}
+                  </button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>

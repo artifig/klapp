@@ -1,9 +1,7 @@
 'use client';
 
 import {ReactNode} from 'react';
-import {usePathname} from '@/navigation';
 import Image from 'next/image';
-import {PageNavigation} from './PageNavigation';
 
 type PageWrapperProps = {
   children: ReactNode;
@@ -14,31 +12,20 @@ export function PageWrapper({children, className = ''}: PageWrapperProps) {
   return (
     <div 
       className={`
-        h-[calc(100vh-64px)] w-full bg-gradient-to-b from-gray-900 to-black
-        px-4 flex flex-col
+        flex-1 flex flex-col px-4 py-6
         ${className}
       `}
     >
-      <div className="container mx-auto max-w-6xl flex-1 relative">
-        <div className="relative h-full">
-          {/* Background Gradient */}
-          <div 
-            className="absolute -top-[500px] left-1/2 -translate-x-1/2 w-[800px] h-[800px] 
-              bg-orange-500/20 rounded-full blur-3xl opacity-20 pointer-events-none"
-          />
-          
-          {/* Content */}
-          <div className="relative h-full">
-            {children}
-          </div>
+      {/* Main Content Area with Bottom Padding for Logo */}
+      <div className="container mx-auto max-w-6xl flex-1 flex flex-col pb-20">
+        {/* Content */}
+        <div className="flex-1">
+          {children}
         </div>
       </div>
 
-      {/* Navigation */}
-      <PageNavigation />
-
       {/* Tehnopol Logo */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
         <Image
           src="/Tehnopol_logo_RGB.png"
           alt="Tehnopol"

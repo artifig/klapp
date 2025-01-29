@@ -44,7 +44,13 @@
       "yellow": "Keskmine",
       "green": "Kõrge"
     },
-    "downloadReport": "Laadi alla raport"
+    "downloadReport": "Laadi alla raport",
+    "emailReport": "Saada raport e-postiga",
+    "downloadPDF": "Laadi alla PDF",
+    "updateEmail": "Muuda e-posti aadressi",
+    "sendingEmail": "Saadan...",
+    "emailSent": "Raport saadetud!",
+    "downloadStarted": "Allalaadimine algas"
   },
   "common": {
     "loading": "Laadimine...",

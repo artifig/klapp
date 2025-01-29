@@ -1,6 +1,7 @@
 'use client';
 
 import {useTranslations} from 'next-intl';
+import {Link, routes} from '@/navigation';
 import {useState, useEffect} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
@@ -21,6 +22,16 @@ export default function Home() {
     setLocalGoal(value);
     if (showError) setShowError(false);
     setGoal(value);
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    if (!goal.trim()) {
+      e.preventDefault();
+      setShowError(true);
+      return;
+    }
+    setShowError(false);
+    setGoal(goal);
   };
 
   return (
@@ -62,13 +73,13 @@ export default function Home() {
                 {t('home.goalPlaceholder')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1">
-              <div className="h-full flex flex-col">
+            <CardContent className="flex-1 flex flex-col">
+              <div className="flex-1">
                 <textarea
                   id="goal"
                   value={goal}
                   onChange={handleChange}
-                  className={`flex-1 w-full p-4 bg-gray-800/50 border rounded-none text-white
+                  className={`w-full h-full p-4 bg-gray-800/50 border rounded-none text-white resize-none
                     focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
                     ${showError ? 'border-red-500' : 'border-gray-700'}`}
                   placeholder={t('home.goalPlaceholder')}
@@ -78,6 +89,16 @@ export default function Home() {
                     {t('common.required')}
                   </p>
                 )}
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Link
+                  href={routes.setup}
+                  onClick={handleNext}
+                  className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
+                    shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
+                >
+                  {t('home.startButton')}
+                </Link>
               </div>
             </CardContent>
           </Card>
