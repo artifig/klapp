@@ -42,10 +42,12 @@ export default async function LocaleLayout({
           <AssessmentProvider>
             <div className="relative flex flex-col min-h-screen">
               <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-sm border-b border-gray-800">
-                <div className="absolute top-0 right-0 p-4">
-                  <LanguageSwitcher />
+                <div className="container mx-auto max-w-4xl relative">
+                  <div className="grid grid-cols-[1fr_auto]">
+                    <Navbar />
+                    <LanguageSwitcher />
+                  </div>
                 </div>
-                <Navbar />
               </header>
               <main className="flex-1 container mx-auto px-4 py-6">
                 {children}

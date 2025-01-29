@@ -17,12 +17,20 @@ export default function LanguageSwitcher() {
   return (
     <button
       onClick={switchLocale}
-      className="fixed top-4 right-4 px-4 py-2 bg-gray-800 text-white rounded-none hover:bg-gray-700 transition-colors flex items-center gap-2"
+      className="relative flex flex-col items-center justify-center py-4 px-6 transition-all
+        border-l border-gray-800 bg-gray-800/50 hover:bg-gray-700/50"
       aria-label={t('languageSwitch')}
     >
-      <span className="font-bold">{locale.toUpperCase()}</span>
-      <span className="text-gray-400">→</span>
-      <span className="text-gray-400">{locale === 'et' ? 'EN' : 'ET'}</span>
+      {/* Circle with current language */}
+      <div className="w-6 h-6 rounded-full flex items-center justify-center text-sm mb-1
+        bg-gray-700 text-gray-400">
+        {locale.toUpperCase()}
+      </div>
+      
+      {/* Label showing target language */}
+      <span className="text-xs font-medium text-center text-gray-400">
+        {locale === 'et' ? 'EN' : 'ET'}
+      </span>
     </button>
   );
 } 
