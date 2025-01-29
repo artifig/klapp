@@ -41,11 +41,25 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages} locale={locale}>
           <AssessmentProvider>
             <div className="relative flex flex-col min-h-screen">
-              <LanguageSwitcher />
-              <Navbar />
-              <main className="flex-1 flex flex-col">
+              <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-sm border-b border-gray-800">
+                <div className="absolute top-0 right-0 p-4">
+                  <LanguageSwitcher />
+                </div>
+                <Navbar />
+              </header>
+              <main className="flex-1 container mx-auto px-4 py-6">
                 {children}
               </main>
+              <footer className="relative h-24 mt-auto">
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
+                <div className="relative h-full flex items-center justify-center">
+                  <img
+                    src="/Tehnopol_logo_RGB.png"
+                    alt="Tehnopol"
+                    className="h-12 w-auto opacity-80 hover:opacity-100 transition-opacity"
+                  />
+                </div>
+              </footer>
             </div>
           </AssessmentProvider>
         </NextIntlClientProvider>
