@@ -49,17 +49,17 @@ export default function Home() {
             <CardContent className="flex-1 overflow-y-auto">
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">What to Expect</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t('home.whatToExpect')}</h3>
                   <ul className="space-y-2 text-gray-300">
-                    <li>• Comprehensive evaluation of your organization's AI readiness</li>
-                    <li>• Assessment across 22 key business areas</li>
-                    <li>• Personalized recommendations based on your responses</li>
-                    <li>• Actionable insights for improvement</li>
+                    <li>• {t('home.expectationsList.evaluation')}</li>
+                    <li>• {t('home.expectationsList.areas')}</li>
+                    <li>• {t('home.expectationsList.recommendations')}</li>
+                    <li>• {t('home.expectationsList.insights')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Time Required</h3>
-                  <p className="text-gray-300">The assessment typically takes 10-15 minutes to complete.</p>
+                  <h3 className="font-semibold text-lg mb-2">{t('home.timeRequired')}</h3>
+                  <p className="text-gray-300">{t('home.timeEstimate')}</p>
                 </div>
               </div>
             </CardContent>

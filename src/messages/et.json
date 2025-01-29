@@ -13,7 +13,16 @@
   "home": {
     "goalLabel": "Teie eesmärk",
     "goalPlaceholder": "Kirjeldage oma mõtteid ja soove seoses tehisaru lahenduste rakendamisega...",
-    "startButton": "Alusta hindamist"
+    "startButton": "Alusta hindamist",
+    "whatToExpect": "Mida oodata",
+    "expectationsList": {
+      "evaluation": "Põhjalik hinnang teie organisatsiooni AI-valmisolekule",
+      "areas": "Hindamine 22 olulises ärivaldkonnas",
+      "recommendations": "Personaalsed soovitused vastavalt teie vastustele",
+      "insights": "Praktilised sammud edasiminekuks"
+    },
+    "timeRequired": "Ajakulu",
+    "timeEstimate": "Hindamine võtab tavaliselt aega 10-15 minutit."
   },
   "setup": {
     "title": "Alustame",
