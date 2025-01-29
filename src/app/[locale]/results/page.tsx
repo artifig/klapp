@@ -229,7 +229,7 @@ export default function ResultsPage() {
         <Card className="flex flex-col h-full">
           <CardHeader className="flex-none">
             <CardTitle>{t('results.recommendations')}</CardTitle>
-            <CardDescription>Actionable steps to improve your AI readiness</CardDescription>
+            <CardDescription>{t('results.actionableSteps')}</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col min-h-0">
             <div className="flex-1 overflow-y-auto pr-2 min-h-0">
@@ -270,7 +270,7 @@ export default function ResultsPage() {
                   className={`flex-1 p-2 bg-gray-800/50 border border-gray-700 text-white
                     focus:border-orange-500 focus:ring-1 focus:ring-orange-500
                     disabled:opacity-50 disabled:cursor-not-allowed`}
-                  placeholder="your@email.com"
+                  placeholder={t('results.emailPlaceholder')}
                 />
                 {isEditing ? (
                   <button

@@ -26,19 +26,34 @@
       "sme": "VKE",
       "corporation": "Suurettevõte"
     },
-    "continue": "Jätka hindamisega"
+    "continue": "Jätka hindamisega",
+    "yourGoal": "Teie eesmärk",
+    "nextSteps": "Järgmised sammud",
+    "nextStepsList": {
+      "details": "Täitke oma organisatsiooni andmed",
+      "required": "Kõik väljad on täpse hindamise jaoks kohustuslikud",
+      "confidential": "Teie andmed on konfidentsiaalsed",
+      "proceed": "Jätkake hindamisküsimustega, kui olete valmis"
+    },
+    "organizationDetails": "Organisatsiooni andmed",
+    "organizationInfo": "Palun sisestage oma organisatsiooni andmed"
   },
   "assessment": {
     "title": "Tehisaru rakendamise valmisoleku hindamine",
     "progress": "Läbitud",
     "previousQuestion": "Eelmine küsimus",
-    "complete": "Lõpeta hindamine"
+    "nextQuestion": "Järgmine küsimus",
+    "complete": "Lõpeta hindamine",
+    "yourAnswers": "Teie vastused",
+    "notAnswered": "Pole veel vastatud",
+    "completeAllQuestions": "Palun vastake kõikidele küsimustele"
   },
   "results": {
     "title": "Teie valmisolek tehisaru rakendada",
     "summary": "Teie ettevõtte valmisoleku analüüs",
     "categories": "Valdkondade ülevaade",
     "recommendations": "Soovitused",
+    "actionableSteps": "Tegevussammud teie AI-valmisoleku parandamiseks",
     "levels": {
       "red": "Madal",
       "yellow": "Keskmine",
@@ -50,7 +65,8 @@
     "updateEmail": "Muuda e-posti aadressi",
     "sendingEmail": "Saadan...",
     "emailSent": "Raport saadetud!",
-    "downloadStarted": "Allalaadimine algas"
+    "downloadStarted": "Allalaadimine algas",
+    "emailPlaceholder": "sinu@email.ee"
   },
   "common": {
     "loading": "Laadimine...",

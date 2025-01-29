@@ -69,18 +69,18 @@ export default function SetupPage() {
             <CardContent className="flex-1 overflow-y-auto flex flex-col">
               <div className="flex-1 space-y-6">
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Your Goal</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t('setup.yourGoal')}</h3>
                   <p className="text-gray-300 bg-gray-800/50 p-4 border border-gray-700">
                     {state.goal}
                   </p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Next Steps</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t('setup.nextSteps')}</h3>
                   <ul className="space-y-2 text-gray-300">
-                    <li>• Fill in your organization details</li>
-                    <li>• All fields are required for accurate assessment</li>
-                    <li>• Your data is kept confidential</li>
-                    <li>• Proceed to assessment questions when ready</li>
+                    <li>• {t('setup.nextStepsList.details')}</li>
+                    <li>• {t('setup.nextStepsList.required')}</li>
+                    <li>• {t('setup.nextStepsList.confidential')}</li>
+                    <li>• {t('setup.nextStepsList.proceed')}</li>
                   </ul>
                 </div>
               </div>
@@ -98,9 +98,9 @@ export default function SetupPage() {
           {/* Right Column - Setup Form */}
           <Card className="flex flex-col">
             <CardHeader>
-              <CardTitle>Organization Details</CardTitle>
+              <CardTitle>{t('setup.organizationDetails')}</CardTitle>
               <CardDescription>
-                Please provide your organization's information
+                {t('setup.organizationInfo')}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col">

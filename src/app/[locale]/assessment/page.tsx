@@ -110,7 +110,7 @@ export default function AssessmentPage() {
 
                 {/* Previous Answers */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Your Answers</h3>
+                  <h3 className="font-semibold text-lg">{t('assessment.yourAnswers')}</h3>
                   <div className="space-y-3">
                     {questions.map((q, index) => {
                       const answered = answers[q.id];
@@ -130,7 +130,7 @@ export default function AssessmentPage() {
                             {answered ? (
                               <span className="text-orange-500">{option?.text}</span>
                             ) : (
-                              <span className="text-gray-500">Not answered yet</span>
+                              <span className="text-gray-500">{t('assessment.notAnswered')}</span>
                             )}
                           </div>
                         </div>
