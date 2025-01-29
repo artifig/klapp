@@ -18,25 +18,27 @@ export function Navbar() {
   const currentStepIndex = steps.findIndex(step => pathname === step.path);
 
   return (
-    <nav className="w-full bg-gray-900/50 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50 px-2 py-2">
+    <nav className="w-full bg-gray-900/50 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4">
           {steps.map((step, index) => {
             const isActive = pathname === step.path;
             const isPast = index < currentStepIndex;
             const isFuture = index > currentStepIndex;
 
             return (
-              <div 
+              <Link 
+                href={step.path}
                 key={step.id} 
-                className={`relative flex flex-col items-center justify-center p-2 rounded-lg transition-all
+                className={`relative flex flex-col items-center justify-center py-4 transition-all
+                  ${index !== steps.length - 1 ? 'border-r' : ''} border-gray-800
                   ${isActive 
-                    ? 'bg-orange-500/20 border-2 border-orange-500' 
+                    ? 'bg-orange-500/20' 
                     : isPast
-                    ? 'bg-green-500/10 border border-green-500'
-                    : 'bg-gray-800/50 border border-gray-700'
+                    ? 'bg-green-500/10 hover:bg-green-500/20'
+                    : 'bg-gray-800/50 hover:bg-gray-700/50'
                   }
-                  ${isFuture ? 'opacity-50' : 'opacity-100'}
+                  ${isFuture ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}
                 `}
               >
                 {/* Step number circle */}
@@ -65,24 +67,21 @@ export function Navbar() {
                   {step.label}
                 </span>
 
-                {/* Progress line */}
-                {index < steps.length - 1 && (
-                  <div 
-                    className={`hidden sm:block absolute h-[2px] top-1/2 -right-2 w-4 transform -translate-y-1/2
-                      ${isPast ? 'bg-green-500' : 'bg-gray-700'}`}
-                  />
+                {/* Active indicator line */}
+                {isActive && (
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500" />
                 )}
-              </div>
+              </Link>
             );
           })}
         </div>
 
         {/* Mobile view - single button for current step */}
-        <div className="sm:hidden mt-2">
+        <div className="sm:hidden">
           {currentStepIndex >= 0 && (
             <div 
-              className="flex items-center justify-center p-3 rounded-lg
-                bg-orange-500/20 border-2 border-orange-500"
+              className="flex items-center justify-center py-3
+                bg-orange-500/20"
             >
               <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm mr-2">
                 {currentStepIndex + 1}
