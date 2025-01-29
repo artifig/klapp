@@ -69,27 +69,6 @@ export default function AssessmentPage() {
   return (
     <PageWrapper>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold">
-            {t('assessment.title')}
-          </h1>
-          <div className="text-right">
-            <div className="text-sm text-gray-400">
-              {t('assessment.progress')}
-            </div>
-            <div className="text-2xl font-bold">
-              {Math.round(progress)}%
-            </div>
-          </div>
-        </div>
-
-        <div className="w-full bg-gray-800 h-2">
-          <div 
-            className="bg-orange-500 h-2 transition-all duration-300"
-            style={{width: `${progress}%`}}
-          />
-        </div>
-
         {currentQuestion && (
           <Card animate>
             <CardHeader>

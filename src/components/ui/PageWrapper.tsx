@@ -1,7 +1,6 @@
 'use client';
 
 import {ReactNode} from 'react';
-import {WorkflowProgress} from './WorkflowProgress';
 import {usePathname} from '@/navigation';
 
 type PageWrapperProps = {
@@ -10,9 +9,6 @@ type PageWrapperProps = {
 };
 
 export function PageWrapper({children, className = ''}: PageWrapperProps) {
-  const pathname = usePathname();
-  const showProgress = pathname !== '/';
-
   return (
     <div 
       className={`
@@ -22,7 +18,6 @@ export function PageWrapper({children, className = ''}: PageWrapperProps) {
       `}
     >
       <div className="container mx-auto max-w-4xl">
-        {showProgress && <WorkflowProgress />}
         <div className="relative">
           {/* Background Gradient */}
           <div 
