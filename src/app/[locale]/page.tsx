@@ -58,20 +58,6 @@ export default function Home() {
             </Link>
           </CardFooter>
         </Card>
-
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mt-12">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} animate>
-              <CardHeader>
-                <CardTitle className="text-xl">Feature {i}</CardTitle>
-                <CardDescription>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
       </div>
     </PageWrapper>
   );
