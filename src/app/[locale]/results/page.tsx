@@ -213,7 +213,7 @@ export default function ResultsPage() {
             </div>
 
             {/* Back Button */}
-            <div className="mt-6 flex-none">
+            <div className="mt-6 pt-6 border-t border-gray-800">
               <Link
                 href={routes.assessment}
                 className="w-full px-6 py-2 bg-gray-800 text-white font-medium 

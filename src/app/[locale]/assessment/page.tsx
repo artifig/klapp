@@ -93,8 +93,8 @@ export default function AssessmentPage() {
                 {t('assessment.progress')}: {Math.round(progress)}%
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto">
-              <div className="space-y-6">
+            <CardContent className="flex-1 overflow-y-auto flex flex-col">
+              <div className="flex-1 space-y-6">
                 {/* Progress Bar */}
                 <div className="space-y-2">
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -139,7 +139,7 @@ export default function AssessmentPage() {
                   </div>
                 </div>
               </div>
-              <div className="mt-6">
+              <div className="mt-6 pt-6 border-t border-gray-800">
                 <Link
                   href={routes.setup}
                   className="w-full px-6 py-2 bg-gray-800 text-white font-medium 

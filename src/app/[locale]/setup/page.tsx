@@ -66,8 +66,8 @@ export default function SetupPage() {
                 {t('app.description')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto">
-              <div className="space-y-6">
+            <CardContent className="flex-1 overflow-y-auto flex flex-col">
+              <div className="flex-1 space-y-6">
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Your Goal</h3>
                   <p className="text-gray-300 bg-gray-800/50 p-4 border border-gray-700">
@@ -84,7 +84,7 @@ export default function SetupPage() {
                   </ul>
                 </div>
               </div>
-              <div className="mt-6">
+              <div className="mt-6 pt-6 border-t border-gray-800">
                 <Link
                   href={routes.home}
                   className="w-full px-6 py-2 bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors text-center"
