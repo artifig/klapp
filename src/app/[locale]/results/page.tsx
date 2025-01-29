@@ -15,27 +15,27 @@ import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} f
 // Example data - in production this would come from the assessment results
 const data = [
   {
-    category: 'Data Management',
+    category: 'Data Quality',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Process Automation',
+    category: 'AI Expertise',
     value: 1,
     fullMark: 3,
   },
   {
-    category: 'AI Readiness',
+    category: 'Infrastructure',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Infrastructure',
+    category: 'AI Strategy',
     value: 3,
     fullMark: 3,
   },
   {
-    category: 'Skills & Training',
+    category: 'Ethics & Governance',
     value: 1,
     fullMark: 3,
   },
@@ -43,18 +43,18 @@ const data = [
 
 const recommendations = [
   {
-    category: 'Data Management',
+    category: 'Data Quality',
     level: 'yellow',
-    text: 'Consider implementing automated data collection systems',
-    provider: 'DataCo Solutions',
-    offer: 'Free initial consultation'
+    text: 'Implement data quality controls and preprocessing pipelines',
+    provider: 'DataAI Solutions',
+    offer: 'Free data assessment consultation'
   },
   {
-    category: 'Process Automation',
+    category: 'AI Expertise',
     level: 'red',
-    text: 'Start with basic process automation tools',
-    provider: 'AutomatePro',
-    offer: '30-day free trial'
+    text: 'Consider hiring AI specialists or training existing staff',
+    provider: 'AI Academy',
+    offer: '3-month AI fundamentals course'
   }
 ];
 

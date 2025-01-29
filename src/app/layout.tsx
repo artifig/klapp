@@ -3,8 +3,8 @@ import { EmbedProvider } from "@/context/EmbedContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Digital Maturity Assessment",
-  description: "Assess your company's digital maturity level",
+  title: "AI Readiness Assessment",
+  description: "Assess your company's AI readiness level",
 };
 
 export default function RootLayout({

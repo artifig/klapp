@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "Digitaliseerimise Küpsuse Hindamine",
-    "description": "Hinda oma ettevõtte digitaliseerimise taset ja saa personaalsed soovitused"
+    "title": "Tehisaru otstarbekuse hindamine",
+    "description": "Hinda oma ettevõtte valmisolekut tehisarukaid lahendusi rakendada ja saa personaalsed soovitused järgmiseks sammuks oma teekonnal"
   },
   "nav": {
     "home": "Avaleht",
@@ -12,7 +12,7 @@
   },
   "home": {
     "goalLabel": "Teie eesmärk",
-    "goalPlaceholder": "Kirjeldage oma ettevõtte digitaliseerimise eesmärke...",
+    "goalPlaceholder": "Kirjeldage oma mõtteid ja soove seoses tehisaru lahenduste rakendamisega...",
     "startButton": "Alusta hindamist"
   },
   "setup": {
@@ -29,15 +29,15 @@
     "continue": "Jätka hindamisega"
   },
   "assessment": {
-    "title": "Digitaliseerimise Hindamine",
+    "title": "Tehisaru rakendamise valmisoleku hindamine",
     "progress": "Läbitud",
     "previousQuestion": "Eelmine küsimus",
     "complete": "Lõpeta hindamine"
   },
   "results": {
-    "title": "Teie Digitaliseerimise Küpsuse Tase",
-    "summary": "Teie ettevõtte digitaliseerimise küpsuse analüüs",
-    "categories": "Valdkondade Ülevaade",
+    "title": "Teie valmisolek tehisaru rakendada",
+    "summary": "Teie ettevõtte valmisoleku analüüs",
+    "categories": "Valdkondade ülevaade",
     "recommendations": "Soovitused",
     "levels": {
       "red": "Madal",

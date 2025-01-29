@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "Digital Maturity Assessment",
-    "description": "Assess your company's digital maturity level and get personalized recommendations"
+    "title": "AI Readiness Assessment",
+    "description": "Assess your company's AI readiness level and get personalized recommendations"
   },
   "nav": {
     "home": "Home",
@@ -29,14 +29,14 @@
     "continue": "Continue to Assessment"
   },
   "assessment": {
-    "title": "Digital Maturity Assessment",
+    "title": "AI Readiness Assessment",
     "progress": "Progress",
     "previousQuestion": "Previous Question",
     "complete": "Complete Assessment"
   },
   "results": {
-    "title": "Your Digital Maturity Level",
-    "summary": "Analysis of your company's digital maturity",
+    "title": "Your AI Readiness Level",
+    "summary": "Analysis of your company's AI readiness",
     "categories": "Categories Overview",
     "recommendations": "Recommendations",
     "levels": {

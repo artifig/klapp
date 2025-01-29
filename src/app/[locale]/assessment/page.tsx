@@ -22,23 +22,23 @@ const questions: Question[] = [
   {
     id: '1',
     category: 'data',
-    text: 'How do you currently manage your data?',
+    text: 'How do you currently manage and prepare data for AI/ML applications?',
     options: [
-      { id: '1a', text: 'No systematic data collection', value: 0 },
-      { id: '1b', text: 'Basic spreadsheets and manual collection', value: 1 },
-      { id: '1c', text: 'Dedicated databases but manual processes', value: 2 },
-      { id: '1d', text: 'Automated data collection and storage systems', value: 3 }
+      { id: '1a', text: 'No systematic data collection or preparation', value: 0 },
+      { id: '1b', text: 'Basic data collection but no standardization', value: 1 },
+      { id: '1c', text: 'Structured data collection with some preprocessing', value: 2 },
+      { id: '1d', text: 'Advanced data pipelines with quality controls', value: 3 }
     ]
   },
   {
     id: '2',
-    category: 'processes',
-    text: 'How automated are your business processes?',
+    category: 'ai_expertise',
+    text: 'What is your current AI/ML expertise level?',
     options: [
-      { id: '2a', text: 'Mostly manual processes', value: 0 },
-      { id: '2b', text: 'Some basic automation tools', value: 1 },
-      { id: '2c', text: 'Significant automation in place', value: 2 },
-      { id: '2d', text: 'Fully automated core processes', value: 3 }
+      { id: '2a', text: 'No AI/ML expertise in-house', value: 0 },
+      { id: '2b', text: 'Basic understanding of AI/ML concepts', value: 1 },
+      { id: '2c', text: 'Dedicated AI/ML team or specialists', value: 2 },
+      { id: '2d', text: 'Advanced AI/ML capabilities and experience', value: 3 }
     ]
   }
 ];
