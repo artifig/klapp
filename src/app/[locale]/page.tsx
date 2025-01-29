@@ -25,27 +25,17 @@ export default function Home() {
 
   return (
     <PageWrapper>
-      <div className="space-y-4 max-w-6xl mx-auto">
-        {/* Page Title */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">
-            {t('app.title')}
-          </h1>
-          <p className="text-gray-400">
-            {t('app.description')}
-          </p>
-        </div>
-
+      <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Left Column - Information */}
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>About AI Readiness Assessment</CardTitle>
-              <CardDescription>
-                Understand how this assessment will help your organization prepare for AI adoption
+              <CardTitle className="text-4xl">{t('app.title')}</CardTitle>
+              <CardDescription className="text-lg">
+                {t('app.description')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div>
                 <h3 className="font-semibold text-lg mb-2">What to Expect</h3>
                 <ul className="space-y-2 text-gray-300">

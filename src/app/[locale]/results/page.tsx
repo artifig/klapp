@@ -148,24 +148,16 @@ export default function ResultsPage() {
 
   return (
     <PageWrapper>
-      <div className="space-y-4 max-w-6xl mx-auto">
-        {/* Page Title */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">
-            {t('results.title')}
-          </h1>
-          <p className="text-gray-400">
-            {t('results.summary')}
-          </p>
-        </div>
-
+      <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Left Column - Radar Chart */}
           <div className="space-y-4">
             <Card className="h-full">
               <CardHeader>
-                <CardTitle>{t('results.categories')}</CardTitle>
-                <CardDescription>Your AI readiness scores across different categories</CardDescription>
+                <CardTitle className="text-4xl">{t('results.title')}</CardTitle>
+                <CardDescription className="text-lg">
+                  {t('results.summary')}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[350px]">

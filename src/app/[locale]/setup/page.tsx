@@ -24,27 +24,17 @@ export default function SetupPage() {
 
   return (
     <PageWrapper>
-      <div className="space-y-4 max-w-6xl mx-auto">
-        {/* Page Title */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">
-            {t('setup.title')}
-          </h1>
-          <p className="text-gray-400">
-            {t('app.description')}
-          </p>
-        </div>
-
+      <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Left Column - Information */}
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Your Assessment Goal</CardTitle>
-              <CardDescription>
-                Review your goal and understand the next steps
+              <CardTitle className="text-4xl">{t('setup.title')}</CardTitle>
+              <CardDescription className="text-lg">
+                {t('app.description')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div>
                 <h3 className="font-semibold text-lg mb-2">Your Goal</h3>
                 <p className="text-gray-300 bg-gray-800/50 p-4 border border-gray-700 min-h-[100px]">
@@ -66,9 +56,9 @@ export default function SetupPage() {
           {/* Right Column - Setup Form */}
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>{t('setup.title')}</CardTitle>
+              <CardTitle>Organization Details</CardTitle>
               <CardDescription>
-                {t('app.description')}
+                Please provide your organization's information
               </CardDescription>
             </CardHeader>
             <CardContent>

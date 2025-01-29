@@ -82,24 +82,14 @@ export default function AssessmentPage() {
 
   return (
     <PageWrapper>
-      <div className="space-y-4 max-w-6xl mx-auto">
-        {/* Page Title */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">
-            {t('assessment.title')}
-          </h1>
-          <p className="text-gray-400">
-            {t('assessment.progress')}: {Math.round(progress)}%
-          </p>
-        </div>
-
+      <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Left Column - Progress and Information */}
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Assessment Progress</CardTitle>
-              <CardDescription>
-                Track your progress and review previous answers
+              <CardTitle className="text-4xl">{t('assessment.title')}</CardTitle>
+              <CardDescription className="text-lg">
+                {t('assessment.progress')}: {Math.round(progress)}%
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
