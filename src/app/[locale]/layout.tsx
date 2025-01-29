@@ -4,6 +4,7 @@ import {NextIntlClientProvider} from 'next-intl';
 import {ReactNode} from 'react';
 import {locales} from '@/config';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import {Navbar} from '@/components/ui/Navbar';
 import {getMessages} from '@/i18n';
 import {AssessmentProvider} from '@/context/AssessmentContext';
 
@@ -40,7 +41,10 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages} locale={locale}>
           <AssessmentProvider>
             <LanguageSwitcher />
-            {children}
+            <Navbar />
+            <main className="pt-4">
+              {children}
+            </main>
           </AssessmentProvider>
         </NextIntlClientProvider>
       </body>
