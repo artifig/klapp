@@ -190,15 +190,15 @@ export default function ResultsPage() {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col min-h-0">
             <div className="flex-1 min-h-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="58%" data={data}>
+              <ResponsiveContainer width="100%" height="100%" minHeight={400}>
+                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
                   <PolarGrid stroke="#374151" />
                   <PolarAngleAxis
                     dataKey="category"
                     tick={{
                       fill: '#9CA3AF',
-                      fontSize: 8,
-                      dy: 3,
+                      fontSize: 10,
+                      dy: 4,
                     }}
                   />
                   <Radar
