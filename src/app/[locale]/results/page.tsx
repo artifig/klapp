@@ -15,42 +15,127 @@ import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} f
 // Example data - in production this would come from the assessment results
 const data = [
   {
-    category: 'Data Quality',
+    category: 'Business Model Validation',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'AI Expertise',
-    value: 1,
-    fullMark: 3,
-  },
-  {
-    category: 'Infrastructure',
-    value: 2,
-    fullMark: 3,
-  },
-  {
-    category: 'AI Strategy',
+    category: 'Founding Team & Culture',
     value: 3,
     fullMark: 3,
   },
   {
-    category: 'Ethics & Governance',
+    category: 'Initial Funding',
     value: 1,
     fullMark: 3,
   },
+  {
+    category: 'MVP Development',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'Business Strategy',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'Product Development',
+    value: 1,
+    fullMark: 3,
+  },
+  {
+    category: 'Operations & Infrastructure',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'Data & Technology',
+    value: 3,
+    fullMark: 3,
+  },
+  {
+    category: 'Quality Management',
+    value: 1,
+    fullMark: 3,
+  },
+  {
+    category: 'Human Capital',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'Customer Experience',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'Finance & Risk',
+    value: 1,
+    fullMark: 3,
+  },
+  {
+    category: 'Governance & Compliance',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'Stakeholder Engagement',
+    value: 3,
+    fullMark: 3,
+  },
+  {
+    category: 'Sustainability',
+    value: 1,
+    fullMark: 3,
+  },
+  {
+    category: 'Health & Safety',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'Globalization',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'Corporate Governance',
+    value: 1,
+    fullMark: 3,
+  },
+  {
+    category: 'Strategic Alliances',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'Regulatory Frameworks',
+    value: 2,
+    fullMark: 3,
+  },
+  {
+    category: 'R&D & Innovation',
+    value: 3,
+    fullMark: 3,
+  },
+  {
+    category: 'Social Responsibility',
+    value: 2,
+    fullMark: 3,
+  }
 ];
 
 const recommendations = [
   {
-    category: 'Data Quality',
+    category: 'Data & Technology',
     level: 'yellow',
     text: 'Implement data quality controls and preprocessing pipelines',
     provider: 'DataAI Solutions',
     offer: 'Free data assessment consultation'
   },
   {
-    category: 'AI Expertise',
+    category: 'R&D & Innovation',
     level: 'red',
     text: 'Consider hiring AI specialists or training existing staff',
     provider: 'AI Academy',
@@ -81,13 +166,17 @@ export default function ResultsPage() {
             <CardDescription>Your AI readiness scores across different categories</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[400px]">
+            <div className="h-[600px]">
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
                   <PolarGrid stroke="#374151" />
                   <PolarAngleAxis
                     dataKey="category"
-                    tick={{fill: '#9CA3AF', fontSize: 12}}
+                    tick={{
+                      fill: '#9CA3AF',
+                      fontSize: 10,
+                      dy: 3,
+                    }}
                   />
                   <Radar
                     name="Score"
