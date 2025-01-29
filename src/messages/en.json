@@ -59,6 +59,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "continue": "Continue",
-    "languageSwitch": "Switch language"
+    "languageSwitch": "Switch language",
+    "switchTo": "Switch to"
   }
 } 

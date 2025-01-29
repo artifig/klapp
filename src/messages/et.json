@@ -122,6 +122,7 @@
     "save": "Salvesta",
     "cancel": "Tühista",
     "continue": "Jätka",
-    "languageSwitch": "Vaheta keelt"
+    "languageSwitch": "Vaheta keelt",
+    "switchTo": "Vaheta"
   }
 } 
