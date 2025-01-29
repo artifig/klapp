@@ -24,44 +24,46 @@ export default function SetupPage() {
 
   return (
     <PageWrapper>
-      <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-4">
+      <div className="h-full flex flex-col">
+        <div className="flex-1 grid lg:grid-cols-2 gap-4">
           {/* Left Column - Information */}
-          <Card className="h-full">
+          <Card className="flex flex-col">
             <CardHeader>
               <CardTitle className="text-4xl">{t('setup.title')}</CardTitle>
               <CardDescription className="text-lg">
                 {t('app.description')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Your Goal</h3>
-                <p className="text-gray-300 bg-gray-800/50 p-4 border border-gray-700 min-h-[100px]">
-                  {state.goal}
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Next Steps</h3>
-                <ul className="space-y-2 text-gray-300">
-                  <li>• Fill in your organization details</li>
-                  <li>• All fields are required for accurate assessment</li>
-                  <li>• Your data is kept confidential</li>
-                  <li>• Proceed to assessment questions when ready</li>
-                </ul>
+            <CardContent className="flex-1 overflow-y-auto">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Your Goal</h3>
+                  <p className="text-gray-300 bg-gray-800/50 p-4 border border-gray-700">
+                    {state.goal}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Next Steps</h3>
+                  <ul className="space-y-2 text-gray-300">
+                    <li>• Fill in your organization details</li>
+                    <li>• All fields are required for accurate assessment</li>
+                    <li>• Your data is kept confidential</li>
+                    <li>• Proceed to assessment questions when ready</li>
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Right Column - Setup Form */}
-          <Card className="h-full">
+          <Card className="flex flex-col">
             <CardHeader>
               <CardTitle>Organization Details</CardTitle>
               <CardDescription>
                 Please provide your organization's information
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 overflow-y-auto">
               <form className="space-y-6">
                 <div className="grid gap-6">
                   {/* Name Input */}

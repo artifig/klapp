@@ -148,62 +148,60 @@ export default function ResultsPage() {
 
   return (
     <PageWrapper>
-      <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-4">
+      <div className="h-full flex flex-col">
+        <div className="flex-1 grid lg:grid-cols-2 gap-4">
           {/* Left Column - Radar Chart */}
-          <div className="space-y-4">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle className="text-4xl">{t('results.title')}</CardTitle>
-                <CardDescription className="text-lg">
-                  {t('results.summary')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[350px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="58%" data={data}>
-                      <PolarGrid stroke="#374151" />
-                      <PolarAngleAxis
-                        dataKey="category"
-                        tick={{
-                          fill: '#9CA3AF',
-                          fontSize: 8,
-                          dy: 3,
-                        }}
-                      />
-                      <Radar
-                        name="Score"
-                        dataKey="value"
-                        stroke="#F97316"
-                        fill="#F97316"
-                        fillOpacity={0.3}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </div>
+          <Card className="flex flex-col">
+            <CardHeader>
+              <CardTitle className="text-4xl">{t('results.title')}</CardTitle>
+              <CardDescription className="text-lg">
+                {t('results.summary')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col">
+              <div className="flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="58%" data={data}>
+                    <PolarGrid stroke="#374151" />
+                    <PolarAngleAxis
+                      dataKey="category"
+                      tick={{
+                        fill: '#9CA3AF',
+                        fontSize: 8,
+                        dy: 3,
+                      }}
+                    />
+                    <Radar
+                      name="Score"
+                      dataKey="value"
+                      stroke="#F97316"
+                      fill="#F97316"
+                      fillOpacity={0.3}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
 
-                {/* Download Report Button */}
-                <button
-                  onClick={() => window.print()}
-                  className="w-full mt-6 px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                    shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
-                >
-                  {t('results.downloadReport')}
-                </button>
-              </CardContent>
-            </Card>
-          </div>
+              {/* Download Report Button */}
+              <button
+                onClick={() => window.print()}
+                className="w-full mt-6 px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
+                  shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
+              >
+                {t('results.downloadReport')}
+              </button>
+            </CardContent>
+          </Card>
 
           {/* Right Column - Recommendations */}
-          <div className="space-y-4">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>{t('results.recommendations')}</CardTitle>
-                <CardDescription>Actionable steps to improve your AI readiness</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
+          <Card className="flex flex-col">
+            <CardHeader>
+              <CardTitle>{t('results.recommendations')}</CardTitle>
+              <CardDescription>Actionable steps to improve your AI readiness</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col">
+              <div className="flex-1 overflow-y-auto pr-2">
+                <div className="space-y-4">
                   {recommendations.map((rec, index) => (
                     <div
                       key={index}
@@ -227,18 +225,18 @@ export default function ResultsPage() {
                     </div>
                   ))}
                 </div>
+              </div>
 
-                {/* Back Button */}
-                <Link
-                  href={routes.assessment}
-                  className="block w-full px-6 py-2 bg-gray-800 text-white font-medium 
-                    hover:bg-gray-700 transition-colors text-center mt-6"
-                >
-                  {t('nav.back')}
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+              {/* Back Button */}
+              <Link
+                href={routes.assessment}
+                className="block w-full px-6 py-2 bg-gray-800 text-white font-medium 
+                  hover:bg-gray-700 transition-colors text-center mt-6"
+              >
+                {t('nav.back')}
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </PageWrapper>

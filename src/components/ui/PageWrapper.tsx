@@ -14,13 +14,13 @@ export function PageWrapper({children, className = ''}: PageWrapperProps) {
   return (
     <div 
       className={`
-        min-h-screen w-full bg-gradient-to-b from-gray-900 to-black
-        px-4 py-8 md:py-12 relative
+        h-[calc(100vh-64px)] w-full bg-gradient-to-b from-gray-900 to-black
+        px-4 flex flex-col
         ${className}
       `}
     >
-      <div className="container mx-auto max-w-4xl">
-        <div className="relative">
+      <div className="container mx-auto max-w-6xl flex-1 relative">
+        <div className="relative h-full">
           {/* Background Gradient */}
           <div 
             className="absolute -top-[500px] left-1/2 -translate-x-1/2 w-[800px] h-[800px] 
@@ -28,7 +28,7 @@ export function PageWrapper({children, className = ''}: PageWrapperProps) {
           />
           
           {/* Content */}
-          <div className="relative">
+          <div className="relative h-full">
             {children}
           </div>
         </div>
@@ -38,7 +38,7 @@ export function PageWrapper({children, className = ''}: PageWrapperProps) {
       <PageNavigation />
 
       {/* Tehnopol Logo */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
         <Image
           src="/Tehnopol_logo_RGB.png"
           alt="Tehnopol"
