@@ -166,15 +166,15 @@ export default function ResultsPage() {
             <CardDescription>Your AI readiness scores across different categories</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[600px]">
+            <div className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+                <RadarChart cx="50%" cy="50%" outerRadius="60%" data={data}>
                   <PolarGrid stroke="#374151" />
                   <PolarAngleAxis
                     dataKey="category"
                     tick={{
                       fill: '#9CA3AF',
-                      fontSize: 10,
+                      fontSize: 9,
                       dy: 3,
                     }}
                   />
