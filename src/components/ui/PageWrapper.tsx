@@ -2,6 +2,7 @@
 
 import {ReactNode} from 'react';
 import {usePathname} from '@/navigation';
+import Image from 'next/image';
 
 type PageWrapperProps = {
   children: ReactNode;
@@ -13,7 +14,7 @@ export function PageWrapper({children, className = ''}: PageWrapperProps) {
     <div 
       className={`
         min-h-screen w-full bg-gradient-to-b from-gray-900 to-black
-        px-4 py-8 md:py-12
+        px-4 py-8 md:py-12 relative
         ${className}
       `}
     >
@@ -30,6 +31,18 @@ export function PageWrapper({children, className = ''}: PageWrapperProps) {
             {children}
           </div>
         </div>
+      </div>
+
+      {/* Tehnopol Logo */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
+        <Image
+          src="/Tehnopol_logo_RGB.png"
+          alt="Tehnopol"
+          width={120}
+          height={40}
+          style={{ objectFit: 'contain' }}
+          className="opacity-80 hover:opacity-100 transition-opacity"
+        />
       </div>
     </div>
   );
