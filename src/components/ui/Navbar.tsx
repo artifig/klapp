@@ -54,9 +54,60 @@ export function Navbar() {
           const isFuture = index > currentStepIndex;
           const isAccessible = isStepAccessible(index);
 
-          return (
-            <div 
-              key={step.id} 
+          const StepContent = () => (
+            <>
+              {/* Step number circle or checkmark */}
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-sm mb-1
+                  ${isActive
+                    ? 'bg-orange-500 text-white'
+                    : isPast
+                    ? 'bg-green-500 text-white'
+                    : 'bg-gray-700 text-gray-400'
+                  }`}
+              >
+                {isPast ? (
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 24 24" 
+                    fill="currentColor" 
+                    className="w-4 h-4"
+                  >
+                    <path 
+                      fillRule="evenodd" 
+                      d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" 
+                      clipRule="evenodd" 
+                    />
+                  </svg>
+                ) : (
+                  index + 1
+                )}
+              </div>
+
+              {/* Step label */}
+              <span
+                className={`text-xs font-medium text-center
+                  ${isActive
+                    ? 'text-orange-500'
+                    : isPast
+                    ? 'text-green-500'
+                    : 'text-gray-400'
+                  }`}
+              >
+                {step.label}
+              </span>
+
+              {/* Active indicator line */}
+              {isActive && (
+                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500" />
+              )}
+            </>
+          );
+
+          return isAccessible ? (
+            <Link 
+              key={step.id}
+              href={step.path}
               className={`relative flex flex-col items-center justify-center py-4 transition-all
                 ${index !== steps.length - 1 ? 'border-r' : ''} border-gray-800
                 ${isActive 
@@ -68,73 +119,18 @@ export function Navbar() {
                 ${(!isAccessible || isFuture) ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}
               `}
             >
-              {isAccessible ? (
-                <Link 
-                  href={step.path}
-                  className="flex flex-col items-center"
-                >
-                  {/* Step number circle or checkmark */}
-                  <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-sm mb-1
-                      ${isActive
-                        ? 'bg-orange-500 text-white'
-                        : isPast
-                        ? 'bg-green-500 text-white'
-                        : 'bg-gray-700 text-gray-400'
-                      }`}
-                  >
-                    {isPast ? (
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        viewBox="0 0 24 24" 
-                        fill="currentColor" 
-                        className="w-4 h-4"
-                      >
-                        <path 
-                          fillRule="evenodd" 
-                          d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" 
-                          clipRule="evenodd" 
-                        />
-                      </svg>
-                    ) : (
-                      index + 1
-                    )}
-                  </div>
-
-                  {/* Step label */}
-                  <span
-                    className={`text-xs font-medium text-center
-                      ${isActive
-                        ? 'text-orange-500'
-                        : isPast
-                        ? 'text-green-500'
-                        : 'text-gray-400'
-                      }`}
-                  >
-                    {step.label}
-                  </span>
-                </Link>
-              ) : (
-                <>
-                  {/* Step number circle */}
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-sm mb-1
-                      bg-gray-700 text-gray-400"
-                  >
-                    {index + 1}
-                  </div>
-
-                  {/* Step label */}
-                  <span className="text-xs font-medium text-center text-gray-400">
-                    {step.label}
-                  </span>
-                </>
-              )}
-
-              {/* Active indicator line */}
-              {isActive && (
-                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500" />
-              )}
+              <StepContent />
+            </Link>
+          ) : (
+            <div 
+              key={step.id}
+              className={`relative flex flex-col items-center justify-center py-4 transition-all
+                ${index !== steps.length - 1 ? 'border-r' : ''} border-gray-800
+                bg-gray-800/50
+                opacity-50 cursor-not-allowed
+              `}
+            >
+              <StepContent />
             </div>
           );
         })}

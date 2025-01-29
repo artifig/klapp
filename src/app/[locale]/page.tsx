@@ -2,7 +2,7 @@
 
 import {useTranslations} from 'next-intl';
 import {Link, routes, useRouter} from '@/navigation';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
@@ -10,9 +10,14 @@ import {useAssessment} from '@/context/AssessmentContext';
 export default function Home() {
   const t = useTranslations();
   const router = useRouter();
-  const {setGoal} = useAssessment();
-  const [goal, setLocalGoal] = useState('');
+  const {state, setGoal} = useAssessment();
+  const [goal, setLocalGoal] = useState(state.goal);
   const [showError, setShowError] = useState(false);
+
+  // Update local state when global state changes
+  useEffect(() => {
+    setLocalGoal(state.goal);
+  }, [state.goal]);
 
   const handleSubmit = (e: React.MouseEvent) => {
     if (!goal.trim()) {
