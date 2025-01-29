@@ -3,7 +3,8 @@ import {locales, defaultLocale} from './config';
 
 export const {Link, redirect, usePathname, useRouter} = createSharedPathnamesNavigation({
   locales,
-  defaultLocale
+  defaultLocale,
+  localePrefix: 'as-needed'
 });
 
 export const routes = {

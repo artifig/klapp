@@ -4,9 +4,12 @@ import {locales, defaultLocale} from './config';
 export default createMiddleware({
   defaultLocale,
   locales,
-  localePrefix: 'as-needed'
+  localePrefix: 'as-needed',
+  localeDetection: true
 });
 
 export const config = {
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
+  matcher: [
+    '/((?!api|_next|_vercel|_static|.*\\..*).*)'
+  ]
 }; 
