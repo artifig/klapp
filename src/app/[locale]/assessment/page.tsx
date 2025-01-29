@@ -134,17 +134,6 @@ export default function AssessmentPage() {
               >
                 {t('assessment.previousQuestion')}
               </button>
-              
-              {isComplete && (
-                <Link
-                  href={routes.results}
-                  onClick={handleComplete}
-                  className="px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                    shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
-                >
-                  {t('assessment.complete')}
-                </Link>
-              )}
             </CardFooter>
           </Card>
         )}

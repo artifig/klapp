@@ -4,7 +4,7 @@ import {useTranslations} from 'next-intl';
 import {Link, routes, useRouter} from '@/navigation';
 import {useState, useEffect} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
-import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} from '@/components/ui/Card';
+import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
 
 export default function Home() {
@@ -19,14 +19,12 @@ export default function Home() {
     setLocalGoal(state.goal);
   }, [state.goal]);
 
-  const handleSubmit = (e: React.MouseEvent) => {
-    if (!goal.trim()) {
-      e.preventDefault();
-      setShowError(true);
-      return;
-    }
-    setShowError(false);
-    setGoal(goal);
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setLocalGoal(value);
+    if (showError) setShowError(false);
+    // Update global state as user types
+    setGoal(value);
   };
 
   return (
@@ -55,10 +53,7 @@ export default function Home() {
               <textarea
                 id="goal"
                 value={goal}
-                onChange={(e) => {
-                  setLocalGoal(e.target.value);
-                  if (showError) setShowError(false);
-                }}
+                onChange={handleChange}
                 className={`w-full p-4 bg-gray-800/50 border rounded-none text-white min-h-[100px]
                   focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
                   ${showError ? 'border-red-500' : 'border-gray-700'}`}
@@ -71,17 +66,6 @@ export default function Home() {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <div /> {/* Empty div for consistent spacing */}
-            <Link
-              href={routes.setup}
-              onClick={handleSubmit}
-              className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
-            >
-              {t('home.startButton')}
-            </Link>
-          </CardFooter>
         </Card>
       </div>
     </PageWrapper>

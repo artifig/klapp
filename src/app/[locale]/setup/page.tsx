@@ -15,10 +15,13 @@ export default function SetupPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const {name, value} = e.target;
-    setLocalFormData(prev => ({...prev, [name]: value}));
+    const newFormData = {...formData, [name]: value};
+    setLocalFormData(newFormData);
     if (errors[name]) {
       setErrors(prev => ({...prev, [name]: false}));
     }
+    // Update global state as user types
+    setFormData(newFormData);
   };
 
   const handleSubmit = (e: React.MouseEvent) => {
@@ -166,22 +169,6 @@ export default function SetupPage() {
               </div>
             </form>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Link
-              href={routes.home}
-              className="px-6 py-2 bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors"
-            >
-              {t('nav.back')}
-            </Link>
-            <Link
-              href={routes.assessment}
-              onClick={handleSubmit}
-              className="px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
-            >
-              {t('setup.continue')}
-            </Link>
-          </CardFooter>
         </Card>
       </div>
     </PageWrapper>
