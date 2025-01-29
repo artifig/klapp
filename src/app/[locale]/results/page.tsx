@@ -10,7 +10,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import {PageWrapper} from '@/components/ui/PageWrapper';
-import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} from '@/components/ui/Card';
+import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 
 // Example data - in production this would come from the assessment results
 const data = [
@@ -148,9 +148,9 @@ export default function ResultsPage() {
 
   return (
     <PageWrapper>
-      <div className="space-y-8 max-w-2xl mx-auto">
+      <div className="space-y-4 max-w-6xl mx-auto">
         {/* Page Title */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold">
             {t('results.title')}
           </h1>
@@ -159,89 +159,95 @@ export default function ResultsPage() {
           </p>
         </div>
 
-        {/* Main Content Card - Radar Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('results.categories')}</CardTitle>
-            <CardDescription>Your AI readiness scores across different categories</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="60%" data={data}>
-                  <PolarGrid stroke="#374151" />
-                  <PolarAngleAxis
-                    dataKey="category"
-                    tick={{
-                      fill: '#9CA3AF',
-                      fontSize: 9,
-                      dy: 3,
-                    }}
-                  />
-                  <Radar
-                    name="Score"
-                    dataKey="value"
-                    stroke="#F97316"
-                    fill="#F97316"
-                    fillOpacity={0.3}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recommendations Section */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-center">
-            {t('results.recommendations')}
-          </h2>
-          
+        <div className="grid lg:grid-cols-2 gap-4">
+          {/* Left Column - Radar Chart */}
           <div className="space-y-4">
-            {recommendations.map((rec, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>{rec.category}</CardTitle>
-                    <span className={`px-3 py-1 text-sm ${
-                      rec.level === 'red' ? 'bg-red-900/50 text-red-200' :
-                      rec.level === 'yellow' ? 'bg-yellow-900/50 text-yellow-200' :
-                      'bg-green-900/50 text-green-200'
-                    }`}>
-                      {t(`results.levels.${rec.level}`)}
-                    </span>
-                  </div>
-                  <CardDescription>{rec.text}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="border-t border-gray-800 pt-4">
-                    <div className="font-bold">{rec.provider}</div>
-                    <div className="text-orange-500">{rec.offer}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle>{t('results.categories')}</CardTitle>
+                <CardDescription>Your AI readiness scores across different categories</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[350px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="58%" data={data}>
+                      <PolarGrid stroke="#374151" />
+                      <PolarAngleAxis
+                        dataKey="category"
+                        tick={{
+                          fill: '#9CA3AF',
+                          fontSize: 8,
+                          dy: 3,
+                        }}
+                      />
+                      <Radar
+                        name="Score"
+                        dataKey="value"
+                        stroke="#F97316"
+                        fill="#F97316"
+                        fillOpacity={0.3}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Download Report Button */}
+                <button
+                  onClick={() => window.print()}
+                  className="w-full mt-6 px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
+                    shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
+                >
+                  {t('results.downloadReport')}
+                </button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Recommendations */}
+          <div className="space-y-4">
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle>{t('results.recommendations')}</CardTitle>
+                <CardDescription>Actionable steps to improve your AI readiness</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
+                  {recommendations.map((rec, index) => (
+                    <div
+                      key={index}
+                      className="p-4 border border-gray-800 rounded-sm space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg">{rec.category}</h3>
+                        <span className={`px-3 py-1 text-sm ${
+                          rec.level === 'red' ? 'bg-red-900/50 text-red-200' :
+                          rec.level === 'yellow' ? 'bg-yellow-900/50 text-yellow-200' :
+                          'bg-green-900/50 text-green-200'
+                        }`}>
+                          {t(`results.levels.${rec.level}`)}
+                        </span>
+                      </div>
+                      <p className="text-gray-300">{rec.text}</p>
+                      <div className="border-t border-gray-800 pt-3">
+                        <div className="font-bold text-sm">{rec.provider}</div>
+                        <div className="text-orange-500 text-sm">{rec.offer}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Back Button */}
+                <Link
+                  href={routes.assessment}
+                  className="block w-full px-6 py-2 bg-gray-800 text-white font-medium 
+                    hover:bg-gray-700 transition-colors text-center mt-6"
+                >
+                  {t('nav.back')}
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         </div>
-
-        {/* Actions Card */}
-        <Card>
-          <CardContent className="flex justify-between py-4">
-            <Link
-              href={routes.assessment}
-              className="px-6 py-2 bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors"
-            >
-              {t('nav.back')}
-            </Link>
-            <button
-              onClick={() => window.print()}
-              className="px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
-            >
-              {t('results.downloadReport')}
-            </button>
-          </CardContent>
-        </Card>
       </div>
     </PageWrapper>
   );

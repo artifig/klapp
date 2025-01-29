@@ -1,10 +1,9 @@
 'use client';
 
 import {useTranslations} from 'next-intl';
-import {Link, routes} from '@/navigation';
 import {useState} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
-import {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} from '@/components/ui/Card';
+import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
 
 type Question = {
@@ -83,9 +82,9 @@ export default function AssessmentPage() {
 
   return (
     <PageWrapper>
-      <div className="space-y-8 max-w-2xl mx-auto">
+      <div className="space-y-4 max-w-6xl mx-auto">
         {/* Page Title */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold">
             {t('assessment.title')}
           </h1>
@@ -94,49 +93,106 @@ export default function AssessmentPage() {
           </p>
         </div>
 
-        {/* Main Content Card */}
-        {currentQuestion && (
-          <Card>
+        <div className="grid lg:grid-cols-2 gap-4">
+          {/* Left Column - Progress and Information */}
+          <Card className="h-full">
             <CardHeader>
-              <div className="text-sm text-orange-500 uppercase tracking-wider mb-2">
-                {currentQuestion.category}
-              </div>
-              <CardTitle>{currentQuestion.text}</CardTitle>
-              {showError && (
-                <p className="text-red-500 text-sm mt-2">
-                  {t('assessment.completeAllQuestions')}
-                </p>
-              )}
+              <CardTitle>Assessment Progress</CardTitle>
+              <CardDescription>
+                Track your progress and review previous answers
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                {currentQuestion.options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleAnswer(currentQuestion.id, option.id)}
-                    className={`w-full p-4 text-left border transition-all duration-300 ${
-                      answers[currentQuestion.id] === option.id
-                        ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10'
-                        : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800/50'
-                    }`}
-                  >
-                    {option.text}
-                  </button>
-                ))}
+            <CardContent className="space-y-6">
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-orange-500 transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <p className="text-sm text-gray-400 text-right">
+                  Question {currentQuestionIndex + 1} of {questions.length}
+                </p>
+              </div>
+
+              {/* Previous Answers */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">Your Answers</h3>
+                <div className="space-y-3">
+                  {questions.map((q, index) => {
+                    const answered = answers[q.id];
+                    const option = q.options.find(opt => opt.id === answered);
+                    return (
+                      <div 
+                        key={q.id}
+                        className={`p-3 border rounded-sm transition-colors
+                          ${index === currentQuestionIndex 
+                            ? 'border-orange-500 bg-orange-500/10' 
+                            : answered 
+                              ? 'border-gray-700 bg-gray-800/50'
+                              : 'border-gray-800 bg-gray-900/50'}`}
+                      >
+                        <div className="text-sm font-medium text-gray-300">{q.category}</div>
+                        <div className="mt-1 text-sm">
+                          {answered ? (
+                            <span className="text-orange-500">{option?.text}</span>
+                          ) : (
+                            <span className="text-gray-500">Not answered yet</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <button
-                onClick={handlePrevious}
-                disabled={currentQuestionIndex === 0}
-                className="px-6 py-2 bg-gray-800 text-white font-medium 
-                  hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {t('assessment.previousQuestion')}
-              </button>
-            </CardFooter>
           </Card>
-        )}
+
+          {/* Right Column - Current Question */}
+          {currentQuestion && (
+            <Card className="h-full">
+              <CardHeader>
+                <div className="text-sm text-orange-500 uppercase tracking-wider mb-2">
+                  {currentQuestion.category}
+                </div>
+                <CardTitle>{currentQuestion.text}</CardTitle>
+                {showError && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {t('assessment.completeAllQuestions')}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3">
+                  {currentQuestion.options.map(option => (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(currentQuestion.id, option.id)}
+                      className={`w-full p-4 text-left border transition-all duration-300 ${
+                        answers[currentQuestion.id] === option.id
+                          ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10'
+                          : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800/50'
+                      }`}
+                    >
+                      {option.text}
+                    </button>
+                  ))}
+                </div>
+
+                {currentQuestionIndex > 0 && (
+                  <button
+                    onClick={handlePrevious}
+                    className="w-full mt-4 px-6 py-2 bg-gray-800 text-white font-medium 
+                      hover:bg-gray-700 transition-colors text-center"
+                  >
+                    {t('assessment.previousQuestion')}
+                  </button>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </PageWrapper>
   );
