@@ -3,6 +3,7 @@
 import {ReactNode} from 'react';
 import {usePathname} from '@/navigation';
 import Image from 'next/image';
+import {PageNavigation} from './PageNavigation';
 
 type PageWrapperProps = {
   children: ReactNode;
@@ -32,6 +33,9 @@ export function PageWrapper({children, className = ''}: PageWrapperProps) {
           </div>
         </div>
       </div>
+
+      {/* Navigation */}
+      <PageNavigation />
 
       {/* Tehnopol Logo */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
