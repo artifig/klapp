@@ -75,7 +75,45 @@
     "sendingEmail": "Saadan...",
     "emailSent": "Raport saadetud!",
     "downloadStarted": "Allalaadimine algas",
-    "emailPlaceholder": "sinu@email.ee"
+    "emailPlaceholder": "sinu@email.ee",
+    "categories": {
+      "businessModel": "Ärimudeli valideerimine",
+      "team": "Meeskond ja kultuur",
+      "funding": "Rahastus",
+      "mvp": "MVP arendus",
+      "strategy": "Äristrateegia",
+      "product": "Tootearendus",
+      "operations": "Tegevused ja taristu",
+      "dataTech": "Andmed ja tehnoloogia",
+      "quality": "Kvaliteedijuhtimine",
+      "humanCapital": "Inimkapital",
+      "customerExp": "Kliendikogemus",
+      "finance": "Finants ja risk",
+      "governance": "Juhtimine ja vastavus",
+      "stakeholders": "Huvigruppide kaasamine",
+      "sustainability": "Jätkusuutlikkus",
+      "health": "Tervishoid ja ohutus",
+      "globalization": "Rahvusvahelistumine",
+      "corpGov": "Ettevõtte juhtimine",
+      "alliances": "Strateegilised partnerlused",
+      "regulatory": "Regulatiivne raamistik",
+      "rnd": "T&A ja innovatsioon",
+      "social": "Sotsiaalne vastutus"
+    },
+    "recommendations": {
+      "dataTech": {
+        "title": "Andmed ja tehnoloogia",
+        "text": "Juurutage andmekvaliteedi kontrollid ja eeltöötluse protsessid",
+        "provider": "DataAI Solutions",
+        "offer": "Tasuta andmete hindamise konsultatsioon"
+      },
+      "rnd": {
+        "title": "T&A ja innovatsioon",
+        "text": "Kaaluge AI-spetsialistide värbamist või olemasoleva personali koolitamist",
+        "provider": "AI Akadeemia",
+        "offer": "3-kuuline AI aluste kursus"
+      }
+    }
   },
   "common": {
     "loading": "Laadimine...",

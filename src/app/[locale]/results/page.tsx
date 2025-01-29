@@ -17,131 +17,133 @@ import {useAssessment} from '@/context/AssessmentContext';
 // Example data - in production this would come from the assessment results
 const data = [
   {
-    category: 'Business Model Validation',
+    category: 'businessModel',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Founding Team & Culture',
+    category: 'team',
     value: 3,
     fullMark: 3,
   },
   {
-    category: 'Initial Funding',
+    category: 'funding',
     value: 1,
     fullMark: 3,
   },
   {
-    category: 'MVP Development',
+    category: 'mvp',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Business Strategy',
+    category: 'strategy',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Product Development',
+    category: 'product',
     value: 1,
     fullMark: 3,
   },
   {
-    category: 'Operations & Infrastructure',
+    category: 'operations',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Data & Technology',
+    category: 'dataTech',
     value: 3,
     fullMark: 3,
   },
   {
-    category: 'Quality Management',
+    category: 'quality',
     value: 1,
     fullMark: 3,
   },
   {
-    category: 'Human Capital',
+    category: 'humanCapital',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Customer Experience',
+    category: 'customerExp',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Finance & Risk',
+    category: 'finance',
     value: 1,
     fullMark: 3,
   },
   {
-    category: 'Governance & Compliance',
+    category: 'governance',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Stakeholder Engagement',
+    category: 'stakeholders',
     value: 3,
     fullMark: 3,
   },
   {
-    category: 'Sustainability',
+    category: 'sustainability',
     value: 1,
     fullMark: 3,
   },
   {
-    category: 'Health & Safety',
+    category: 'health',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Globalization',
+    category: 'globalization',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Corporate Governance',
+    category: 'corpGov',
     value: 1,
     fullMark: 3,
   },
   {
-    category: 'Strategic Alliances',
+    category: 'alliances',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'Regulatory Frameworks',
+    category: 'regulatory',
     value: 2,
     fullMark: 3,
   },
   {
-    category: 'R&D & Innovation',
+    category: 'rnd',
     value: 3,
     fullMark: 3,
   },
   {
-    category: 'Social Responsibility',
+    category: 'social',
     value: 2,
     fullMark: 3,
   }
 ];
 
+type TranslationFunction = ReturnType<typeof useTranslations>;
+
 const recommendations = [
   {
-    category: 'Data & Technology',
+    category: 'dataTech',
     level: 'yellow',
-    text: 'Implement data quality controls and preprocessing pipelines',
-    provider: 'DataAI Solutions',
-    offer: 'Free data assessment consultation'
+    text: (t: TranslationFunction) => t('results.recommendations.dataTech.text'),
+    provider: (t: TranslationFunction) => t('results.recommendations.dataTech.provider'),
+    offer: (t: TranslationFunction) => t('results.recommendations.dataTech.offer')
   },
   {
-    category: 'R&D & Innovation',
+    category: 'rnd',
     level: 'red',
-    text: 'Consider hiring AI specialists or training existing staff',
-    provider: 'AI Academy',
-    offer: '3-month AI fundamentals course'
+    text: (t: TranslationFunction) => t('results.recommendations.rnd.text'),
+    provider: (t: TranslationFunction) => t('results.recommendations.rnd.provider'),
+    offer: (t: TranslationFunction) => t('results.recommendations.rnd.offer')
   }
 ];
 
@@ -200,6 +202,7 @@ export default function ResultsPage() {
                       fontSize: 10,
                       dy: 4,
                     }}
+                    tickFormatter={(value) => t(`results.categories.${value}`)}
                   />
                   <Radar
                     name="Score"
@@ -240,7 +243,9 @@ export default function ResultsPage() {
                     className="p-4 border border-gray-800 rounded-sm space-y-3"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-lg">{rec.category}</h3>
+                      <h3 className="font-semibold text-lg">
+                        {t(`results.recommendations.${rec.category}.title`)}
+                      </h3>
                       <span className={`px-3 py-1 text-sm ${
                         rec.level === 'red' ? 'bg-red-900/50 text-red-200' :
                         rec.level === 'yellow' ? 'bg-yellow-900/50 text-yellow-200' :
@@ -249,10 +254,10 @@ export default function ResultsPage() {
                         {t(`results.levels.${rec.level}`)}
                       </span>
                     </div>
-                    <p className="text-gray-300">{rec.text}</p>
+                    <p className="text-gray-300">{rec.text(t)}</p>
                     <div className="border-t border-gray-800 pt-3">
-                      <div className="font-bold text-sm">{rec.provider}</div>
-                      <div className="text-orange-500 text-sm">{rec.offer}</div>
+                      <div className="font-bold text-sm">{rec.provider(t)}</div>
+                      <div className="text-orange-500 text-sm">{rec.offer(t)}</div>
                     </div>
                   </div>
                 ))}
