@@ -11,9 +11,11 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",
     "@types/airtable": "^0.10.0",
+    "@types/dotenv": "^6.1.1",
     "airtable": "^0.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.7",
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
     "lucide-react": "^0.474.0",

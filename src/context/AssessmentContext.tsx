@@ -1,20 +1,18 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
+import { getCategories, getQuestions, saveResult, AirtableCategory, AirtableQuestion } from '@/lib/airtable';
+import { useLocale } from 'next-intl';
 
-interface Category {
-  id: string;
-  key: string;
+interface Category extends Omit<AirtableCategory, 'name_en' | 'name_et'> {
   name: string;
   questions: Question[];
 }
 
-interface Question {
-  id: string;
+interface Question extends Omit<AirtableQuestion, 'text_en' | 'text_et'> {
   text: string;
-  categoryId: string;
 }
 
 interface FormData {
@@ -42,6 +40,8 @@ interface AssessmentState {
   answers: Record<string, number>;
   matchedProviders: Provider[];
   progress: number;
+  isLoading: boolean;
+  error: string | null;
 }
 
 interface AssessmentContextType {
@@ -78,13 +78,62 @@ const defaultState: AssessmentState = {
   completedCategories: [],
   answers: {},
   matchedProviders: [],
-  progress: 0
+  progress: 0,
+  isLoading: true,
+  error: null
 };
 
 const AssessmentContext = createContext<AssessmentContextType | undefined>(undefined);
 
 export function AssessmentProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = usePersistentState<AssessmentState>('assessment_state', defaultState);
+  const locale = useLocale();
+
+  // Fetch categories and questions from Airtable
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setState(prev => ({ ...prev, isLoading: true, error: null }));
+        
+        const [categoriesData, questionsData] = await Promise.all([
+          getCategories(),
+          getQuestions()
+        ]);
+
+        // Transform categories and questions based on locale
+        const categories: Category[] = categoriesData.map(cat => ({
+          id: cat.id,
+          key: cat.key,
+          name: locale === 'et' ? cat.name_et : cat.name_en,
+          order: cat.order,
+          questions: questionsData
+            .filter(q => q.categoryId === cat.id)
+            .map(q => ({
+              id: q.id,
+              text: locale === 'et' ? q.text_et : q.text_en,
+              categoryId: q.categoryId,
+              order: q.order
+            }))
+            .sort((a, b) => a.order - b.order)
+        }));
+
+        setState(prev => ({
+          ...prev,
+          categories: categories.sort((a, b) => a.order - b.order),
+          isLoading: false
+        }));
+      } catch (error) {
+        console.error('Error fetching assessment data:', error);
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: 'Failed to load assessment data'
+        }));
+      }
+    };
+
+    fetchData();
+  }, [setState, locale]);
 
   const setGoal = useCallback((goal: string) => {
     setState(prev => ({ ...prev, goal }));
@@ -163,15 +212,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   }, [state]);
 
   const value: AssessmentContextType = {
-    goal: state.goal,
-    formData: state.formData,
-    currentCategory: state.currentCategory,
-    currentQuestion: state.currentQuestion,
-    categories: state.categories,
-    completedCategories: state.completedCategories,
-    answers: state.answers,
-    matchedProviders: state.matchedProviders,
-    progress: state.progress,
+    ...state,
     setGoal,
     setFormData,
     setCurrentCategory,
@@ -181,6 +222,14 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     resetAssessment,
     isStepAccessible
   };
+
+  if (state.isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (state.error) {
+    return <div>Error: {state.error}</div>;
+  }
 
   return (
     <AssessmentContext.Provider value={value}>

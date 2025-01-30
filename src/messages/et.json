@@ -118,7 +118,49 @@
     "completeAllQuestions": "Palun vastake kõikidele küsimustele enne jätkamist",
     "notAnswered": "Pole veel vastatud",
     "yourAnswers": "Teie vastused",
-    "loadingQuestions": "Laadin hindamisküsimusi..."
+    "loadingQuestions": "Laadin hindamisküsimusi...",
+    "noQuestionSelected": "Palun valige hindamise alustamiseks kategooria",
+    "categories": {
+      "title": "Hindamise kategooriad",
+      "businessModel": "Ärimudeli valideerimine",
+      "team": "Meeskond ja kultuur",
+      "funding": "Rahastus",
+      "mvp": "MVP arendus",
+      "strategy": "Äristrateegia",
+      "product": "Tootearendus",
+      "operations": "Tegevused ja taristu",
+      "dataTech": "Andmed ja tehnoloogia",
+      "quality": "Kvaliteedijuhtimine",
+      "humanCapital": "Inimkapital",
+      "customerExp": "Kliendikogemus",
+      "finance": "Finants ja risk",
+      "governance": "Juhtimine ja vastavus",
+      "stakeholders": "Huvigruppide kaasamine",
+      "sustainability": "Jätkusuutlikkus",
+      "health": "Tervishoid ja ohutus"
+    },
+    "answers": {
+      "1": "Alustamata",
+      "2": "Algusjärgus",
+      "3": "Töös",
+      "4": "Edasijõudnud",
+      "5": "Optimeeritud"
+    },
+    "contextCard": {
+      "title": "Hindamise progress",
+      "description": "Jälgi oma edenemist erinevates hindamiskategooriates",
+      "categoryStatus": "Kategooria staatus",
+      "overallProgress": "Üldine progress"
+    },
+    "interactiveCard": {
+      "title": "Praegune küsimus",
+      "selectCategory": "Vali alustamiseks kategooria",
+      "navigation": {
+        "back": "Eelmine",
+        "next": "Järgmine",
+        "finish": "Lõpeta hindamine"
+      }
+    }
   },
   "results": {
     "title": "Teie tehisaru valmisoleku tase",

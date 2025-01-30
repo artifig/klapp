@@ -117,7 +117,49 @@
     "completeAllQuestions": "Please answer all questions before proceeding",
     "notAnswered": "Not answered yet",
     "yourAnswers": "Your Answers",
-    "loadingQuestions": "Loading assessment questions..."
+    "loadingQuestions": "Loading assessment questions...",
+    "noQuestionSelected": "Please select a category to start the assessment",
+    "categories": {
+      "title": "Assessment Categories",
+      "businessModel": "Business Model Validation",
+      "team": "Team & Culture",
+      "funding": "Funding",
+      "mvp": "MVP Development",
+      "strategy": "Business Strategy",
+      "product": "Product Development",
+      "operations": "Operations & Infrastructure",
+      "dataTech": "Data & Technology",
+      "quality": "Quality Management",
+      "humanCapital": "Human Capital",
+      "customerExp": "Customer Experience",
+      "finance": "Finance & Risk",
+      "governance": "Governance & Compliance",
+      "stakeholders": "Stakeholder Engagement",
+      "sustainability": "Sustainability",
+      "health": "Health & Safety"
+    },
+    "answers": {
+      "1": "Not started",
+      "2": "Early stages",
+      "3": "In progress",
+      "4": "Advanced",
+      "5": "Optimized"
+    },
+    "contextCard": {
+      "title": "Assessment Progress",
+      "description": "Track your progress through different assessment categories",
+      "categoryStatus": "Category Status",
+      "overallProgress": "Overall Progress"
+    },
+    "interactiveCard": {
+      "title": "Current Question",
+      "selectCategory": "Select a category to begin",
+      "navigation": {
+        "back": "Previous",
+        "next": "Next",
+        "finish": "Complete Assessment"
+      }
+    }
   },
   "results": {
     "title": "Your AI Readiness Level",
