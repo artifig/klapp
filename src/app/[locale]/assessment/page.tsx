@@ -71,7 +71,13 @@ export default function AssessmentPage() {
         console.log('Form company type:', formCompanyType);
         
         if (!formCompanyType) {
-          throw new Error('Company type not selected');
+          // Instead of throwing an error, wait for a short time and check again
+          // This gives time for the data to load from localStorage
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const retryCompanyType = state.formData.companyType;
+          if (!retryCompanyType) {
+            throw new Error('Company type not selected');
+          }
         }
 
         const mappedCompanyType = CompanyTypeMapping[formCompanyType as keyof typeof CompanyTypeMapping];

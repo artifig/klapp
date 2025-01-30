@@ -1,7 +1,7 @@
 'use client';
 
 import {useTranslations} from 'next-intl';
-import {Link, routes} from '@/navigation';
+import {Link, routes, useRouter} from '@/navigation';
 import {useState, useEffect} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
@@ -24,6 +24,7 @@ type FormField = keyof FormData;
 
 export default function SetupPage() {
   const t = useTranslations();
+  const router = useRouter();
   const {state, setFormData} = useAssessment();
   const [error, setError] = useState<string | null>(null);
 
@@ -115,8 +116,8 @@ export default function SetupPage() {
       await setLocalFormData(formData);
       await syncData();
       
-      // Navigate to assessment
-      window.location.href = routes.assessment;
+      // Use Next.js router for navigation
+      router.push(routes.assessment);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save form data');
     }
