@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Font Face Declarations */
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: local('Helvetica Neue Regular'), local('HelveticaNeue-Regular');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica Neue Bold';
+  src: local('Helvetica Neue Bold'), local('HelveticaNeue-Bold');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -14,8 +31,49 @@
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  /* Base Typography */
+  body {
+    @apply text-foreground bg-background font-helvetica-neue text-body antialiased;
+  }
+
+  /* Heading Styles */
+  h1 {
+    @apply font-helvetica-neue-bold text-h1 mb-6;
+  }
+
+  h2 {
+    @apply font-helvetica-neue-bold text-h2 mb-5;
+  }
+
+  h3 {
+    @apply font-helvetica-neue-bold text-h3 mb-4;
+  }
+
+  h4 {
+    @apply font-helvetica-neue-bold text-h4 mb-4;
+  }
+
+  h5 {
+    @apply font-helvetica-neue-bold text-h5 mb-3;
+  }
+
+  h6 {
+    @apply font-helvetica-neue-bold text-h6 mb-3;
+  }
+
+  /* Paragraph Styles */
+  p {
+    @apply text-body mb-4;
+  }
+
+  /* Large Text */
+  .text-large {
+    @apply text-body-lg;
+  }
+
+  /* Small Text */
+  small, .text-small {
+    @apply text-body-sm;
+  }
 }
