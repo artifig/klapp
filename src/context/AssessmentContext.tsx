@@ -2,23 +2,29 @@
 
 import React, {createContext, useContext, useState, ReactNode} from 'react';
 
-type FormData = {
-  name: string;
-  company: string;
-  email: string;
-  companyType: string;
-};
-
-type AssessmentState = {
-  goal: string;
-  formData: FormData;
+export interface AssessmentState {
+  formData: {
+    name?: string;
+    email?: string;
+    company?: string;
+    companyType?: string;
+  };
+  goal?: string;
   answers: Record<string, string>;
-};
+  results: Record<string, number>;
+  recommendations: Record<string, {
+    title: string;
+    text: string;
+    score: number;
+    provider: string;
+    offer: string;
+  }>;
+}
 
 type AssessmentContextType = {
   state: AssessmentState;
   setGoal: (goal: string) => void;
-  setFormData: (data: FormData) => void;
+  setFormData: (data: {name: string; company: string; email: string; companyType: string}) => void;
   setAnswer: (questionId: string, answerId: string) => void;
   resetState: () => void;
 };
@@ -31,7 +37,9 @@ const initialState: AssessmentState = {
     email: '',
     companyType: ''
   },
-  answers: {}
+  answers: {},
+  results: {},
+  recommendations: {}
 };
 
 const AssessmentContext = createContext<AssessmentContextType | undefined>(undefined);
@@ -43,7 +51,7 @@ export function AssessmentProvider({children}: {children: ReactNode}) {
     setState(prev => ({...prev, goal}));
   };
 
-  const setFormData = (formData: FormData) => {
+  const setFormData = (formData: {name: string; company: string; email: string; companyType: string}) => {
     setState(prev => ({...prev, formData}));
   };
 
