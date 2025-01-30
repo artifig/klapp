@@ -245,8 +245,19 @@ export default function AssessmentPage() {
           {currentQuestion && (
             <Card className="flex flex-col">
               <CardHeader>
-                <div className="text-sm text-orange-500 uppercase tracking-wider mb-2">
-                  {currentQuestion.categoryId}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm text-orange-500 uppercase tracking-wider">
+                    {currentQuestion.categoryId}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {currentQuestionIndex + 1} / {questions.length}
+                  </div>
+                </div>
+                <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-orange-500 transition-all duration-300 ease-in-out"
+                    style={{ width: `${progress}%` }}
+                  />
                 </div>
                 <CardTitle>{currentQuestion.question.questionText}</CardTitle>
                 {showError && (
