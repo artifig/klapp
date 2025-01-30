@@ -207,8 +207,7 @@ export default function SetupPage() {
                 <Link
                   href={routes.assessment}
                   onClick={handleNext}
-                  className="w-full px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                    shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
+                  className="primary-button block w-full text-center"
                 >
                   {t('setup.continue')}
                 </Link>

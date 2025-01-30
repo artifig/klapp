@@ -17,8 +17,7 @@ export default function LanguageSwitcher() {
   return (
     <button
       onClick={switchLocale}
-      className="relative flex flex-col items-center justify-center py-4 px-6 transition-all
-        border-l border-gray-800 bg-gray-800/50 hover:bg-gray-700/50"
+      className="secondary-button !px-6 !py-4 !uppercase-none flex flex-col items-center justify-center"
       aria-label={t('languageSwitch')}
     >
       {/* Circle with current language */}

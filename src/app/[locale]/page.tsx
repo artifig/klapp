@@ -94,8 +94,7 @@ export default function Home() {
                 <Link
                   href={routes.setup}
                   onClick={handleNext}
-                  className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                    shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all"
+                  className="primary-button inline-block"
                 >
                   {t('home.startButton')}
                 </Link>

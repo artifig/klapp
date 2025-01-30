@@ -263,8 +263,7 @@ export default function AssessmentPage() {
               <div className="mt-6 pt-6 border-t border-gray-800">
                 <Link
                   href={routes.setup}
-                  className="w-full px-6 py-2 bg-gray-800 text-white font-medium 
-                    hover:bg-gray-700 transition-colors text-center"
+                  className="secondary-button block w-full text-center"
                 >
                   {t('nav.back')}
                 </Link>
@@ -408,8 +407,7 @@ export default function AssessmentPage() {
                     <Link
                       href={routes.results}
                       onClick={handleNext}
-                      className="w-full px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                        shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
+                      className="primary-button block w-full text-center"
                     >
                       {t('nav.results')}
                     </Link>
@@ -418,8 +416,7 @@ export default function AssessmentPage() {
                       {currentQuestionIndex > 0 && (
                         <button
                           onClick={handlePrevious}
-                          className="flex-1 px-8 py-3 bg-gray-800 text-white font-medium
-                            hover:bg-gray-700 transition-all text-center"
+                          className="secondary-button flex-1"
                         >
                           {t('assessment.previousQuestion')}
                         </button>
@@ -429,8 +426,7 @@ export default function AssessmentPage() {
                           currentQuestion.question.questionId,
                           currentQuestion.answers[0].answerId
                         )}
-                        className="flex-1 px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white font-medium
-                          shadow-lg hover:from-orange-600 hover:to-orange-800 transition-all text-center"
+                        className="primary-button flex-1"
                       >
                         {t('assessment.nextQuestion')}
                       </button>

@@ -280,16 +280,14 @@ export default function ResultsPage() {
                 {isEditing ? (
                   <button
                     onClick={handleSaveEmail}
-                    className="px-4 py-2 bg-orange-500 text-white font-medium 
-                      hover:bg-orange-600 transition-colors"
+                    className="secondary-button"
                   >
                     {t('common.save')}
                   </button>
                 ) : (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-4 py-2 bg-gray-800 text-white font-medium 
-                      hover:bg-gray-700 transition-colors"
+                    className="secondary-button"
                   >
                     {t('results.updateEmail')}
                   </button>
@@ -300,9 +298,7 @@ export default function ResultsPage() {
                 <button
                   onClick={handleSendEmail}
                   disabled={isSending}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-700 
-                    text-white font-medium shadow-lg hover:from-orange-600 hover:to-orange-800 
-                    transition-all text-center disabled:opacity-50"
+                  className="primary-button w-full"
                 >
                   {isSending ? t('results.sendingEmail') : 
                    showSuccess ? t('results.emailSent') : 
@@ -310,8 +306,7 @@ export default function ResultsPage() {
                 </button>
                 <button
                   onClick={handleDownloadPDF}
-                  className="w-full px-6 py-2 bg-gray-800 text-white font-medium 
-                    hover:bg-gray-700 transition-colors text-center"
+                  className="secondary-button w-full"
                 >
                   {t('results.downloadPDF')}
                 </button>
