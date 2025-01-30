@@ -21,8 +21,17 @@ export default async function LocaleLayout({
 }: Props) {
   const {locale} = await params;
 
+  console.log('🎨 Layout Rendering:', {
+    receivedLocale: locale,
+    isValidLocale: locales.includes(locale as any),
+    availableLocales: locales
+  });
+
   // Ensure that the incoming locale is valid
   if (!locale || !locales.includes(locale as any)) {
+    console.log('❌ Invalid locale, showing 404:', {
+      receivedLocale: locale
+    });
     notFound();
   }
 
