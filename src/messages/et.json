@@ -1,8 +1,8 @@
 {
   "Navigation": "Navigeerimine",
   "app": {
-    "title": "Tehisaru valmisoleku hindamine",
-    "description": "Hinda oma ettevõtte tehisaru valmisolekut ja saa personaalseid soovitusi"
+    "title": "Tehisintellekti valmisoleku hindamine",
+    "description": "Hinda oma ettevõtte valmisolekut tehisintellekti rakendamiseks ja saa personaalseid soovitusi"
   },
   "nav": {
     "home": "Avaleht",
@@ -15,32 +15,26 @@
   },
   "home": {
     "goalLabel": "Teie eesmärk",
-    "goalDescription": "Millised on teie peamised eesmärgid tehisaru juurutamisel oma organisatsioonis?",
-    "goalPlaceholder": "Nt soovime automatiseerida klienditeeninduse protsesse ja rakendada müügiprognooside ennustusanalüüsi...",
-    "exampleGoalsTitle": "Näidiseesmärgid",
-    "exampleGoals": {
-      "goal1": "Rakendada tehisarul põhinevat klienditeeninduse automatiseerimist, et vähendada reageerimisaega ja parandada kliendirahulolu",
-      "goal2": "Arendada tootmisseadmete ennetava hoolduse võimekust seisakuaja vähendamiseks",
-      "goal3": "Integreerida masinõpe müügiprotsessi, et paremini prognoosida klientide käitumist ja optimeerida hinnakujundust"
-    },
+    "goalDescription": "Millised on teie peamised eesmärgid tehisintellekti juurutamisel oma organisatsioonis?",
+    "goalPlaceholder": "Näiteks: Soovime automatiseerida klienditeeninduse protsesse ja rakendada müügiprognoosimiseks ennustavat analüütikat...",
     "whatToExpect": "Mida oodata",
     "expectationsList": {
-      "evaluation": "Põhjalik hindamine teie ettevõtte valmisolekust",
-      "areas": "Ülevaade erinevatest valdkondadest",
-      "recommendations": "Personaalsed soovitused",
-      "insights": "Väärtuslikud tähelepanekud"
+      "evaluation": "Põhjalik hinnang teie tehisintellekti valmisolekule",
+      "areas": "Hindamine põhilistes ärivaldkondades",
+      "recommendations": "Kohandatud soovitused parendamiseks",
+      "insights": "Praktilised teadmised ja järgmised sammud"
     },
     "timeRequired": "Ajakulu",
     "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit",
-    "startButton": "Alusta tehisaru hindamisteekonda",
+    "startButton": "Alusta tehisintellekti valmisoleku teekonda",
     "contextCard": {
-      "title": "Tehisaru valmisoleku hindamine",
-      "description": "Tere tulemast tehisaru valmisoleku hindamise tööriista! See aitab teil mõista oma organisatsiooni valmisolekut tehisaru rakendamiseks.",
+      "title": "Tehisintellekti valmisoleku hindamine",
+      "description": "Tere tulemast tehisintellekti valmisoleku hindamise tööriista! See aitab teil mõista oma organisatsiooni valmisolekut tehisintellekti juurutamiseks.",
       "steps": {
         "step1": "Täitke lühike küsimustik",
         "step2": "Saage ülevaade oma organisatsiooni valmisolekust",
         "step3": "Tuvastage võimalused ja väljakutsed",
-        "step4": "Saage personaalsed soovitused edasisteks sammudeks"
+        "step4": "Saage personaalsed soovitused järgmisteks sammudeks"
       }
     }
   },
@@ -60,7 +54,6 @@
     },
     "companyTypes": {
       "startup": "Idufirma",
-      "scaleup": "Kasvufirma",
       "sme": "VKE",
       "enterprise": "Suurettevõte"
     },
@@ -75,14 +68,14 @@
       },
       "email": {
         "required": "Palun sisestage e-posti aadress",
-        "invalid": "Palun sisestage korrektne e-posti aadress"
+        "invalid": "Palun sisestage kehtiv e-posti aadress"
       },
       "companyType": {
         "required": "Palun valige ettevõtte tüüp"
       }
     },
     "autosave": {
-      "saving": "Salvestan...",
+      "saving": "Salvestamine...",
       "saved": "Salvestatud",
       "error": "Salvestamine ebaõnnestus"
     },
@@ -99,7 +92,7 @@
     "organizationInfo": "Palun sisestage oma organisatsiooni andmed",
     "contextCard": {
       "title": "Seadistus",
-      "description": "Enne hindamise alustamist vajame mõningaid andmeid teie organisatsiooni kohta.",
+      "description": "Enne hindamise alustamist vajame mõningat teavet teie organisatsiooni kohta.",
       "yourGoal": "Teie eesmärk",
       "requirements": "Nõuded",
       "steps": {
@@ -111,14 +104,14 @@
     }
   },
   "assessment": {
-    "title": "Tehisaru valmisoleku hindamine",
+    "title": "Tehisintellekti valmisoleku hindamine",
     "progress": "Progress",
     "previousQuestion": "Eelmine küsimus",
     "nextQuestion": "Järgmine küsimus",
     "completeAllQuestions": "Palun vastake kõikidele küsimustele enne jätkamist",
-    "notAnswered": "Pole veel vastatud",
+    "notAnswered": "Veel vastamata",
     "yourAnswers": "Teie vastused",
-    "loadingQuestions": "Laadin hindamisküsimusi...",
+    "loadingQuestions": "Hindamisküsimuste laadimine...",
     "noQuestionSelected": "Palun valige hindamise alustamiseks kategooria",
     "categories": {
       "title": "Hindamise kategooriad",
@@ -148,13 +141,13 @@
     },
     "contextCard": {
       "title": "Hindamise progress",
-      "description": "Jälgi oma edenemist erinevates hindamiskategooriates",
+      "description": "Jälgige oma progressi erinevates hindamiskategooriates",
       "categoryStatus": "Kategooria staatus",
       "overallProgress": "Üldine progress"
     },
     "interactiveCard": {
       "title": "Praegune küsimus",
-      "selectCategory": "Vali alustamiseks kategooria",
+      "selectCategory": "Valige alustamiseks kategooria",
       "navigation": {
         "back": "Eelmine",
         "next": "Järgmine",
@@ -163,60 +156,16 @@
     }
   },
   "results": {
-    "title": "Teie tehisaru valmisoleku tase",
-    "summary": "Teie ettevõtte tehisaru valmisoleku analüüs",
-    "recommendationsTitle": "Soovitused",
-    "actionableSteps": "Tegevussammud teie AI-valmisoleku parandamiseks",
-    "emailReport": "Saada raport e-postiga",
-    "downloadPDF": "Laadi alla PDF",
-    "updateEmail": "Muuda e-posti aadressi",
-    "sendingEmail": "Saadan...",
-    "emailSent": "Raport saadetud!",
-    "downloadStarted": "Allalaadimine algas",
-    "emailPlaceholder": "Sisestage e-posti aadress",
+    "title": "Teie tehisintellekti valmisoleku tase",
+    "summary": "Teie ettevõtte tehisintellekti valmisoleku analüüs",
+    "categories": "Kategooriate ülevaade",
+    "recommendations": "Soovitused",
     "levels": {
       "red": "Madal",
       "yellow": "Keskmine",
       "green": "Kõrge"
     },
-    "categories": {
-      "businessModel": "Ärimudeli valideerimine",
-      "team": "Meeskond ja kultuur",
-      "funding": "Rahastus",
-      "mvp": "MVP arendus",
-      "strategy": "Äristrateegia",
-      "product": "Tootearendus",
-      "operations": "Tegevused ja taristu",
-      "dataTech": "Andmed ja tehnoloogia",
-      "quality": "Kvaliteedijuhtimine",
-      "humanCapital": "Inimkapital",
-      "customerExp": "Kliendikogemus",
-      "finance": "Finants ja risk",
-      "governance": "Juhtimine ja vastavus",
-      "stakeholders": "Huvigruppide kaasamine",
-      "sustainability": "Jätkusuutlikkus",
-      "health": "Tervishoid ja ohutus",
-      "globalization": "Rahvusvahelistumine",
-      "corpGov": "Ettevõtte juhtimine",
-      "alliances": "Strateegilised partnerlused",
-      "regulatory": "Regulatiivne raamistik",
-      "rnd": "T&A ja innovatsioon",
-      "social": "Sotsiaalne vastutus"
-    },
-    "recommendations": {
-      "dataTech": {
-        "title": "Andmete ja tehnoloogia täiustamine",
-        "text": "Andmete haldamise ja tehnoloogia täiustamine",
-        "provider": "Tehnopol",
-        "offer": "Andmete haldamise konsultatsioon"
-      },
-      "rnd": {
-        "title": "T&A tugevdamine",
-        "text": "Teadus- ja arendustegevuse tugevdamine",
-        "provider": "Tehnopol",
-        "offer": "T&A strateegia nõustamine"
-      }
-    }
+    "downloadReport": "Laadi raport alla"
   },
   "common": {
     "loading": "Laadimine...",
@@ -228,6 +177,6 @@
     "cancel": "Tühista",
     "continue": "Jätka",
     "languageSwitch": "Vaheta keelt",
-    "switchTo": "Vaheta"
+    "switchTo": "Lülitu"
   }
 } 

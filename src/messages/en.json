@@ -16,12 +16,6 @@
     "goalLabel": "Your Goal",
     "goalDescription": "What are your main objectives for implementing AI in your organization?",
     "goalPlaceholder": "E.g., We want to automate our customer service processes and implement predictive analytics for sales forecasting...",
-    "exampleGoalsTitle": "Example Goals",
-    "exampleGoals": {
-      "goal1": "Implement AI-powered customer service automation to reduce response times and improve customer satisfaction",
-      "goal2": "Develop predictive maintenance capabilities for our manufacturing equipment to reduce downtime",
-      "goal3": "Integrate machine learning into our sales process to better predict customer behavior and optimize pricing"
-    },
     "whatToExpect": "What to Expect",
     "expectationsList": {
       "evaluation": "Comprehensive evaluation of your AI readiness",
@@ -45,10 +39,6 @@
   },
   "setup": {
     "title": "Let's Get Started",
-    "nameLabel": "Your Name",
-    "emailLabel": "Email Address",
-    "companyNameLabel": "Company Name",
-    "companyTypeLabel": "Company Type",
     "form": {
       "name": "Your Name",
       "email": "Email Address",
@@ -59,7 +49,6 @@
     },
     "companyTypes": {
       "startup": "Startup",
-      "scaleup": "Scale-up",
       "sme": "SME",
       "enterprise": "Enterprise"
     },
@@ -119,32 +108,6 @@
     "yourAnswers": "Your Answers",
     "loadingQuestions": "Loading assessment questions...",
     "noQuestionSelected": "Please select a category to start the assessment",
-    "categories": {
-      "title": "Assessment Categories",
-      "businessModel": "Business Model Validation",
-      "team": "Team & Culture",
-      "funding": "Funding",
-      "mvp": "MVP Development",
-      "strategy": "Business Strategy",
-      "product": "Product Development",
-      "operations": "Operations & Infrastructure",
-      "dataTech": "Data & Technology",
-      "quality": "Quality Management",
-      "humanCapital": "Human Capital",
-      "customerExp": "Customer Experience",
-      "finance": "Finance & Risk",
-      "governance": "Governance & Compliance",
-      "stakeholders": "Stakeholder Engagement",
-      "sustainability": "Sustainability",
-      "health": "Health & Safety"
-    },
-    "answers": {
-      "1": "Not started",
-      "2": "Early stages",
-      "3": "In progress",
-      "4": "Advanced",
-      "5": "Optimized"
-    },
     "contextCard": {
       "title": "Assessment Progress",
       "description": "Track your progress through different assessment categories",
