@@ -1,49 +1,85 @@
 'use client';
 
-import React, { createContext, useContext, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
 
-export interface AssessmentState {
-  formData: {
-    name: string;
-    email: string;
-    company: string;
-    companyType: string;
-  };
-  goal: string;
-  answers: Record<string, string>;
-  results: Record<string, number>;
-  recommendations: Record<string, {
-    title: string;
-    text: string;
-    score: number;
-    provider: string;
-    offer: string;
-  }>;
+interface Category {
+  id: string;
+  key: string;
+  name: string;
+  questions: Question[];
+}
+
+interface Question {
+  id: string;
+  text: string;
+  categoryId: string;
+}
+
+interface FormData {
+  name: string;
+  email: string;
+  companyName: string;
+  companyType: string;
+}
+
+interface Provider {
+  id: string;
+  name: string;
+  description: string;
+  matchScore: number;
+  contactEmail: string;
+}
+
+interface AssessmentState {
+  formData: FormData;
+  goal: string | null;
+  currentCategory: Category | null;
+  currentQuestion: Question | null;
+  categories: Category[];
+  completedCategories: string[];
+  answers: Record<string, number>;
+  matchedProviders: Provider[];
+  progress: number;
+}
+
+interface AssessmentContextType {
+  goal: string | null;
+  formData: FormData | null;
+  currentCategory: Category | null;
+  currentQuestion: Question | null;
+  categories: Category[];
+  completedCategories: string[];
+  answers: Record<string, number>;
+  matchedProviders: Provider[];
+  progress: number;
+  setGoal: (goal: string) => void;
+  setFormData: (data: FormData) => void;
+  setCurrentCategory: (category: Category) => void;
+  setAnswer: (questionId: string, value: number) => void;
+  getAnswerForQuestion: (questionId: string) => number | undefined;
+  moveToNextQuestion: () => void;
+  resetAssessment: () => void;
+  isStepAccessible: (path: string) => boolean;
 }
 
 const defaultState: AssessmentState = {
   formData: {
     name: '',
     email: '',
-    company: '',
+    companyName: '',
     companyType: ''
   },
-  goal: '',
+  goal: null,
+  currentCategory: null,
+  currentQuestion: null,
+  categories: [],
+  completedCategories: [],
   answers: {},
-  results: {},
-  recommendations: {}
+  matchedProviders: [],
+  progress: 0
 };
-
-interface AssessmentContextType {
-  state: AssessmentState;
-  setGoal: (goal: string) => void;
-  setFormData: (data: AssessmentState['formData']) => void;
-  setAnswer: (questionId: string, answerId: string) => void;
-  resetState: () => void;
-  isStepAccessible: (path: string) => boolean;
-}
 
 const AssessmentContext = createContext<AssessmentContextType | undefined>(undefined);
 
@@ -54,18 +90,54 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     setState(prev => ({ ...prev, goal }));
   }, [setState]);
 
-  const setFormData = useCallback((formData: AssessmentState['formData']) => {
+  const setFormData = useCallback((formData: FormData) => {
     setState(prev => ({ ...prev, formData }));
   }, [setState]);
 
-  const setAnswer = useCallback((questionId: string, answerId: string) => {
+  const setCurrentCategory = useCallback((category: Category) => {
     setState(prev => ({
       ...prev,
-      answers: { ...prev.answers, [questionId]: answerId }
+      currentCategory: category,
+      currentQuestion: category.questions[0] || null
     }));
   }, [setState]);
 
-  const resetState = useCallback(() => {
+  const setAnswer = useCallback((questionId: string, value: number) => {
+    setState(prev => ({
+      ...prev,
+      answers: { ...prev.answers, [questionId]: value }
+    }));
+  }, [setState]);
+
+  const getAnswerForQuestion = useCallback((questionId: string) => {
+    return state.answers[questionId];
+  }, [state.answers]);
+
+  const moveToNextQuestion = useCallback(() => {
+    if (!state.currentCategory || !state.currentQuestion) return;
+
+    const currentQuestionIndex = state.currentCategory.questions.findIndex(
+      q => q.id === state.currentQuestion?.id
+    );
+    
+    if (currentQuestionIndex === -1) return;
+
+    const nextQuestion = state.currentCategory.questions[currentQuestionIndex + 1];
+
+    if (nextQuestion) {
+      setState(prev => ({ ...prev, currentQuestion: nextQuestion }));
+    } else {
+      const currentCategoryId = state.currentCategory.id;
+      setState(prev => ({
+        ...prev,
+        completedCategories: [...prev.completedCategories, currentCategoryId],
+        currentQuestion: null,
+        currentCategory: null
+      }));
+    }
+  }, [state.currentCategory, state.currentQuestion, setState]);
+
+  const resetAssessment = useCallback(() => {
     setState(defaultState);
   }, [setState]);
 
@@ -79,7 +151,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         return Boolean(state.goal?.trim()) &&
           Boolean(state.formData.name) &&
           Boolean(state.formData.email) &&
-          Boolean(state.formData.company) &&
+          Boolean(state.formData.companyName) &&
           Boolean(state.formData.companyType);
       case routes.results:
         return Boolean(state.goal?.trim()) &&
@@ -90,24 +162,37 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     }
   }, [state]);
 
+  const value: AssessmentContextType = {
+    goal: state.goal,
+    formData: state.formData,
+    currentCategory: state.currentCategory,
+    currentQuestion: state.currentQuestion,
+    categories: state.categories,
+    completedCategories: state.completedCategories,
+    answers: state.answers,
+    matchedProviders: state.matchedProviders,
+    progress: state.progress,
+    setGoal,
+    setFormData,
+    setCurrentCategory,
+    setAnswer,
+    getAnswerForQuestion,
+    moveToNextQuestion,
+    resetAssessment,
+    isStepAccessible
+  };
+
   return (
-    <AssessmentContext.Provider value={{
-      state,
-      setGoal,
-      setFormData,
-      setAnswer,
-      resetState,
-      isStepAccessible
-    }}>
+    <AssessmentContext.Provider value={value}>
       {children}
     </AssessmentContext.Provider>
   );
 }
 
-export function useAssessment() {
+export function useAssessmentContext() {
   const context = useContext(AssessmentContext);
   if (!context) {
-    throw new Error('useAssessment must be used within AssessmentProvider');
+    throw new Error('useAssessmentContext must be used within AssessmentProvider');
   }
   return context;
 } 
