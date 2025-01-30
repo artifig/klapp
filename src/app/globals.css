@@ -153,4 +153,60 @@
            focus:ring-green-500
            bg-green-900/20;
   }
+
+  /* Answer Option Styles */
+  .answer-option {
+    @apply flex items-center gap-3 w-full p-4 
+           rounded-lg border border-gray-700
+           bg-gray-800/50 hover:bg-gray-800
+           transition-all duration-200
+           cursor-pointer;
+  }
+
+  .answer-option.selected {
+    @apply border-orange-500 bg-orange-500/10
+           hover:bg-orange-500/20;
+  }
+
+  .answer-text {
+    @apply text-gray-200 font-medium;
+  }
+
+  /* Progress Bar */
+  .progress-bar {
+    @apply h-2 bg-gray-800 rounded-full overflow-hidden;
+  }
+
+  .progress-bar-fill {
+    @apply h-full bg-gradient-to-r from-[#FF6600] to-[#FFCC00]
+           transition-all duration-500 ease-out;
+  }
+}
+
+/* Animations */
+@keyframes scaleIn {
+  from { transform: translate(-50%, -50%) scale(0); }
+  to { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-scale-in {
+  animation: scaleIn 200ms ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 300ms ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 300ms ease-out forwards;
 }

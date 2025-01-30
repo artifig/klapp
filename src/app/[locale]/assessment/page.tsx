@@ -14,6 +14,8 @@ import {
   CompanyType,
   CompanyTypeMapping
 } from '@/services/airtable';
+import {AnswerOption} from '@/components/ui/AnswerOption';
+import {ChevronLeft, ChevronRight} from 'lucide-react';
 
 type AssessmentQuestion = {
   categoryId: string;
@@ -25,12 +27,14 @@ export default function AssessmentPage() {
   const t = useTranslations();
   const {state, setAnswer} = useAssessment();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>(state.answers);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showError, setShowError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [assessmentStructure, setAssessmentStructure] = useState<CategoryWithQuestions[]>([]);
   const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     async function loadAssessmentData() {
@@ -145,17 +149,32 @@ export default function AssessmentPage() {
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
-      setShowError(false);
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentQuestionIndex(prev => prev - 1);
+        setSelectedAnswer(answers[questions[currentQuestionIndex - 1].question.questionId] || null);
+        setIsTransitioning(false);
+      }, 300);
     }
   };
 
-  const handleNext = (e: React.MouseEvent) => {
-    if (Object.keys(answers).length < questions.length) {
-      e.preventDefault();
-      setShowError(true);
-      return;
+  const handleNext = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentQuestionIndex(prev => prev + 1);
+        setSelectedAnswer(answers[questions[currentQuestionIndex + 1].question.questionId] || null);
+        setIsTransitioning(false);
+      }, 300);
     }
+  };
+
+  const handleAnswerSelect = (answer: string) => {
+    setSelectedAnswer(answer);
+    setAnswers(prev => ({
+      ...prev,
+      [questions[currentQuestionIndex].question.questionId]: answer
+    }));
   };
 
   if (isLoading) {
@@ -193,250 +212,77 @@ export default function AssessmentPage() {
 
   return (
     <PageWrapper>
-      <div className="h-full flex flex-col">
-        <div className="flex-1 grid lg:grid-cols-2 gap-4">
-          {/* Left Column - Progress and Information */}
-          <Card className="flex flex-col">
-            <CardHeader>
-              <CardTitle className="text-4xl">{t('assessment.title')}</CardTitle>
-              <CardDescription className="text-lg">
-                {t('assessment.progress')}: {Math.round(progress)}%
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto flex flex-col">
-              <div className="flex-1 space-y-6">
-                {/* Overall Progress Bar */}
-                <div className="space-y-2">
-                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-orange-500 transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-400">
-                    <span>Overall Progress</span>
-                    <span>{Math.round(progress)}% Complete</span>
-                  </div>
-                </div>
-
-                {/* Category Progress */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Categories Progress</h3>
-                  <div className="space-y-3">
-                    {categories.map(cat => {
-                      const isCurrentCategory = currentQuestion?.categoryId === cat.categoryId;
-                      const categoryData = assessmentStructure.find(s => s.category.categoryId === cat.categoryId)?.category;
-                      return (
-                        <div 
-                          key={cat.categoryId}
-                          className={`p-4 border rounded-sm transition-colors
-                            ${isCurrentCategory 
-                              ? 'border-orange-500 bg-orange-500/10' 
-                              : cat.progress === 100
-                                ? 'border-green-500/50 bg-green-500/5'
-                                : cat.progress > 0
-                                  ? 'border-gray-700 bg-gray-800/50'
-                                  : 'border-gray-800 bg-gray-900/50'}`}
-                        >
-                          <div className="flex justify-between items-center mb-2">
-                            <div className="text-sm font-medium text-gray-300">{categoryData?.categoryText}</div>
-                            <div className="text-sm text-gray-400">{cat.answered}/{cat.total}</div>
-                          </div>
-                          <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full transition-all duration-300 ${
-                                cat.progress === 100 
-                                  ? 'bg-green-500' 
-                                  : isCurrentCategory 
-                                    ? 'bg-orange-500'
-                                    : 'bg-gray-600'
-                              }`}
-                              style={{ width: `${cat.progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+      <div className="h-full flex flex-col max-w-3xl mx-auto">
+        <Card className="flex-1">
+          <CardHeader>
+            <div className="flex items-center justify-between mb-4">
+              <CardTitle>{t('assessment.title')}</CardTitle>
+              <span className="text-gray-400">
+                {t('assessment.progress')}: {currentQuestionIndex + 1} / {questions.length}
+              </span>
+            </div>
+            
+            {/* Category Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">{t(`results.categories.${currentQuestion?.categoryId}`)}</span>
+                <span className="text-gray-400">{Math.round(currentCategoryProgress?.progress || 0)}%</span>
               </div>
-              <div className="mt-6 pt-6 border-t border-gray-800">
-                <Link
-                  href={routes.setup}
-                  className="secondary-button block w-full text-center"
-                >
-                  {t('nav.back')}
-                </Link>
+              <div className="progress-bar">
+                <div 
+                  className="progress-bar-fill"
+                  style={{ width: `${currentCategoryProgress?.progress || 0}%` }}
+                />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardHeader>
 
-          {/* Right Column - Current Question */}
-          {currentQuestion && (
-            <Card className="flex flex-col">
-              <CardHeader className="space-y-6">
-                {/* Title and Progress Stats */}
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold text-white">
-                    {t('assessment.title')}
-                  </h2>
-                  <div className="px-3 py-1 bg-gray-800 rounded-full text-sm text-gray-400">
-                    Question {currentQuestionIndex + 1} of {questions.length}
-                  </div>
-                </div>
+          <CardContent>
+            {/* Question */}
+            <div className={`space-y-6 ${isTransitioning ? 'opacity-0' : 'animate-fade-in'}`}>
+              <h2 className="text-xl font-medium text-white">
+                {currentQuestion?.question.questionText}
+              </h2>
 
-                {/* Compact Progress Statistics */}
-                <div className="space-y-4 p-3 bg-gray-900/50 rounded-lg border border-gray-800">
-                  {/* Main Stats */}
-                  <div className="grid grid-cols-3 gap-3">
-                    {/* Overall Progress */}
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-400">Overall</div>
-                      <div className="text-lg font-medium text-orange-500">
-                        {Math.round(progress)}%
-                      </div>
-                      <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-orange-500 transition-all duration-300"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                    </div>
+              {/* Answer Options */}
+              <div className="space-y-3">
+                {currentQuestion?.answers.map((answer, index) => (
+                  <AnswerOption
+                    key={index}
+                    text={answer.answerText}
+                    selected={selectedAnswer === answer.answerId}
+                    onSelect={() => handleAnswerSelect(answer.answerId)}
+                    className="animate-slide-in"
+                    style={{
+                      animationDelay: `${index * 50}ms`
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
 
-                    {/* Category Progress */}
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-400">Category</div>
-                      <div className="text-lg font-medium text-orange-500">
-                        {currentCategoryProgress?.answered || 0}
-                        <span className="text-gray-600">/</span>
-                        {currentCategoryProgress?.total || 0}
-                      </div>
-                      <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-orange-500 transition-all duration-300"
-                          style={{ width: `${currentCategoryProgress?.progress || 0}%` }}
-                        />
-                      </div>
-                    </div>
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mt-8">
+              <button
+                onClick={handlePrevious}
+                disabled={currentQuestionIndex === 0}
+                className="secondary-button flex items-center gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                {t('assessment.previousQuestion')}
+              </button>
 
-                    {/* Current Category */}
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-400">Section</div>
-                      <div className="text-sm font-medium text-orange-500 truncate" title={currentQuestion.categoryId}>
-                        {currentQuestion.categoryId}
-                      </div>
-                      <div className="text-sm text-gray-300 truncate" title={assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryText}>
-                        {assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryText}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Category Completion Overview */}
-                  <div className="border-t border-gray-800 pt-3">
-                    <div className="text-xs text-gray-400 mb-2">Categories Completion</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {categories.map(cat => {
-                        const isCurrentCategory = currentQuestion?.categoryId === cat.categoryId;
-                        return (
-                          <div
-                            key={cat.categoryId}
-                            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-help
-                              ${cat.progress === 100
-                                ? 'bg-green-500'
-                                : isCurrentCategory
-                                  ? 'bg-orange-500'
-                                  : cat.progress > 0
-                                    ? 'bg-gray-600'
-                                    : 'bg-gray-800'
-                              }`}
-                            title={`${assessmentStructure.find(s => s.category.categoryId === cat.categoryId)?.category.categoryText}: ${Math.round(cat.progress)}%`}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Category Description */}
-                <div className="text-sm text-gray-400 bg-gray-900/30 p-3 rounded-lg border border-gray-800">
-                  {assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryDescription}
-                </div>
-
-                {/* Current Question */}
-                <div className="space-y-4">
-                  <div className="text-xl font-medium text-white">
-                    {currentQuestion.question.questionText}
-                  </div>
-                  {showError && (
-                    <p className="text-red-500 text-sm">
-                      {t('assessment.completeAllQuestions')}
-                    </p>
-                  )}
-                </div>
-              </CardHeader>
-
-              <CardContent className="flex-1 flex flex-col">
-                <div className="flex-1 overflow-y-auto">
-                  <div className="grid gap-3">
-                    {currentQuestion.answers.map(answer => (
-                      <button
-                        key={answer.answerId}
-                        onClick={() => handleAnswer(currentQuestion.question.questionId, answer.answerId)}
-                        className={`w-full p-4 text-left border rounded-lg transition-all duration-300 
-                          ${answers[currentQuestion.question.questionId] === answer.answerId
-                            ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10'
-                            : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800/50'
-                          }
-                        `}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0
-                            ${answers[currentQuestion.question.questionId] === answer.answerId
-                              ? 'border-orange-500 bg-orange-500'
-                              : 'border-gray-600'
-                            }`}
-                          />
-                          <span className="text-lg">{answer.answerText}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-6">
-                  {Object.keys(answers).length === questions.length ? (
-                    <Link
-                      href={routes.results}
-                      onClick={handleNext}
-                      className="primary-button block w-full text-center"
-                    >
-                      {t('nav.results')}
-                    </Link>
-                  ) : (
-                    <div className="flex space-x-4">
-                      {currentQuestionIndex > 0 && (
-                        <button
-                          onClick={handlePrevious}
-                          className="secondary-button flex-1"
-                        >
-                          {t('assessment.previousQuestion')}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleAnswer(
-                          currentQuestion.question.questionId,
-                          currentQuestion.answers[0].answerId
-                        )}
-                        className="primary-button flex-1"
-                      >
-                        {t('assessment.nextQuestion')}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+              <button
+                onClick={handleNext}
+                disabled={!selectedAnswer || currentQuestionIndex === questions.length - 1}
+                className="primary-button flex items-center gap-2"
+              >
+                {t('assessment.nextQuestion')}
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </PageWrapper>
   );
