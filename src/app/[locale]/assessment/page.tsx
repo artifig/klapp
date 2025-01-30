@@ -166,6 +166,9 @@ export default function AssessmentPage() {
         setSelectedAnswer(answers[questions[currentQuestionIndex + 1].question.questionId] || null);
         setIsTransitioning(false);
       }, 300);
+    } else {
+      // This is the last question and it's answered, navigate to results
+      window.location.href = routes.results;
     }
   };
 
@@ -274,11 +277,17 @@ export default function AssessmentPage() {
 
               <button
                 onClick={handleNext}
-                disabled={!selectedAnswer || currentQuestionIndex === questions.length - 1}
+                disabled={!selectedAnswer}
                 className="primary-button flex items-center gap-2"
               >
-                {t('assessment.nextQuestion')}
-                <ChevronRight className="w-4 h-4" />
+                {currentQuestionIndex === questions.length - 1 ? (
+                  t('nav.results')
+                ) : (
+                  <>
+                    {t('assessment.nextQuestion')}
+                    <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </div>
           </CardContent>
