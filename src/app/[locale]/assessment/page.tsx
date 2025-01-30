@@ -1,7 +1,7 @@
 'use client';
 
 import {useTranslations} from 'next-intl';
-import {Link, routes} from '@/navigation';
+import {Link, routes, useRouter} from '@/navigation';
 import {useState, useEffect, useMemo, useCallback, useRef} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { useSync } from '@/lib/sync';
 import { SyncStatus } from '@/components/ui/SyncStatus';
+import useOfflineStatus from '@/hooks/useOfflineStatus';
 
 type AssessmentQuestion = {
   categoryId: string;
@@ -30,6 +31,8 @@ type AssessmentQuestion = {
 
 export default function AssessmentPage() {
   const t = useTranslations();
+  const router = useRouter();
+  const isOffline = useOfflineStatus();
   const {state, setAnswer} = useAssessment();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -44,7 +47,6 @@ export default function AssessmentPage() {
   const { 
     data: answers = {}, // Provide default empty object
     updateData: setAnswers,
-    isOffline,
     syncStatus,
     syncData
   } = useSync<Record<string, string>>({
@@ -254,7 +256,7 @@ export default function AssessmentPage() {
       }, 300);
     } else {
       // This is the last question and it's answered, navigate to results
-      window.location.href = routes.results;
+      router.push(routes.results);
     }
   };
 
@@ -280,7 +282,7 @@ export default function AssessmentPage() {
       } else {
         // If this is the last question, sync and then navigate
         syncData().then(() => {
-          window.location.href = routes.results;
+          router.push(routes.results);
         });
       }
     } catch (err) {
@@ -423,6 +425,13 @@ export default function AssessmentPage() {
             </button>
           ) : null}
         </div>
+
+        {/* Offline Mode Notification */}
+        {isOffline && (
+          <div className="text-yellow-500 text-sm text-center">
+            {t('common.offlineMode')}
+          </div>
+        )}
       </div>
     </main>
   );

@@ -7,12 +7,15 @@ import {Logo} from './Logo';
 import {useLocale} from 'next-intl';
 import { useSync } from '@/lib/sync';
 import { SyncStatus } from './SyncStatus';
+import useOfflineStatus from '@/hooks/useOfflineStatus';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export function Navbar() {
   const t = useTranslations();
   const pathname = usePathname();
   const {state} = useAssessment();
   const locale = useLocale();
+  const isOffline = useOfflineStatus();
 
   const steps = [
     {id: 'home', path: routes.home, label: t('nav.home')},
@@ -50,7 +53,7 @@ export function Navbar() {
     }
   };
 
-  const { isOffline, syncStatus } = useSync<Record<string, never>>({
+  const { isOffline: syncIsOffline, syncStatus } = useSync<Record<string, never>>({
     key: 'global',
     initialData: {},
     onSync: async () => {
@@ -73,24 +76,20 @@ export function Navbar() {
         {/* Navigation Steps */}
         <div className="grid grid-cols-4 relative">
           {steps.map((step, index) => {
-            const isActive = pathname === step.path;
-            const isPast = index < currentStepIndex;
-            const isFuture = index > currentStepIndex;
             const isAccessible = isStepAccessible(index);
+            const isCurrent = pathname === step.path;
 
             const StepContent = () => (
               <>
                 {/* Step number circle or checkmark */}
                 <div
                   className={`w-6 h-6 rounded-full flex items-center justify-center text-sm mb-1
-                    ${isActive
+                    ${isCurrent
                       ? 'bg-orange-500 text-white'
-                      : isPast
-                      ? 'bg-green-500 text-white'
                       : 'bg-gray-700 text-gray-400'
                     }`}
                 >
-                  {isPast ? (
+                  {isCurrent ? (
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
                       viewBox="0 0 24 24" 
@@ -111,10 +110,8 @@ export function Navbar() {
                 {/* Step label */}
                 <span
                   className={`text-xs font-medium text-center
-                    ${isActive
+                    ${isCurrent
                       ? 'text-orange-500'
-                      : isPast
-                      ? 'text-green-500'
                       : 'text-gray-400'
                     }`}
                 >
@@ -122,7 +119,7 @@ export function Navbar() {
                 </span>
 
                 {/* Active indicator line */}
-                {isActive && (
+                {isCurrent && (
                   <div className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500" />
                 )}
               </>
@@ -132,15 +129,13 @@ export function Navbar() {
               <Link 
                 key={step.id}
                 href={step.path}
-                className={`relative flex flex-col items-center justify-center transition-all
-                  ${index !== steps.length - 1 ? 'border-r' : ''} border-gray-800
-                  ${isActive 
-                    ? 'bg-orange-500/20' 
-                    : isPast
-                    ? 'bg-green-500/10 hover:bg-green-500/20'
-                    : 'bg-gray-800/50 hover:bg-gray-700/50'
-                  }
-                  ${(!isAccessible || isFuture) ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}
+                className={`
+                  flex items-center justify-center px-4 border-r border-gray-800
+                  transition-all relative
+                  ${isCurrent ? 'bg-gray-800/80 text-white' : ''}
+                  ${isAccessible 
+                    ? 'text-gray-400 hover:bg-gray-800/50 hover:text-white cursor-pointer' 
+                    : 'text-gray-600 cursor-not-allowed'}
                 `}
               >
                 <StepContent />
@@ -148,10 +143,10 @@ export function Navbar() {
             ) : (
               <div 
                 key={step.id}
-                className={`relative flex flex-col items-center justify-center transition-all
-                  ${index !== steps.length - 1 ? 'border-r' : ''} border-gray-800
-                  bg-gray-800/50
-                  opacity-50 cursor-not-allowed
+                className={`
+                  flex items-center justify-center px-4 border-r border-gray-800
+                  transition-all relative
+                  text-gray-600 cursor-not-allowed
                 `}
               >
                 <StepContent />
@@ -161,45 +156,13 @@ export function Navbar() {
         </div>
 
         {/* Right Section: Language Switcher and Sync Status */}
-        <div className="flex items-stretch">
-          {/* Language Switcher */}
-          <Link
-            href={pathname}
-            locale={locale === 'en' ? 'et' : 'en'}
-            className="relative flex items-center justify-center border-l border-gray-800 text-gray-400 hover:text-white transition-all bg-gray-800/50 hover:bg-gray-700/50 group px-4"
-          >
-            <div className="flex items-center gap-2">
-              <div className="flex flex-col items-center">
-                <span className="text-xs uppercase opacity-60">
-                  {t('common.switchTo')}
-                </span>
-                <span className="text-sm font-medium uppercase group-hover:text-orange-500">
-                  {locale === 'en' ? 'Eesti' : 'English'}
-                </span>
-              </div>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                fill="currentColor" 
-                className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-orange-500"
-              >
-                <path 
-                  fillRule="evenodd" 
-                  d="M9 2.25a.75.75 0 01.75.75v1.506a49.38 49.38 0 015.343.371.75.75 0 11-.186 1.489c-.66-.083-1.323-.151-1.99-.206a18.67 18.67 0 01-2.969 6.323c.317.384.65.753.998 1.107a.75.75 0 11-1.07 1.052A18.902 18.902 0 019 13.687a18.823 18.823 0 01-5.656 4.482.75.75 0 11-.688-1.333 17.323 17.323 0 005.396-4.353A18.72 18.72 0 015.89 5.277C5.43 5.176 4.973 5.096 4.519 5.037A.75.75 0 114.706 3.55a37.647 37.647 0 014.544.428V3a.75.75 0 01.75-.75zm5.404 4.5a.75.75 0 01.904.563l2.25 8.5a.75.75 0 11-1.447.384l-2.25-8.5a.75.75 0 01.543-.947z" 
-                  clipRule="evenodd" 
-                />
-              </svg>
-            </div>
-          </Link>
-
-          {/* Sync Status */}
-          <div className="flex items-center justify-center border-l border-gray-800 bg-gray-800/50 px-4">
-            <SyncStatus
-              isOffline={isOffline}
-              status={syncStatus}
-              variant="compact"
-            />
-          </div>
+        <div className="flex items-center px-4">
+          {isOffline && (
+            <span className="text-yellow-500 text-sm mr-4">
+              {t('common.offline')}
+            </span>
+          )}
+          <LanguageSwitcher />
         </div>
       </div>
     </nav>

@@ -1,16 +1,17 @@
 'use client';
 
-import React, {createContext, useContext, ReactNode} from 'react';
-import { usePersistedState } from '@/hooks/usePersistedState';
+import React, { createContext, useContext, useCallback } from 'react';
+import { usePersistentState } from '@/hooks/usePersistentState';
+import { routes } from '@/navigation';
 
 export interface AssessmentState {
   formData: {
-    name?: string;
-    email?: string;
-    company?: string;
-    companyType?: string;
+    name: string;
+    email: string;
+    company: string;
+    companyType: string;
   };
-  goal?: string;
+  goal: string;
   answers: Record<string, string>;
   results: Record<string, number>;
   recommendations: Record<string, {
@@ -22,59 +23,82 @@ export interface AssessmentState {
   }>;
 }
 
-type AssessmentContextType = {
+const defaultState: AssessmentState = {
+  formData: {
+    name: '',
+    email: '',
+    company: '',
+    companyType: ''
+  },
+  goal: '',
+  answers: {},
+  results: {},
+  recommendations: {}
+};
+
+interface AssessmentContextType {
   state: AssessmentState;
   setGoal: (goal: string) => void;
-  setFormData: (data: {name: string; company: string; email: string; companyType: string}) => void;
+  setFormData: (data: AssessmentState['formData']) => void;
   setAnswer: (questionId: string, answerId: string) => void;
   resetState: () => void;
-};
+  isStepAccessible: (path: string) => boolean;
+}
 
 const AssessmentContext = createContext<AssessmentContextType | undefined>(undefined);
 
-export function AssessmentProvider({children}: {children: ReactNode}) {
-  const [state, setState] = usePersistedState<AssessmentState>('assessment_state', {
-    goal: '',
-    formData: {
-      name: '',
-      company: '',
-      email: '',
-      companyType: ''
-    },
-    answers: {},
-    results: {},
-    recommendations: {}
-  });
+export function AssessmentProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = usePersistentState<AssessmentState>('assessment_state', defaultState);
 
-  const setGoal = (goal: string) => {
-    setState(prev => ({...prev, goal}));
-  };
+  const setGoal = useCallback((goal: string) => {
+    setState(prev => ({ ...prev, goal }));
+  }, [setState]);
 
-  const setFormData = (formData: {name: string; company: string; email: string; companyType: string}) => {
-    setState(prev => ({...prev, formData}));
-  };
+  const setFormData = useCallback((formData: AssessmentState['formData']) => {
+    setState(prev => ({ ...prev, formData }));
+  }, [setState]);
 
-  const setAnswer = (questionId: string, answerId: string) => {
+  const setAnswer = useCallback((questionId: string, answerId: string) => {
     setState(prev => ({
       ...prev,
-      answers: {...prev.answers, [questionId]: answerId}
+      answers: { ...prev.answers, [questionId]: answerId }
     }));
-  };
+  }, [setState]);
 
-  const resetState = () => {
-    setState(initialState);
-  };
+  const resetState = useCallback(() => {
+    setState(defaultState);
+  }, [setState]);
+
+  const isStepAccessible = useCallback((path: string) => {
+    switch (path) {
+      case routes.home:
+        return true;
+      case routes.setup:
+        return Boolean(state.goal?.trim());
+      case routes.assessment:
+        return Boolean(state.goal?.trim()) &&
+          Boolean(state.formData.name) &&
+          Boolean(state.formData.email) &&
+          Boolean(state.formData.company) &&
+          Boolean(state.formData.companyType);
+      case routes.results:
+        return Boolean(state.goal?.trim()) &&
+          Boolean(state.formData.name) &&
+          Object.keys(state.answers).length > 0;
+      default:
+        return false;
+    }
+  }, [state]);
 
   return (
-    <AssessmentContext.Provider 
-      value={{
-        state,
-        setGoal,
-        setFormData,
-        setAnswer,
-        resetState
-      }}
-    >
+    <AssessmentContext.Provider value={{
+      state,
+      setGoal,
+      setFormData,
+      setAnswer,
+      resetState,
+      isStepAccessible
+    }}>
       {children}
     </AssessmentContext.Provider>
   );
@@ -82,8 +106,8 @@ export function AssessmentProvider({children}: {children: ReactNode}) {
 
 export function useAssessment() {
   const context = useContext(AssessmentContext);
-  if (context === undefined) {
-    throw new Error('useAssessment must be used within an AssessmentProvider');
+  if (!context) {
+    throw new Error('useAssessment must be used within AssessmentProvider');
   }
   return context;
 } 

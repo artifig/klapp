@@ -1,60 +1,39 @@
 'use client';
 
 import {useTranslations} from 'next-intl';
-import {Link, routes} from '@/navigation';
-import {useState, useEffect} from 'react';
+import {Link, routes, useRouter} from '@/navigation';
+import {useState} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
-import {useSync} from '@/lib/sync';
+import useOfflineStatus from '@/hooks/useOfflineStatus';
 
 export default function Home() {
   const t = useTranslations();
+  const router = useRouter();
+  const isOffline = useOfflineStatus();
   const {state, setGoal} = useAssessment();
-  const {
-    data: goalData = state.goal || '',
-    updateData: setLocalGoal,
-    isOffline,
-    syncStatus,
-    syncData
-  } = useSync<string>({
-    key: 'goal',
-    initialData: state.goal || '',
-    onSync: async (data: string) => {
-      if (data?.trim()) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setGoal(data);
-      }
-    }
-  });
-  const [showError, setShowError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const maxCharacters = 500; // Maximum characters allowed
-
-  useEffect(() => {
-    setLocalGoal(state.goal);
-  }, [state.goal]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     if (value.length <= maxCharacters) {
-      setLocalGoal(value);
-      if (showError) setShowError(false);
+      setGoal(value);
+      setError(null);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
-      if (!goalData?.trim()) {
-        setError('Please enter your goal');
+      if (!state.goal?.trim()) {
+        setError(t('errors.goalRequired'));
         return;
       }
 
-      await setLocalGoal(goalData);
-      await syncData();
-
-      window.location.href = routes.setup;
+      router.push(routes.setup);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save goal');
     }
@@ -117,7 +96,7 @@ export default function Home() {
                         key={index}
                         className="p-3 bg-gray-800/50 border border-gray-700 rounded-md text-sm text-gray-300 cursor-pointer hover:border-orange-500/50 transition-colors"
                         onClick={() => {
-                          setLocalGoal(example);
+                          setGoal(example);
                         }}
                       >
                         {example}
@@ -128,41 +107,36 @@ export default function Home() {
 
                 {/* Goal Input */}
                 <div className="flex-1 space-y-2">
-                  <textarea
-                    id="goal"
-                    value={goalData}
-                    onChange={handleChange}
-                    className={`w-full h-[200px] p-4 bg-gray-800/50 border rounded-md text-white resize-none
-                      focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
-                      ${showError ? 'border-red-500' : 'border-gray-700'}`}
-                    placeholder={t('home.goalPlaceholder')}
-                  />
-                  <div className="flex justify-between items-center text-sm">
-                    <div>
-                      {showError && (
-                        <p className="text-red-500">
-                          {t('common.required')}
-                        </p>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <textarea
+                      value={state.goal}
+                      onChange={handleChange}
+                      placeholder={t('home.goalPlaceholder')}
+                      className="w-full min-h-[150px] p-3 bg-gray-800/50 border border-gray-700 
+                        rounded-lg focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20"
+                      maxLength={maxCharacters}
+                    />
+                    <div className="text-sm text-gray-400 flex justify-between">
+                      <span>{state.goal?.length || 0}/{maxCharacters}</span>
+                      {isOffline && (
+                        <span className="text-yellow-500">
+                          {t('common.offlineMode')}
+                        </span>
                       )}
                     </div>
-                    <div className={`text-gray-400 ${(goalData.length || 0) > maxCharacters * 0.8 ? 'text-orange-500' : ''}`}>
-                      {goalData.length || 0}/{maxCharacters}
-                    </div>
-                  </div>
+                  </form>
                 </div>
               </div>
 
               {/* CTA Button */}
               <div className="mt-6">
-                <Link
-                  href={routes.setup}
-                  onClick={handleSubmit}
-                  className="primary-button block w-full text-center text-lg py-4 shadow-xl
-                    hover:shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98]
-                    transition-all duration-200"
+                <button
+                  type="submit"
+                  className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 
+                    text-white font-medium rounded-lg transition-colors"
                 >
-                  {t('home.startButton')}
-                </Link>
+                  {t('common.continue')}
+                </button>
               </div>
             </CardContent>
           </Card>

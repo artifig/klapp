@@ -10,6 +10,7 @@ const pageOrder = [
 ] as const;
 
 export function PageNavigation() {
+  
   const pathname = usePathname() as typeof pageOrder[number];
   const currentIndex = pageOrder.indexOf(pathname);
   const {state, setGoal, setFormData, setAnswer} = useAssessment();
