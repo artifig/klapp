@@ -16,7 +16,7 @@ interface FormData {
 const COMPANY_TYPES = ['startup', 'scaleup', 'sme', 'enterprise'] as const;
 
 export const SetupInteractiveCard = () => {
-  const t = useTranslations('Setup');
+  const t = useTranslations('setup');
   const router = useRouter();
   const { setFormData } = useAssessmentContext();
   const [formData, setLocalFormData] = useState<FormData>({

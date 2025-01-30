@@ -46,15 +46,68 @@
   "setup": {
     "title": "Let's Get Started",
     "nameLabel": "Your Name",
-    "companyLabel": "Company Name",
     "emailLabel": "Email Address",
-    "companyType": {
-      "label": "Company Type",
-      "startup": "Startup",
-      "sme": "SME",
-      "corporation": "Corporation"
+    "companyNameLabel": "Company Name",
+    "companyTypeLabel": "Company Type",
+    "form": {
+      "name": "Your Name",
+      "email": "Email Address",
+      "companyName": "Company Name",
+      "companyType": "Company Type",
+      "selectCompanyType": "Select company type",
+      "submit": "Continue to Assessment"
     },
-    "continue": "Continue to Assessment"
+    "companyTypes": {
+      "startup": "Startup",
+      "scaleup": "Scale-up",
+      "sme": "SME",
+      "enterprise": "Enterprise"
+    },
+    "validation": {
+      "name": {
+        "required": "Please enter your name",
+        "tooShort": "Name is too short"
+      },
+      "company": {
+        "required": "Please enter company name",
+        "tooShort": "Company name is too short"
+      },
+      "email": {
+        "required": "Please enter email address",
+        "invalid": "Please enter a valid email address"
+      },
+      "companyType": {
+        "required": "Please select company type"
+      }
+    },
+    "autosave": {
+      "saving": "Saving...",
+      "saved": "Saved",
+      "error": "Failed to save"
+    },
+    "continue": "Continue to Assessment",
+    "yourGoal": "Your Goal",
+    "nextSteps": "Next Steps",
+    "nextStepsList": {
+      "details": "Fill in your company details",
+      "required": "All fields are required",
+      "confidential": "Your data will be treated confidentially",
+      "proceed": "After entering your data, you can proceed with the assessment"
+    },
+    "organizationDetails": "Organization Details",
+    "organizationInfo": "Please enter your organization details",
+    "contextCard": {
+      "title": "Setup",
+      "description": "Before starting the assessment, we need some information about your organization.",
+      "yourGoal": "Your Goal",
+      "requirements": "Requirements",
+      "steps": {
+        "step1": "Enter your details",
+        "step2": "Choose company type",
+        "step3": "Set your goal",
+        "step4": "Continue to assessment"
+      }
+    }
   },
   "assessment": {
     "title": "AI Readiness Assessment",

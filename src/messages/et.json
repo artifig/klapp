@@ -47,18 +47,22 @@
   "setup": {
     "title": "Alustame",
     "nameLabel": "Teie nimi",
-    "companyLabel": "Ettevõtte nimi",
     "emailLabel": "E-posti aadress",
-    "companyType": {
-      "label": "Ettevõtte tüüp",
+    "companyNameLabel": "Ettevõtte nimi",
+    "companyTypeLabel": "Ettevõtte tüüp",
+    "form": {
+      "name": "Teie nimi",
+      "email": "E-posti aadress",
+      "companyName": "Ettevõtte nimi",
+      "companyType": "Ettevõtte tüüp",
+      "selectCompanyType": "Valige ettevõtte tüüp",
+      "submit": "Jätka hindamisega"
+    },
+    "companyTypes": {
       "startup": "Idufirma",
+      "scaleup": "Kasvufirma",
       "sme": "VKE",
-      "corporation": "Suurettevõte",
-      "descriptions": {
-        "startup": "Alustavad ettevõtted innovatiivsete lahendustega",
-        "sme": "Väikesed ja keskmise suurusega ettevõtted",
-        "corporation": "Suurettevõtted ja korporatsioonid"
-      }
+      "enterprise": "Suurettevõte"
     },
     "validation": {
       "name": {
@@ -92,7 +96,19 @@
       "proceed": "Pärast andmete sisestamist saate jätkata hindamisega"
     },
     "organizationDetails": "Organisatsiooni andmed",
-    "organizationInfo": "Palun sisestage oma organisatsiooni andmed"
+    "organizationInfo": "Palun sisestage oma organisatsiooni andmed",
+    "contextCard": {
+      "title": "Seadistus",
+      "description": "Enne hindamise alustamist vajame mõningaid andmeid teie organisatsiooni kohta.",
+      "yourGoal": "Teie eesmärk",
+      "requirements": "Nõuded",
+      "steps": {
+        "step1": "Sisestage oma andmed",
+        "step2": "Valige ettevõtte tüüp",
+        "step3": "Määrake oma eesmärk",
+        "step4": "Jätkake hindamisega"
+      }
+    }
   },
   "assessment": {
     "title": "Tehisaru valmisoleku hindamine",
