@@ -113,6 +113,26 @@ export default function AssessmentPage() {
   const currentQuestion = questions[currentQuestionIndex];
   const progress = questions.length > 0 ? (currentQuestionIndex / questions.length) * 100 : 0;
 
+  // Calculate category-specific progress
+  const getCategoryProgress = (categoryId: string) => {
+    const categoryQuestions = questions.filter(q => q.categoryId === categoryId);
+    const answeredInCategory = categoryQuestions.filter(q => answers[q.question.questionId]).length;
+    return {
+      total: categoryQuestions.length,
+      answered: answeredInCategory,
+      progress: categoryQuestions.length > 0 ? (answeredInCategory / categoryQuestions.length) * 100 : 0
+    };
+  };
+
+  // Get unique categories and their progress
+  const categories = Array.from(new Set(questions.map(q => q.categoryId))).map(categoryId => ({
+    categoryId,
+    ...getCategoryProgress(categoryId)
+  }));
+
+  // Get current category progress
+  const currentCategoryProgress = currentQuestion ? getCategoryProgress(currentQuestion.categoryId) : null;
+
   const handleAnswer = (questionId: string, answerId: string) => {
     const newAnswers = {...answers, [questionId]: answerId};
     setAnswers(newAnswers);
@@ -185,7 +205,7 @@ export default function AssessmentPage() {
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto flex flex-col">
               <div className="flex-1 space-y-6">
-                {/* Progress Bar */}
+                {/* Overall Progress Bar */}
                 <div className="space-y-2">
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                     <div 
@@ -193,35 +213,46 @@ export default function AssessmentPage() {
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <p className="text-sm text-gray-400 text-right">
-                    Question {currentQuestionIndex + 1} of {questions.length}
-                  </p>
+                  <div className="flex justify-between text-sm text-gray-400">
+                    <span>Overall Progress</span>
+                    <span>{Math.round(progress)}% Complete</span>
+                  </div>
                 </div>
 
-                {/* Previous Answers */}
+                {/* Category Progress */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">{t('assessment.yourAnswers')}</h3>
+                  <h3 className="font-semibold text-lg">Categories Progress</h3>
                   <div className="space-y-3">
-                    {questions.map((q, index) => {
-                      const answered = answers[q.question.questionId];
-                      const answer = q.answers.find(a => a.answerId === answered);
+                    {categories.map(cat => {
+                      const isCurrentCategory = currentQuestion?.categoryId === cat.categoryId;
+                      const categoryData = assessmentStructure.find(s => s.category.categoryId === cat.categoryId)?.category;
                       return (
                         <div 
-                          key={q.question.questionId}
-                          className={`p-3 border rounded-sm transition-colors
-                            ${index === currentQuestionIndex 
+                          key={cat.categoryId}
+                          className={`p-4 border rounded-sm transition-colors
+                            ${isCurrentCategory 
                               ? 'border-orange-500 bg-orange-500/10' 
-                              : answered 
-                                ? 'border-gray-700 bg-gray-800/50'
-                                : 'border-gray-800 bg-gray-900/50'}`}
+                              : cat.progress === 100
+                                ? 'border-green-500/50 bg-green-500/5'
+                                : cat.progress > 0
+                                  ? 'border-gray-700 bg-gray-800/50'
+                                  : 'border-gray-800 bg-gray-900/50'}`}
                         >
-                          <div className="text-sm font-medium text-gray-300">{q.categoryId}</div>
-                          <div className="mt-1 text-sm">
-                            {answered ? (
-                              <span className="text-orange-500">{answer?.answerText}</span>
-                            ) : (
-                              <span className="text-gray-500">{t('assessment.notAnswered')}</span>
-                            )}
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-sm font-medium text-gray-300">{categoryData?.categoryText}</div>
+                            <div className="text-sm text-gray-400">{cat.answered}/{cat.total}</div>
+                          </div>
+                          <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full transition-all duration-300 ${
+                                cat.progress === 100 
+                                  ? 'bg-green-500' 
+                                  : isCurrentCategory 
+                                    ? 'bg-orange-500'
+                                    : 'bg-gray-600'
+                              }`}
+                              style={{ width: `${cat.progress}%` }}
+                            />
                           </div>
                         </div>
                       );
@@ -250,14 +281,34 @@ export default function AssessmentPage() {
                     {currentQuestion.categoryId}
                   </div>
                   <div className="text-sm text-gray-400">
-                    {currentQuestionIndex + 1} / {questions.length}
+                    Question {currentQuestionIndex + 1} / {questions.length}
                   </div>
                 </div>
-                <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-orange-500 transition-all duration-300 ease-in-out"
-                    style={{ width: `${progress}%` }}
-                  />
+                {/* Category Progress */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between text-sm text-gray-400">
+                    <span>Category Progress</span>
+                    <span>{currentCategoryProgress?.answered || 0}/{currentCategoryProgress?.total || 0} Questions</span>
+                  </div>
+                  <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-orange-500 transition-all duration-300 ease-in-out"
+                      style={{ width: `${currentCategoryProgress?.progress || 0}%` }}
+                    />
+                  </div>
+                </div>
+                {/* Overall Progress */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between text-sm text-gray-400">
+                    <span>Overall Progress</span>
+                    <span>{Math.round(progress)}%</span>
+                  </div>
+                  <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-orange-500 transition-all duration-300 ease-in-out"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
                 </div>
                 <div className="space-y-4">
                   <div>
