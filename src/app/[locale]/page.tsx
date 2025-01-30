@@ -6,12 +6,29 @@ import {useState, useEffect} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
+import {useSync} from '@/lib/sync';
 
 export default function Home() {
   const t = useTranslations();
   const {state, setGoal} = useAssessment();
-  const [goal, setLocalGoal] = useState(state.goal);
+  const {
+    data: goalData = state.goal || '',
+    updateData: setLocalGoal,
+    isOffline,
+    syncStatus,
+    syncData
+  } = useSync<string>({
+    key: 'goal',
+    initialData: state.goal || '',
+    onSync: async (data: string) => {
+      if (data?.trim()) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setGoal(data);
+      }
+    }
+  });
   const [showError, setShowError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const maxCharacters = 500; // Maximum characters allowed
 
   useEffect(() => {
@@ -23,18 +40,24 @@ export default function Home() {
     if (value.length <= maxCharacters) {
       setLocalGoal(value);
       if (showError) setShowError(false);
-      setGoal(value);
     }
   };
 
-  const handleNext = (e: React.MouseEvent) => {
-    if (!goal.trim()) {
-      e.preventDefault();
-      setShowError(true);
-      return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!goalData?.trim()) {
+        setError('Please enter your goal');
+        return;
+      }
+
+      await setLocalGoal(goalData);
+      await syncData();
+
+      window.location.href = routes.setup;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save goal');
     }
-    setShowError(false);
-    setGoal(goal);
   };
 
   // Example goals
@@ -95,7 +118,6 @@ export default function Home() {
                         className="p-3 bg-gray-800/50 border border-gray-700 rounded-md text-sm text-gray-300 cursor-pointer hover:border-orange-500/50 transition-colors"
                         onClick={() => {
                           setLocalGoal(example);
-                          setGoal(example);
                         }}
                       >
                         {example}
@@ -108,7 +130,7 @@ export default function Home() {
                 <div className="flex-1 space-y-2">
                   <textarea
                     id="goal"
-                    value={goal}
+                    value={goalData}
                     onChange={handleChange}
                     className={`w-full h-[200px] p-4 bg-gray-800/50 border rounded-md text-white resize-none
                       focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
@@ -123,8 +145,8 @@ export default function Home() {
                         </p>
                       )}
                     </div>
-                    <div className={`text-gray-400 ${goal.length > maxCharacters * 0.8 ? 'text-orange-500' : ''}`}>
-                      {goal.length}/{maxCharacters}
+                    <div className={`text-gray-400 ${(goalData.length || 0) > maxCharacters * 0.8 ? 'text-orange-500' : ''}`}>
+                      {goalData.length || 0}/{maxCharacters}
                     </div>
                   </div>
                 </div>
@@ -134,7 +156,7 @@ export default function Home() {
               <div className="mt-6">
                 <Link
                   href={routes.setup}
-                  onClick={handleNext}
+                  onClick={handleSubmit}
                   className="primary-button block w-full text-center text-lg py-4 shadow-xl
                     hover:shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98]
                     transition-all duration-200"

@@ -19,6 +19,8 @@ import {ChevronLeft, ChevronRight, WifiOff} from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { cn } from '@/lib/utils';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
+import { useSync } from '@/lib/sync';
+import { SyncStatus } from '@/components/ui/SyncStatus';
 
 type AssessmentQuestion = {
   categoryId: string;
@@ -31,17 +33,35 @@ export default function AssessmentPage() {
   const {state, setAnswer} = useAssessment();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showError, setShowError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [assessmentStructure, setAssessmentStructure] = useState<CategoryWithQuestions[]>([]);
   const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isOffline, setIsOffline] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<'synced' | 'pending' | 'error'>('synced');
-  const syncTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const syncDebounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // Use our sync hook for answers
+  const { 
+    data: answers = {}, // Provide default empty object
+    updateData: setAnswers,
+    isOffline,
+    syncStatus,
+    syncData
+  } = useSync<Record<string, string>>({
+    key: 'assessment_answers',
+    initialData: {},
+    onSync: async (data) => {
+      // Only sync if we have answers
+      if (Object.keys(data).length > 0) {
+        // Replace with your actual API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Sync with context
+        Object.entries(data).forEach(([questionId, answerId]) => {
+          setAnswer(questionId, answerId);
+        });
+      }
+    }
+  });
 
   useEffect(() => {
     async function loadAssessmentData() {
@@ -126,80 +146,24 @@ export default function AssessmentPage() {
     }
   }, [setAnswer]);
 
-  // Monitor online status
+  // Monitor online/offline status
   useEffect(() => {
     const handleOnline = () => {
-      setIsOffline(false);
-      syncAnswers(); // Try to sync when coming back online
+      // Online status is now handled by useSync
     };
     
     const handleOffline = () => {
-      setIsOffline(true);
-      setSyncStatus('pending');
+      // Offline status is now handled by useSync
     };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    setIsOffline(!window.navigator.onLine);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
-
-  // Sync answers with backend
-  const syncAnswers = useCallback(async () => {
-    if (isOffline || !Object.keys(answers).length) return;
-
-    try {
-      // Clear any existing debounce timeout
-      if (syncDebounceRef.current) {
-        clearTimeout(syncDebounceRef.current);
-      }
-
-      // Debounce the sync operation
-      syncDebounceRef.current = setTimeout(async () => {
-        setSyncStatus('pending');
-        
-        // Clear any existing sync retry timeout
-        if (syncTimeoutRef.current) {
-          clearTimeout(syncTimeoutRef.current);
-        }
-
-        try {
-          // Simulate API call - replace with actual API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          setSyncStatus('synced');
-          localStorage.setItem('assessment_answers', JSON.stringify(answers));
-        } catch (err) {
-          console.error('Error syncing answers:', err);
-          setSyncStatus('error');
-          // Retry sync after delay
-          syncTimeoutRef.current = setTimeout(syncAnswers, 5000);
-        }
-      }, 2000); // Debounce for 2 seconds
-    } catch (err) {
-      console.error('Error in sync operation:', err);
-      setSyncStatus('error');
-    }
-  }, [answers, isOffline]);
-
-  // Sync answers whenever they change, but with a debounce
-  useEffect(() => {
-    syncAnswers();
-    
-    // Cleanup timeouts
-    return () => {
-      if (syncDebounceRef.current) {
-        clearTimeout(syncDebounceRef.current);
-      }
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-    };
-  }, [answers, syncAnswers]);
 
   // Add logging for render-time variables
   console.log('Current render state:', {
@@ -296,11 +260,8 @@ export default function AssessmentPage() {
         ...answers,
         [questions[currentQuestionIndex].question.questionId]: answerId
       };
-      setAnswers(newAnswers);
+      setAnswers(newAnswers); // This will trigger sync automatically
       setAnswer(questions[currentQuestionIndex].question.questionId, answerId);
-      
-      // Cache answers locally
-      localStorage.setItem('assessment_answers', JSON.stringify(newAnswers));
 
       // Auto-advance with animation
       if (currentQuestionIndex < questions.length - 1) {
@@ -311,10 +272,10 @@ export default function AssessmentPage() {
           setIsTransitioning(false);
         }, 300);
       } else {
-        // If this is the last question, navigate to results after a brief delay
-        setTimeout(() => {
+        // If this is the last question, sync and then navigate
+        syncData().then(() => {
           window.location.href = routes.results;
-        }, 500);
+        });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save answer');
@@ -353,25 +314,6 @@ export default function AssessmentPage() {
   return (
     <main className="container mx-auto px-4 py-8 animate-fade">
       <div className="max-w-3xl mx-auto space-y-8">
-        {/* Offline/Sync Status */}
-        {(isOffline || syncStatus !== 'synced') && (
-          <div className={cn(
-            'flex items-center justify-between p-4 rounded-lg animate-fade-in',
-            isOffline ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-blue-500/10 border border-blue-500/20'
-          )}>
-            <div className="flex items-center gap-2">
-              {isOffline && <WifiOff className="w-4 h-4 text-yellow-500" />}
-              <span className={isOffline ? 'text-yellow-500' : 'text-blue-500'}>
-                {isOffline 
-                  ? 'You are offline. Your answers will be saved locally.'
-                  : syncStatus === 'pending' 
-                    ? 'Syncing your answers...' 
-                    : 'Failed to sync answers. Retrying...'}
-              </span>
-            </div>
-          </div>
-        )}
-
         {/* Error Message */}
         {error && (
           <ErrorMessage 

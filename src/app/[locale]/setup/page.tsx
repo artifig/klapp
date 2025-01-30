@@ -9,6 +9,9 @@ import {useAssessment} from '@/context/AssessmentContext';
 import {CompanyType} from '@/services/airtable';
 import {Building2, Rocket, Building} from 'lucide-react';
 import debounce from 'lodash/debounce';
+import { useSync } from '@/lib/sync';
+import { ErrorMessage } from '@/components/ui/ErrorMessage';
+import { cn } from '@/lib/utils';
 
 interface FormData {
   name: string;
@@ -22,10 +25,30 @@ type FormField = keyof FormData;
 export default function SetupPage() {
   const t = useTranslations();
   const {state, setFormData} = useAssessment();
-  const [formData, setLocalFormData] = useState<Partial<FormData>>(state.formData || {});
-  const [errors, setErrors] = useState<Record<FormField, string>>({} as Record<FormField, string>);
-  const [touched, setTouched] = useState<Record<FormField, boolean>>({} as Record<FormField, boolean>);
-  const [saveStatus, setSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Use sync hook for form data
+  const {
+    data: formData = state.formData as FormData,
+    updateData: setLocalFormData,
+    isOffline,
+    syncStatus,
+    syncData
+  } = useSync<FormData>({
+    key: 'setup_form_data',
+    initialData: state.formData as FormData,
+    onSync: async (data) => {
+      // Only sync if we have all required fields
+      if (data.name?.trim() && 
+          data.email?.trim() && 
+          data.company?.trim() && 
+          data.companyType) {
+        // Replace with your actual API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setFormData(data);
+      }
+    }
+  });
 
   // Validation rules
   const validateField = (name: FormField, value: string | undefined) => {
@@ -50,15 +73,12 @@ export default function SetupPage() {
   // Auto-save functionality
   const debouncedSave = debounce(async (data: Partial<FormData>) => {
     try {
-      setSaveStatus('saving');
+      setError(null);
       if (Object.keys(data).length === 4) {
-        setFormData(data as FormData);
+        setLocalFormData(data as FormData);
       }
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus(null), 2000);
-    } catch (error) {
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save form data');
     }
   }, 1000);
 
@@ -70,45 +90,35 @@ export default function SetupPage() {
     
     // Validate field
     const error = validateField(name, value);
-    setErrors(prev => ({...prev, [name]: error}));
+    setError(error);
     
     // Trigger auto-save
     debouncedSave(newFormData);
   };
 
-  const handleBlur = (name: FormField) => {
-    setTouched(prev => ({...prev, [name]: true}));
-    const error = validateField(name, formData[name]);
-    setErrors(prev => ({...prev, [name]: error}));
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // Validate all fields
+      const validationErrors = Object.entries(formData).reduce<string[]>((errors, [field, value]) => {
+        const error = validateField(field as keyof FormData, value);
+        if (error) errors.push(error);
+        return errors;
+      }, []);
 
-  const handleNext = (e: React.MouseEvent) => {
-    // Validate all fields
-    const newErrors: Record<FormField, string> = {} as Record<FormField, string>;
-    let hasErrors = false;
-
-    (Object.keys(FormData) as FormField[]).forEach(field => {
-      const error = validateField(field, formData[field]);
-      if (error) {
-        newErrors[field] = error;
-        hasErrors = true;
+      if (validationErrors.length > 0) {
+        setError(validationErrors.join(', '));
+        return;
       }
-    });
 
-    if (hasErrors) {
-      e.preventDefault();
-      setErrors(newErrors);
-      setTouched({
-        name: true,
-        email: true,
-        company: true,
-        companyType: true
-      });
-      return;
-    }
-
-    if (Object.keys(formData).length === 4) {
-      setFormData(formData as FormData);
+      // Update local data and wait for sync to complete
+      await setLocalFormData(formData);
+      await syncData();
+      
+      // Navigate to assessment
+      window.location.href = routes.assessment;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save form data');
     }
   };
 
@@ -125,14 +135,14 @@ export default function SetupPage() {
       formData.email?.trim() &&
       formData.company?.trim() &&
       formData.companyType &&
-      !Object.values(errors).some(error => error) // No validation errors
+      !error
     );
   };
 
   return (
     <PageWrapper>
       <div className="h-full flex flex-col">
-        <div className="flex-1 grid lg:grid-cols-2 gap-4">
+        <div className="flex-1 grid lg:grid-cols-2 gap-4 p-4">
           {/* Left Column - Information */}
           <Card className="flex flex-col">
             <CardHeader>
@@ -180,7 +190,15 @@ export default function SetupPage() {
             </CardHeader>
             <CardContent className="flex-1 flex flex-col">
               <div className="flex-1 overflow-y-auto">
-                <form className="space-y-6">
+                {/* Error Message */}
+                {error && (
+                  <ErrorMessage 
+                    message={error}
+                    className="mb-4 animate-shake"
+                  />
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Personal Information Group */}
                   <div className="space-y-4">
                     <div className="relative">
@@ -194,13 +212,12 @@ export default function SetupPage() {
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
-                          onBlur={() => handleBlur('name')}
-                          className={`input-field ${touched.name && errors.name ? 'error' : ''}`}
+                          className={`input-field ${error ? 'error' : ''}`}
                           required
                         />
                         <div className="h-6 mt-1">
-                          {touched.name && errors.name && (
-                            <p className="text-red-500 text-sm absolute">{errors.name}</p>
+                          {error && (
+                            <p className="text-red-500 text-sm absolute">{error}</p>
                           )}
                         </div>
                       </div>
@@ -217,13 +234,12 @@ export default function SetupPage() {
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          onBlur={() => handleBlur('email')}
-                          className={`input-field ${touched.email && errors.email ? 'error' : ''}`}
+                          className={`input-field ${error ? 'error' : ''}`}
                           required
                         />
                         <div className="h-6 mt-1">
-                          {touched.email && errors.email && (
-                            <p className="text-red-500 text-sm absolute">{errors.email}</p>
+                          {error && (
+                            <p className="text-red-500 text-sm absolute">{error}</p>
                           )}
                         </div>
                       </div>
@@ -243,13 +259,12 @@ export default function SetupPage() {
                           name="company"
                           value={formData.company}
                           onChange={handleInputChange}
-                          onBlur={() => handleBlur('company')}
-                          className={`input-field ${touched.company && errors.company ? 'error' : ''}`}
+                          className={`input-field ${error ? 'error' : ''}`}
                           required
                         />
                         <div className="h-6 mt-1">
-                          {touched.company && errors.company && (
-                            <p className="text-red-500 text-sm absolute">{errors.company}</p>
+                          {error && (
+                            <p className="text-red-500 text-sm absolute">{error}</p>
                           )}
                         </div>
                       </div>
@@ -293,60 +308,28 @@ export default function SetupPage() {
                           </label>
                         ))}
                       </div>
-                      {touched.companyType && errors.companyType && (
-                        <p className="text-red-500 text-sm mt-1">{errors.companyType}</p>
+                      {error && (
+                        <p className="text-red-500 text-sm mt-1">{error}</p>
                       )}
                     </div>
                   </div>
+
+                  {/* Submit Button - Moved inside form */}
+                  <div className="mt-6">
+                    <button
+                      type="submit"
+                      disabled={!isFormComplete()}
+                      className={cn(
+                        "w-full text-center text-lg py-4 rounded-lg transition-all duration-200",
+                        isFormComplete()
+                          ? "primary-button hover:shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                          : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                      )}
+                    >
+                      {t('setup.continue')}
+                    </button>
+                  </div>
                 </form>
-              </div>
-
-              {/* Save Status */}
-              {saveStatus && (
-                <div className={`text-sm mt-2 ${
-                  saveStatus === 'saving' ? 'text-gray-400' :
-                  saveStatus === 'saved' ? 'text-green-500' :
-                  'text-red-500'
-                }`}>
-                  {t(`setup.autosave.${saveStatus}`)}
-                </div>
-              )}
-
-              {/* Continue Button */}
-              <div className="mt-6">
-                {isFormComplete() ? (
-                  <Link
-                    href={routes.assessment}
-                    onClick={handleNext}
-                    className="primary-button block w-full text-center text-lg py-4 shadow-xl
-                      hover:shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98]
-                      transition-all duration-200"
-                  >
-                    {t('setup.continue')}
-                  </Link>
-                ) : (
-                  <button
-                    className="primary-button block w-full text-center text-lg py-4
-                      opacity-50 cursor-not-allowed"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Show all validation messages
-                      setTouched({
-                        name: true,
-                        email: true,
-                        company: true,
-                        companyType: true
-                      });
-                      // Validate all fields
-                      (['name', 'email', 'company', 'companyType'] as FormField[]).forEach(field => {
-                        const error = validateField(field, formData[field]);
-                        setErrors(prev => ({...prev, [field]: error}));
-                      });
-                    }}
-                  >
-                    {t('setup.continue')}
-                  </button>
-                )}
               </div>
             </CardContent>
           </Card>

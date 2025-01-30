@@ -5,6 +5,8 @@ import {usePathname, Link, routes} from '@/navigation';
 import {useAssessment} from '@/context/AssessmentContext';
 import {Logo} from './Logo';
 import {useLocale} from 'next-intl';
+import { useSync } from '@/lib/sync';
+import { SyncStatus } from './SyncStatus';
 
 export function Navbar() {
   const t = useTranslations();
@@ -29,15 +31,15 @@ export function Navbar() {
     // Check previous step requirements
     switch(index) {
       case 1: // Setup
-        return state.goal.trim().length > 0; // Can only proceed if goal is set
+        return Boolean(state.goal?.trim().length); // Can only proceed if goal is set
       case 2: // Assessment
-        return state.goal.trim().length > 0 && // Must have goal
+        return Boolean(state.goal?.trim().length) && // Must have goal
                state.formData.name && 
                state.formData.company && 
                state.formData.email && 
                state.formData.companyType;
       case 3: // Results
-        return state.goal.trim().length > 0 && // Must have goal
+        return Boolean(state.goal?.trim().length) && // Must have goal
                state.formData.name && // Must have setup data
                state.formData.company && 
                state.formData.email && 
@@ -48,9 +50,18 @@ export function Navbar() {
     }
   };
 
+  const { isOffline, syncStatus } = useSync<Record<string, never>>({
+    key: 'global',
+    initialData: {},
+    onSync: async () => {
+      // This is just a placeholder sync for global status
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  });
+
   return (
     <nav className="w-full bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
-      <div className="max-w-screen-2xl mx-auto grid grid-cols-[1fr_2fr_1fr] items-stretch h-[3.5rem] sm:h-16 relative">
+      <div className="max-w-screen-2xl mx-auto grid grid-cols-[1fr_2fr_auto] items-stretch h-[3.5rem] sm:h-16 relative">
         {/* Logo */}
         <Link 
           href={routes.home} 
@@ -149,35 +160,47 @@ export function Navbar() {
           })}
         </div>
 
-        {/* Language Switcher */}
-        <Link
-          href={pathname}
-          locale={locale === 'en' ? 'et' : 'en'}
-          className="relative flex items-center justify-center border-l border-gray-800 text-gray-400 hover:text-white transition-all bg-gray-800/50 hover:bg-gray-700/50 group"
-        >
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col items-center">
-              <span className="text-xs uppercase opacity-60">
-                {t('common.switchTo')}
-              </span>
-              <span className="text-sm font-medium uppercase group-hover:text-orange-500">
-                {locale === 'en' ? 'Eesti' : 'English'}
-              </span>
+        {/* Right Section: Language Switcher and Sync Status */}
+        <div className="flex items-stretch">
+          {/* Language Switcher */}
+          <Link
+            href={pathname}
+            locale={locale === 'en' ? 'et' : 'en'}
+            className="relative flex items-center justify-center border-l border-gray-800 text-gray-400 hover:text-white transition-all bg-gray-800/50 hover:bg-gray-700/50 group px-4"
+          >
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col items-center">
+                <span className="text-xs uppercase opacity-60">
+                  {t('common.switchTo')}
+                </span>
+                <span className="text-sm font-medium uppercase group-hover:text-orange-500">
+                  {locale === 'en' ? 'Eesti' : 'English'}
+                </span>
+              </div>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="currentColor" 
+                className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-orange-500"
+              >
+                <path 
+                  fillRule="evenodd" 
+                  d="M9 2.25a.75.75 0 01.75.75v1.506a49.38 49.38 0 015.343.371.75.75 0 11-.186 1.489c-.66-.083-1.323-.151-1.99-.206a18.67 18.67 0 01-2.969 6.323c.317.384.65.753.998 1.107a.75.75 0 11-1.07 1.052A18.902 18.902 0 019 13.687a18.823 18.823 0 01-5.656 4.482.75.75 0 11-.688-1.333 17.323 17.323 0 005.396-4.353A18.72 18.72 0 015.89 5.277C5.43 5.176 4.973 5.096 4.519 5.037A.75.75 0 114.706 3.55a37.647 37.647 0 014.544.428V3a.75.75 0 01.75-.75zm5.404 4.5a.75.75 0 01.904.563l2.25 8.5a.75.75 0 11-1.447.384l-2.25-8.5a.75.75 0 01.543-.947z" 
+                  clipRule="evenodd" 
+                />
+              </svg>
             </div>
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              viewBox="0 0 24 24" 
-              fill="currentColor" 
-              className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-orange-500"
-            >
-              <path 
-                fillRule="evenodd" 
-                d="M9 2.25a.75.75 0 01.75.75v1.506a49.38 49.38 0 015.343.371.75.75 0 11-.186 1.489c-.66-.083-1.323-.151-1.99-.206a18.67 18.67 0 01-2.969 6.323c.317.384.65.753.998 1.107a.75.75 0 11-1.07 1.052A18.902 18.902 0 019 13.687a18.823 18.823 0 01-5.656 4.482.75.75 0 11-.688-1.333 17.323 17.323 0 005.396-4.353A18.72 18.72 0 015.89 5.277C5.43 5.176 4.973 5.096 4.519 5.037A.75.75 0 114.706 3.55a37.647 37.647 0 014.544.428V3a.75.75 0 01.75-.75zm5.404 4.5a.75.75 0 01.904.563l2.25 8.5a.75.75 0 11-1.447.384l-2.25-8.5a.75.75 0 01.543-.947z" 
-                clipRule="evenodd" 
-              />
-            </svg>
+          </Link>
+
+          {/* Sync Status */}
+          <div className="flex items-center justify-center border-l border-gray-800 bg-gray-800/50 px-4">
+            <SyncStatus
+              isOffline={isOffline}
+              status={syncStatus}
+              variant="compact"
+            />
           </div>
-        </Link>
+        </div>
       </div>
     </nav>
   );
