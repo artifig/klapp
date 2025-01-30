@@ -2,7 +2,7 @@
 
 import {useTranslations} from 'next-intl';
 import {Link, routes} from '@/navigation';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useMemo} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
@@ -137,6 +137,25 @@ export default function AssessmentPage() {
   // Get current category progress
   const currentCategoryProgress = currentQuestion ? getCategoryProgress(currentQuestion.categoryId) : null;
 
+  // Function to shuffle array
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Memoize shuffled answers for each question
+  const shuffledAnswers = useMemo(() => {
+    const shuffled = new Map<string, MethodAnswer[]>();
+    questions.forEach(q => {
+      shuffled.set(q.question.questionId, shuffleArray(q.answers));
+    });
+    return shuffled;
+  }, [questions]);
+
   const handleAnswer = (questionId: string, answerId: string) => {
     const newAnswers = {...answers, [questionId]: answerId};
     setAnswers(newAnswers);
@@ -172,12 +191,29 @@ export default function AssessmentPage() {
     }
   };
 
-  const handleAnswerSelect = (answer: string) => {
-    setSelectedAnswer(answer);
+  const handleAnswerSelect = (answerId: string) => {
+    // Save the answer
+    setSelectedAnswer(answerId);
     setAnswers(prev => ({
       ...prev,
-      [questions[currentQuestionIndex].question.questionId]: answer
+      [questions[currentQuestionIndex].question.questionId]: answerId
     }));
+    setAnswer(questions[currentQuestionIndex].question.questionId, answerId);
+
+    // Auto-advance with animation
+    if (currentQuestionIndex < questions.length - 1) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentQuestionIndex(prev => prev + 1);
+        setSelectedAnswer(answers[questions[currentQuestionIndex + 1]?.question.questionId] || null);
+        setIsTransitioning(false);
+      }, 300);
+    } else {
+      // If this is the last question, navigate to results after a brief delay
+      setTimeout(() => {
+        window.location.href = routes.results;
+      }, 500);
+    }
   };
 
   if (isLoading) {
@@ -249,9 +285,9 @@ export default function AssessmentPage() {
 
               {/* Answer Options */}
               <div className="space-y-3">
-                {currentQuestion?.answers.map((answer, index) => (
+                {currentQuestion && shuffledAnswers.get(currentQuestion.question.questionId)?.map((answer, index) => (
                   <AnswerOption
-                    key={index}
+                    key={answer.answerId}
                     text={answer.answerText}
                     selected={selectedAnswer === answer.answerId}
                     onSelect={() => handleAnswerSelect(answer.answerId)}
@@ -264,8 +300,8 @@ export default function AssessmentPage() {
               </div>
             </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8">
+            {/* Navigation Buttons - Now only showing Previous */}
+            <div className="flex justify-start mt-8">
               <button
                 onClick={handlePrevious}
                 disabled={currentQuestionIndex === 0}
@@ -273,21 +309,6 @@ export default function AssessmentPage() {
               >
                 <ChevronLeft className="w-4 h-4" />
                 {t('assessment.previousQuestion')}
-              </button>
-
-              <button
-                onClick={handleNext}
-                disabled={!selectedAnswer}
-                className="primary-button flex items-center gap-2"
-              >
-                {currentQuestionIndex === questions.length - 1 ? (
-                  t('nav.results')
-                ) : (
-                  <>
-                    {t('assessment.nextQuestion')}
-                    <ChevronRight className="w-4 h-4" />
-                  </>
-                )}
               </button>
             </div>
           </CardContent>
