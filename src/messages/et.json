@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "Tehisintellekti valmisoleku hindamine",
-    "description": "Hinda oma ettevõtte tehisintellekti valmisolekut ja saa personaalseid soovitusi"
+    "title": "Tehisaru valmisoleku hindamine",
+    "description": "Hinda oma ettevõtte tehisaru valmisolekut ja saa personaalseid soovitusi"
   },
   "nav": {
     "home": "Avaleht",
@@ -14,11 +14,11 @@
   },
   "home": {
     "goalLabel": "Teie eesmärk",
-    "goalDescription": "Millised on teie peamised eesmärgid tehisintellekti juurutamisel oma organisatsioonis?",
+    "goalDescription": "Millised on teie peamised eesmärgid tehisaru juurutamisel oma organisatsioonis?",
     "goalPlaceholder": "Nt soovime automatiseerida klienditeeninduse protsesse ja rakendada müügiprognooside ennustusanalüüsi...",
     "exampleGoalsTitle": "Näidiseesmärgid",
     "exampleGoals": {
-      "goal1": "Rakendada tehisintellektil põhinevat klienditeeninduse automatiseerimist, et vähendada reageerimisaega ja parandada kliendirahulolu",
+      "goal1": "Rakendada tehisarul põhinevat klienditeeninduse automatiseerimist, et vähendada reageerimisaega ja parandada kliendirahulolu",
       "goal2": "Arendada tootmisseadmete ennetava hoolduse võimekust seisakuaja vähendamiseks",
       "goal3": "Integreerida masinõpe müügiprotsessi, et paremini prognoosida klientide käitumist ja optimeerida hinnakujundust"
     },
@@ -42,7 +42,34 @@
       "label": "Ettevõtte tüüp",
       "startup": "Idufirma",
       "sme": "VKE",
-      "corporation": "Suurettevõte"
+      "corporation": "Suurettevõte",
+      "descriptions": {
+        "startup": "Alustavad ettevõtted innovatiivsete lahendustega",
+        "sme": "Väikesed ja keskmise suurusega ettevõtted",
+        "corporation": "Suurettevõtted ja korporatsioonid"
+      }
+    },
+    "validation": {
+      "name": {
+        "required": "Palun sisestage oma nimi",
+        "tooShort": "Nimi on liiga lühike"
+      },
+      "company": {
+        "required": "Palun sisestage ettevõtte nimi",
+        "tooShort": "Ettevõtte nimi on liiga lühike"
+      },
+      "email": {
+        "required": "Palun sisestage e-posti aadress",
+        "invalid": "Palun sisestage korrektne e-posti aadress"
+      },
+      "companyType": {
+        "required": "Palun valige ettevõtte tüüp"
+      }
+    },
+    "autosave": {
+      "saving": "Salvestan...",
+      "saved": "Salvestatud",
+      "error": "Salvestamine ebaõnnestus"
     },
     "continue": "Jätka hindamisega",
     "yourGoal": "Teie eesmärk",
@@ -57,18 +84,18 @@
     "organizationInfo": "Palun sisestage oma organisatsiooni andmed"
   },
   "assessment": {
-    "title": "Tehisintellekti valmisoleku hindamine",
+    "title": "Tehisaru valmisoleku hindamine",
     "progress": "Progress",
     "previousQuestion": "Eelmine küsimus",
     "nextQuestion": "Järgmine küsimus",
     "completeAllQuestions": "Palun vastake kõikidele küsimustele enne jätkamist",
     "notAnswered": "Pole veel vastatud",
     "yourAnswers": "Teie vastused",
-    "loadingQuestions": "Laen hindamisküsimusi..."
+    "loadingQuestions": "Laadin hindamisküsimusi..."
   },
   "results": {
-    "title": "Teie tehisintellekti valmisoleku tase",
-    "summary": "Teie ettevõtte tehisintellekti valmisoleku analüüs",
+    "title": "Teie tehisaru valmisoleku tase",
+    "summary": "Teie ettevõtte tehisaru valmisoleku analüüs",
     "recommendationsTitle": "Soovitused",
     "actionableSteps": "Tegevussammud teie AI-valmisoleku parandamiseks",
     "emailReport": "Saada raport e-postiga",

@@ -2,62 +2,131 @@
 
 import {useTranslations} from 'next-intl';
 import {Link, routes} from '@/navigation';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {PageWrapper} from '@/components/ui/PageWrapper';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/Card';
 import {useAssessment} from '@/context/AssessmentContext';
 import {CompanyType} from '@/services/airtable';
+import {Building2, Rocket, Building} from 'lucide-react';
+import debounce from 'lodash/debounce';
+
+interface FormData {
+  name: string;
+  email: string;
+  company: string;
+  companyType: string;
+}
+
+type FormField = keyof FormData;
 
 export default function SetupPage() {
   const t = useTranslations();
   const {state, setFormData} = useAssessment();
-  const [formData, setLocalFormData] = useState(state.formData);
-  const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [formData, setLocalFormData] = useState<Partial<FormData>>(state.formData || {});
+  const [errors, setErrors] = useState<Record<FormField, string>>({} as Record<FormField, string>);
+  const [touched, setTouched] = useState<Record<FormField, boolean>>({} as Record<FormField, boolean>);
+  const [saveStatus, setSaveStatus] = useState<'saving' | 'saved' | 'error' | null>(null);
+
+  // Validation rules
+  const validateField = (name: FormField, value: string | undefined) => {
+    if (!value?.trim()) {
+      return t(`setup.validation.${name}.required`);
+    }
+
+    switch (name) {
+      case 'name':
+        if (value.trim().length < 2) return t('setup.validation.name.tooShort');
+        break;
+      case 'company':
+        if (value.trim().length < 2) return t('setup.validation.company.tooShort');
+        break;
+      case 'email':
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('setup.validation.email.invalid');
+        break;
+    }
+    return '';
+  };
+
+  // Auto-save functionality
+  const debouncedSave = debounce(async (data: Partial<FormData>) => {
+    try {
+      setSaveStatus('saving');
+      if (Object.keys(data).length === 4) {
+        setFormData(data as FormData);
+      }
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(null), 2000);
+    } catch (error) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus(null), 3000);
+    }
+  }, 1000);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const {name, value} = e.target;
-    console.log('Input changed:', { name, value });
+    const name = e.target.name as FormField;
+    const value = e.target.value;
     const newFormData = {...formData, [name]: value};
-    console.log('New form data:', newFormData);
     setLocalFormData(newFormData);
-    if (errors[name]) {
-      setErrors(prev => ({...prev, [name]: false}));
-    }
-    setFormData(newFormData);
+    
+    // Validate field
+    const error = validateField(name, value);
+    setErrors(prev => ({...prev, [name]: error}));
+    
+    // Trigger auto-save
+    debouncedSave(newFormData);
+  };
+
+  const handleBlur = (name: FormField) => {
+    setTouched(prev => ({...prev, [name]: true}));
+    const error = validateField(name, formData[name]);
+    setErrors(prev => ({...prev, [name]: error}));
   };
 
   const handleNext = (e: React.MouseEvent) => {
-    console.log('Submitting form data:', formData);
-    // Validate all required fields
-    const newErrors: Record<string, boolean> = {};
+    // Validate all fields
+    const newErrors: Record<FormField, string> = {} as Record<FormField, string>;
     let hasErrors = false;
 
-    if (!formData.name?.trim()) {
-      newErrors.name = true;
-      hasErrors = true;
-    }
-    if (!formData.company?.trim()) {
-      newErrors.company = true;
-      hasErrors = true;
-    }
-    if (!formData.email?.trim()) {
-      newErrors.email = true;
-      hasErrors = true;
-    }
-    if (!formData.companyType) {
-      newErrors.companyType = true;
-      hasErrors = true;
-    }
+    (Object.keys(FormData) as FormField[]).forEach(field => {
+      const error = validateField(field, formData[field]);
+      if (error) {
+        newErrors[field] = error;
+        hasErrors = true;
+      }
+    });
 
     if (hasErrors) {
-      console.log('Form validation failed:', newErrors);
       e.preventDefault();
       setErrors(newErrors);
+      setTouched({
+        name: true,
+        email: true,
+        company: true,
+        companyType: true
+      });
       return;
     }
 
-    console.log('Form validation passed, proceeding with:', formData);
-    setFormData(formData);
+    if (Object.keys(formData).length === 4) {
+      setFormData(formData as FormData);
+    }
+  };
+
+  const companyTypes = [
+    { id: 'startup', icon: Rocket, color: 'orange' },
+    { id: 'sme', icon: Building2, color: 'blue' },
+    { id: 'corporation', icon: Building, color: 'purple' }
+  ];
+
+  // Add this function after the state declarations
+  const isFormComplete = () => {
+    return (
+      formData.name?.trim() &&
+      formData.email?.trim() &&
+      formData.company?.trim() &&
+      formData.companyType &&
+      !Object.values(errors).some(error => error) // No validation errors
+    );
   };
 
   return (
@@ -93,7 +162,7 @@ export default function SetupPage() {
               <div className="mt-6 pt-6 border-t border-gray-800">
                 <Link
                   href={routes.home}
-                  className="w-full px-6 py-2 bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors text-center"
+                  className="secondary-button block w-full text-center"
                 >
                   {t('nav.back')}
                 </Link>
@@ -112,105 +181,172 @@ export default function SetupPage() {
             <CardContent className="flex-1 flex flex-col">
               <div className="flex-1 overflow-y-auto">
                 <form className="space-y-6">
-                  <div className="grid gap-6">
-                    {/* Name Input */}
-                    <div className="space-y-2">
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+                  {/* Personal Information Group */}
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
                         {t('setup.nameLabel')}
                       </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        className={`w-full p-3 bg-gray-800/50 border text-white
-                          focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
-                          ${errors.name ? 'border-red-500' : 'border-gray-700'}`}
-                        required
-                      />
-                      {errors.name && (
-                        <p className="text-red-500 text-sm">{t('common.required')}</p>
-                      )}
+                      <div className="relative">
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          onBlur={() => handleBlur('name')}
+                          className={`input-field ${touched.name && errors.name ? 'error' : ''}`}
+                          required
+                        />
+                        <div className="h-6 mt-1">
+                          {touched.name && errors.name && (
+                            <p className="text-red-500 text-sm absolute">{errors.name}</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Company Input */}
-                    <div className="space-y-2">
-                      <label htmlFor="company" className="block text-sm font-medium text-gray-300">
-                        {t('setup.companyLabel')}
-                      </label>
-                      <input
-                        type="text"
-                        id="company"
-                        name="company"
-                        value={formData.company}
-                        onChange={handleInputChange}
-                        className={`w-full p-3 bg-gray-800/50 border text-white
-                          focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
-                          ${errors.company ? 'border-red-500' : 'border-gray-700'}`}
-                        required
-                      />
-                      {errors.company && (
-                        <p className="text-red-500 text-sm">{t('common.required')}</p>
-                      )}
-                    </div>
-
-                    {/* Email Input */}
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+                    <div className="relative">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
                         {t('setup.emailLabel')}
                       </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className={`w-full p-3 bg-gray-800/50 border text-white
-                          focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
-                          ${errors.email ? 'border-red-500' : 'border-gray-700'}`}
-                        required
-                      />
-                      {errors.email && (
-                        <p className="text-red-500 text-sm">{t('common.required')}</p>
-                      )}
+                      <div className="relative">
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          onBlur={() => handleBlur('email')}
+                          className={`input-field ${touched.email && errors.email ? 'error' : ''}`}
+                          required
+                        />
+                        <div className="h-6 mt-1">
+                          {touched.email && errors.email && (
+                            <p className="text-red-500 text-sm absolute">{errors.email}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Company Information Group */}
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <label htmlFor="company" className="block text-sm font-medium text-gray-300 mb-1">
+                        {t('setup.companyLabel')}
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          id="company"
+                          name="company"
+                          value={formData.company}
+                          onChange={handleInputChange}
+                          onBlur={() => handleBlur('company')}
+                          className={`input-field ${touched.company && errors.company ? 'error' : ''}`}
+                          required
+                        />
+                        <div className="h-6 mt-1">
+                          {touched.company && errors.company && (
+                            <p className="text-red-500 text-sm absolute">{errors.company}</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Company Type Select */}
+                    {/* Company Type Radio Buttons */}
                     <div className="space-y-2">
-                      <label htmlFor="companyType" className="block text-sm font-medium text-gray-300">
+                      <label className="block text-sm font-medium text-gray-300">
                         {t('setup.companyType.label')}
                       </label>
-                      <select
-                        id="companyType"
-                        name="companyType"
-                        value={formData.companyType}
-                        onChange={handleInputChange}
-                        className={`w-full p-3 bg-gray-800/50 border text-white
-                          focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors
-                          ${errors.companyType ? 'border-red-500' : 'border-gray-700'}`}
-                        required
-                      >
-                        <option value="">{t('setup.companyType.label')}</option>
-                        <option value="startup">{t('setup.companyType.startup')}</option>
-                        <option value="sme">{t('setup.companyType.sme')}</option>
-                        <option value="corporation">{t('setup.companyType.corporation')}</option>
-                      </select>
-                      {errors.companyType && (
-                        <p className="text-red-500 text-sm">{t('common.required')}</p>
+                      <div className="grid gap-3">
+                        {companyTypes.map(({id, icon: Icon, color}) => (
+                          <label
+                            key={id}
+                            className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all
+                              ${formData.companyType === id 
+                                ? 'border-orange-500 bg-orange-500/10' 
+                                : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800/50'}`}
+                          >
+                            <input
+                              type="radio"
+                              name="companyType"
+                              value={id}
+                              checked={formData.companyType === id}
+                              onChange={handleInputChange}
+                              className="sr-only"
+                            />
+                            <div className="flex-1 flex items-start gap-3">
+                              <div className={`p-2 rounded-md bg-${color}-500/20 text-${color}-500`}>
+                                <Icon className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <div className="font-medium text-white">
+                                  {t(`setup.companyType.${id}`)}
+                                </div>
+                                <div className="text-sm text-gray-400">
+                                  {t(`setup.companyType.descriptions.${id}`)}
+                                </div>
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                      {touched.companyType && errors.companyType && (
+                        <p className="text-red-500 text-sm mt-1">{errors.companyType}</p>
                       )}
                     </div>
                   </div>
                 </form>
               </div>
+
+              {/* Save Status */}
+              {saveStatus && (
+                <div className={`text-sm mt-2 ${
+                  saveStatus === 'saving' ? 'text-gray-400' :
+                  saveStatus === 'saved' ? 'text-green-500' :
+                  'text-red-500'
+                }`}>
+                  {t(`setup.autosave.${saveStatus}`)}
+                </div>
+              )}
+
+              {/* Continue Button */}
               <div className="mt-6">
-                <Link
-                  href={routes.assessment}
-                  onClick={handleNext}
-                  className="primary-button block w-full text-center"
-                >
-                  {t('setup.continue')}
-                </Link>
+                {isFormComplete() ? (
+                  <Link
+                    href={routes.assessment}
+                    onClick={handleNext}
+                    className="primary-button block w-full text-center text-lg py-4 shadow-xl
+                      hover:shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98]
+                      transition-all duration-200"
+                  >
+                    {t('setup.continue')}
+                  </Link>
+                ) : (
+                  <button
+                    className="primary-button block w-full text-center text-lg py-4
+                      opacity-50 cursor-not-allowed"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // Show all validation messages
+                      setTouched({
+                        name: true,
+                        email: true,
+                        company: true,
+                        companyType: true
+                      });
+                      // Validate all fields
+                      (['name', 'email', 'company', 'companyType'] as FormField[]).forEach(field => {
+                        const error = validateField(field, formData[field]);
+                        setErrors(prev => ({...prev, [field]: error}));
+                      });
+                    }}
+                  >
+                    {t('setup.continue')}
+                  </button>
+                )}
               </div>
             </CardContent>
           </Card>
