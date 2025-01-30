@@ -12,4 +12,15 @@ export const routes = {
   setup: '/setup',
   assessment: '/assessment',
   results: '/results'
-} as const; 
+} as const;
+
+// Add a custom hook for programmatic navigation
+export function useAppNavigation() {
+  const router = useRouter();
+  
+  return {
+    navigateTo: (route: keyof typeof routes) => {
+      router.push(routes[route]);
+    }
+  };
+} 

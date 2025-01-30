@@ -1,6 +1,7 @@
 'use client';
 
-import React, {createContext, useContext, useState, ReactNode} from 'react';
+import React, {createContext, useContext, ReactNode} from 'react';
+import { usePersistedState } from '@/hooks/usePersistedState';
 
 export interface AssessmentState {
   formData: {
@@ -29,23 +30,21 @@ type AssessmentContextType = {
   resetState: () => void;
 };
 
-const initialState: AssessmentState = {
-  goal: '',
-  formData: {
-    name: '',
-    company: '',
-    email: '',
-    companyType: ''
-  },
-  answers: {},
-  results: {},
-  recommendations: {}
-};
-
 const AssessmentContext = createContext<AssessmentContextType | undefined>(undefined);
 
 export function AssessmentProvider({children}: {children: ReactNode}) {
-  const [state, setState] = useState<AssessmentState>(initialState);
+  const [state, setState] = usePersistedState<AssessmentState>('assessment_state', {
+    goal: '',
+    formData: {
+      name: '',
+      company: '',
+      email: '',
+      companyType: ''
+    },
+    answers: {},
+    results: {},
+    recommendations: {}
+  });
 
   const setGoal = (goal: string) => {
     setState(prev => ({...prev, goal}));
