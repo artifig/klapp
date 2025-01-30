@@ -259,7 +259,17 @@ export default function AssessmentPage() {
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <CardTitle>{currentQuestion.question.questionText}</CardTitle>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-300">
+                      {assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryText}
+                    </h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                      {assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryDescription}
+                    </p>
+                  </div>
+                  <CardTitle>{currentQuestion.question.questionText}</CardTitle>
+                </div>
                 {showError && (
                   <p className="text-red-500 text-sm mt-2">
                     {t('assessment.completeAllQuestions')}
