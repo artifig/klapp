@@ -256,7 +256,11 @@ export default function AssessmentPage() {
           <CardHeader>
             <div className="flex items-center justify-between mb-4">
               <CardTitle>{t('assessment.title')}</CardTitle>
-              <span className="text-gray-400">
+              <span 
+                className="text-gray-400"
+                role="status"
+                aria-live="polite"
+              >
                 {t('assessment.progress')}: {currentQuestionIndex + 1} / {questions.length}
               </span>
             </div>
@@ -264,10 +268,25 @@ export default function AssessmentPage() {
             {/* Category Progress Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-400">{t(`results.categories.${currentQuestion?.categoryId}`)}</span>
-                <span className="text-gray-400">{Math.round(currentCategoryProgress?.progress || 0)}%</span>
+                <span className="text-gray-400">
+                  {t(`results.categories.${currentQuestion?.categoryId}`)}
+                </span>
+                <span 
+                  className="text-gray-400"
+                  role="status"
+                  aria-live="polite"
+                >
+                  {Math.round(currentCategoryProgress?.progress || 0)}%
+                </span>
               </div>
-              <div className="progress-bar">
+              <div 
+                className="progress-bar"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(currentCategoryProgress?.progress || 0)}
+                aria-label={t('assessment.progress')}
+              >
                 <div 
                   className="progress-bar-fill"
                   style={{ width: `${currentCategoryProgress?.progress || 0}%` }}
@@ -278,13 +297,23 @@ export default function AssessmentPage() {
 
           <CardContent>
             {/* Question */}
-            <div className={`space-y-6 ${isTransitioning ? 'opacity-0' : 'animate-fade-in'}`}>
-              <h2 className="text-xl font-medium text-white">
+            <div 
+              className={`space-y-6 ${isTransitioning ? 'opacity-0' : 'animate-fade-in'}`}
+              role="radiogroup"
+              aria-labelledby="current-question"
+            >
+              <h2 
+                id="current-question"
+                className="text-xl font-medium text-white"
+              >
                 {currentQuestion?.question.questionText}
               </h2>
 
               {/* Answer Options */}
-              <div className="space-y-3">
+              <div 
+                className="space-y-3"
+                role="presentation"
+              >
                 {currentQuestion && shuffledAnswers.get(currentQuestion.question.questionId)?.map((answer, index) => (
                   <AnswerOption
                     key={answer.answerId}
@@ -300,14 +329,18 @@ export default function AssessmentPage() {
               </div>
             </div>
 
-            {/* Navigation Buttons - Now only showing Previous */}
+            {/* Navigation Buttons */}
             <div className="flex justify-start mt-8">
               <button
                 onClick={handlePrevious}
                 disabled={currentQuestionIndex === 0}
                 className="secondary-button flex items-center gap-2"
+                aria-label={t('assessment.previousQuestion')}
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft 
+                  className="w-4 h-4"
+                  aria-hidden="true"
+                />
                 {t('assessment.previousQuestion')}
               </button>
             </div>
