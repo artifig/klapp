@@ -14,6 +14,17 @@
   /* Calculate fluid font sizes */
   --fluid-screen: 100vw;
   --fluid-bp: calc((var(--fluid-screen) - var(--fluid-min-width) * 1px) / (var(--fluid-max-width) - var(--fluid-min-width)));
+
+  /* Animation Timing */
+  --animation-duration-fast: 150ms;
+  --animation-duration-standard: 300ms;
+  --animation-duration-slow: 500ms;
+  
+  /* Animation Curves */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Font Face Declarations */
@@ -217,6 +228,125 @@
   .card-grid {
     @apply grid gap-6;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  }
+
+  /* Transition Classes */
+  .transition-standard {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .transition-fast {
+    @apply transition-all duration-150 ease-in-out;
+  }
+
+  .transition-slow {
+    @apply transition-all duration-500 ease-in-out;
+  }
+
+  /* Loading States */
+  .loading-overlay {
+    @apply absolute inset-0 
+           bg-gray-900/50 
+           backdrop-blur-sm
+           flex items-center justify-center
+           transition-standard;
+  }
+
+  .loading-container {
+    @apply relative
+           min-h-[100px]
+           flex items-center justify-center;
+  }
+
+  .loading-text {
+    @apply mt-4 text-sm text-gray-400
+           animate-pulse;
+  }
+
+  /* Animation Classes */
+  .animate-fade {
+    animation: fade var(--animation-duration-standard) var(--ease-standard);
+  }
+
+  .animate-slide-up {
+    animation: slideUp var(--animation-duration-standard) var(--ease-out);
+  }
+
+  .animate-slide-down {
+    animation: slideDown var(--animation-duration-standard) var(--ease-out);
+  }
+
+  .animate-scale {
+    animation: scale var(--animation-duration-standard) var(--ease-standard);
+  }
+
+  .animate-spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  /* Hover Effects */
+  .hover-lift {
+    @apply transition-standard
+           hover:-translate-y-1
+           hover:shadow-lg;
+  }
+
+  .hover-grow {
+    @apply transition-standard
+           hover:scale-105;
+  }
+
+  .hover-glow {
+    @apply transition-standard
+           hover:shadow-[0_0_15px_rgba(255,102,0,0.3)];
+  }
+}
+
+/* Animation Keyframes */
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 

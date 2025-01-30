@@ -16,6 +16,8 @@ import {
 } from '@/services/airtable';
 import {AnswerOption} from '@/components/ui/AnswerOption';
 import {ChevronLeft, ChevronRight} from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { cn } from '@/lib/utils';
 
 type AssessmentQuestion = {
   categoryId: string;
@@ -115,7 +117,7 @@ export default function AssessmentPage() {
   });
 
   const currentQuestion = questions[currentQuestionIndex];
-  const progress = questions.length > 0 ? (currentQuestionIndex / questions.length) * 100 : 0;
+  const progressPercentage = (Object.keys(answers).length / questions.length) * 100;
 
   // Calculate category-specific progress
   const getCategoryProgress = (categoryId: string) => {
@@ -218,14 +220,10 @@ export default function AssessmentPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper>
-        <div className="h-full flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-2xl font-semibold mb-4">{t('common.loading')}</div>
-            <div className="text-gray-400">{t('assessment.loadingQuestions')}</div>
-          </div>
-        </div>
-      </PageWrapper>
+      <div className="loading-container">
+        <LoadingSpinner size="lg" />
+        <p className="loading-text">Loading assessment...</p>
+      </div>
     );
   }
 
@@ -250,103 +248,97 @@ export default function AssessmentPage() {
   }
 
   return (
-    <PageWrapper>
-      <div className="h-full flex flex-col max-w-3xl mx-auto">
-        <Card className="flex-1">
-          <CardHeader>
-            <div className="flex items-center justify-between mb-4">
-              <CardTitle>{t('assessment.title')}</CardTitle>
-              <span 
-                className="text-gray-400"
-                role="status"
-                aria-live="polite"
-              >
-                {t('assessment.progress')}: {currentQuestionIndex + 1} / {questions.length}
-              </span>
-            </div>
-            
-            {/* Category Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">
-                  {t(`results.categories.${currentQuestion?.categoryId}`)}
-                </span>
-                <span 
-                  className="text-gray-400"
-                  role="status"
-                  aria-live="polite"
-                >
-                  {Math.round(currentCategoryProgress?.progress || 0)}%
-                </span>
-              </div>
-              <div 
-                className="progress-bar"
-                role="progressbar"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(currentCategoryProgress?.progress || 0)}
-                aria-label={t('assessment.progress')}
-              >
-                <div 
-                  className="progress-bar-fill"
-                  style={{ width: `${currentCategoryProgress?.progress || 0}%` }}
-                />
-              </div>
-            </div>
-          </CardHeader>
+    <main className="container mx-auto px-4 py-8 animate-fade">
+      <div className="max-w-3xl mx-auto space-y-8">
+        {/* Progress Section */}
+        <div className="space-y-4 animate-slide-down">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-white">
+              Question {currentQuestionIndex + 1} of {questions.length}
+            </h2>
+            <span className="text-primary font-medium">
+              {Math.round(progressPercentage)}%
+            </span>
+          </div>
+          <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[#FF6600] to-[#FFCC00] transition-all duration-500 ease-out"
+              style={{
+                width: `${progressPercentage}%`,
+              }}
+              role="progressbar"
+              aria-valuenow={progressPercentage}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            />
+          </div>
+        </div>
 
-          <CardContent>
-            {/* Question */}
-            <div 
-              className={`space-y-6 ${isTransitioning ? 'opacity-0' : 'animate-fade-in'}`}
-              role="radiogroup"
-              aria-labelledby="current-question"
-            >
-              <h2 
-                id="current-question"
-                className="text-xl font-medium text-white"
-              >
-                {currentQuestion?.question.questionText}
-              </h2>
-
-              {/* Answer Options */}
-              <div 
-                className="space-y-3"
-                role="presentation"
-              >
-                {currentQuestion && shuffledAnswers.get(currentQuestion.question.questionId)?.map((answer, index) => (
-                  <AnswerOption
-                    key={answer.answerId}
-                    text={answer.answerText}
-                    selected={selectedAnswer === answer.answerId}
-                    onSelect={() => handleAnswerSelect(answer.answerId)}
-                    className="animate-slide-in"
-                    style={{
-                      animationDelay: `${index * 50}ms`
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-start mt-8">
+        {/* Question Section */}
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg p-6 space-y-6 animate-scale border border-gray-700">
+          <h1 className="text-2xl font-bold text-white">{currentQuestion.question.questionText}</h1>
+          
+          <div 
+            className="space-y-4"
+            role="radiogroup"
+            aria-labelledby="question-options"
+          >
+            {shuffledAnswers.get(currentQuestion.question.questionId)?.map((answer, index) => (
               <button
-                onClick={handlePrevious}
-                disabled={currentQuestionIndex === 0}
-                className="secondary-button flex items-center gap-2"
-                aria-label={t('assessment.previousQuestion')}
+                key={index}
+                onClick={() => handleAnswerSelect(answer.answerId)}
+                className={cn(
+                  'w-full p-4 text-left rounded-lg transition-standard hover-lift',
+                  'border-2 focus:outline-none focus:ring-2 focus:ring-primary/50',
+                  'text-white',
+                  selectedAnswer === answer.answerId
+                    ? 'border-primary bg-primary/20'
+                    : 'border-gray-700 bg-gray-800/30 hover:border-primary/30 hover:bg-gray-800/50'
+                )}
+                role="radio"
+                aria-checked={selectedAnswer === answer.answerId}
+                tabIndex={0}
               >
-                <ChevronLeft 
-                  className="w-4 h-4"
-                  aria-hidden="true"
-                />
-                {t('assessment.previousQuestion')}
+                {answer.answerText}
               </button>
-            </div>
-          </CardContent>
-        </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Navigation Section */}
+        <div className="flex justify-between items-center animate-slide-up">
+          <button
+            onClick={handlePrevious}
+            disabled={currentQuestionIndex === 0}
+            className={cn(
+              'px-6 py-2 rounded-lg transition-standard',
+              'focus:outline-none focus:ring-2 focus:ring-primary/50',
+              currentQuestionIndex === 0
+                ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed'
+                : 'bg-gray-800 hover:bg-gray-700 text-white'
+            )}
+          >
+            Previous
+          </button>
+          
+          {currentQuestionIndex === questions.length - 1 ? (
+            <button
+              onClick={handleNext}
+              disabled={!selectedAnswer}
+              className={cn(
+                'px-6 py-2 rounded-lg transition-standard',
+                'focus:outline-none focus:ring-2 focus:ring-primary/50',
+                !selectedAnswer
+                  ? 'bg-primary/30 text-white/50 cursor-not-allowed'
+                  : 'bg-primary hover:bg-primary/90 text-white',
+                'font-medium'
+              )}
+            >
+              View Results
+            </button>
+          ) : null}
+        </div>
       </div>
-    </PageWrapper>
+    </main>
   );
 } 
