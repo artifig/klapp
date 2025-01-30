@@ -8,12 +8,20 @@
     "setup": "Seadistus",
     "assessment": "Hindamine",
     "results": "Tulemused",
-    "back": "Tagasi"
+    "back": "Tagasi",
+    "goal": "Eesmärk",
+    "next": "Edasi"
   },
   "home": {
     "goalLabel": "Teie eesmärk",
-    "goalPlaceholder": "Kirjeldage oma ettevõtte digitaliseerimise eesmärke...",
-    "startButton": "Alusta hindamist",
+    "goalDescription": "Millised on teie peamised eesmärgid tehisintellekti juurutamisel oma organisatsioonis?",
+    "goalPlaceholder": "Nt soovime automatiseerida klienditeeninduse protsesse ja rakendada müügiprognooside ennustusanalüüsi...",
+    "exampleGoalsTitle": "Näidiseesmärgid",
+    "exampleGoals": {
+      "goal1": "Rakendada tehisintellektil põhinevat klienditeeninduse automatiseerimist, et vähendada reageerimisaega ja parandada kliendirahulolu",
+      "goal2": "Arendada tootmisseadmete ennetava hoolduse võimekust seisakuaja vähendamiseks",
+      "goal3": "Integreerida masinõpe müügiprotsessi, et paremini prognoosida klientide käitumist ja optimeerida hinnakujundust"
+    },
     "whatToExpect": "Mida oodata",
     "expectationsList": {
       "evaluation": "Põhjalik hindamine teie ettevõtte valmisolekust",
@@ -22,7 +30,8 @@
       "insights": "Väärtuslikud tähelepanekud"
     },
     "timeRequired": "Ajakulu",
-    "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit"
+    "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit",
+    "startButton": "Alusta tehisaru hindamisteekonda"
   },
   "setup": {
     "title": "Alustame",
@@ -60,15 +69,8 @@
   "results": {
     "title": "Teie tehisintellekti valmisoleku tase",
     "summary": "Teie ettevõtte tehisintellekti valmisoleku analüüs",
-    "categories": "Kategooriate ülevaade",
-    "recommendations": "Soovitused",
+    "recommendationsTitle": "Soovitused",
     "actionableSteps": "Tegevussammud teie AI-valmisoleku parandamiseks",
-    "levels": {
-      "red": "Madal",
-      "yellow": "Keskmine",
-      "green": "Kõrge"
-    },
-    "downloadReport": "Laadi raport alla",
     "emailReport": "Saada raport e-postiga",
     "downloadPDF": "Laadi alla PDF",
     "updateEmail": "Muuda e-posti aadressi",
@@ -76,6 +78,11 @@
     "emailSent": "Raport saadetud!",
     "downloadStarted": "Allalaadimine algas",
     "emailPlaceholder": "Sisestage e-posti aadress",
+    "levels": {
+      "red": "Madal",
+      "yellow": "Keskmine",
+      "green": "Kõrge"
+    },
     "categories": {
       "businessModel": "Ärimudeli valideerimine",
       "team": "Meeskond ja kultuur",
@@ -102,11 +109,13 @@
     },
     "recommendations": {
       "dataTech": {
+        "title": "Andmete ja tehnoloogia täiustamine",
         "text": "Andmete haldamise ja tehnoloogia täiustamine",
         "provider": "Tehnopol",
         "offer": "Andmete haldamise konsultatsioon"
       },
       "rnd": {
+        "title": "T&A tugevdamine",
         "text": "Teadus- ja arendustegevuse tugevdamine",
         "provider": "Tehnopol",
         "offer": "T&A strateegia nõustamine"

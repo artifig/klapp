@@ -8,12 +8,30 @@
     "setup": "Setup",
     "assessment": "Assessment",
     "results": "Results",
-    "back": "Back"
+    "back": "Back",
+    "goal": "Goal",
+    "next": "Next"
   },
   "home": {
     "goalLabel": "Your Goal",
-    "goalPlaceholder": "Describe your company's digitalization goals...",
-    "startButton": "Start Assessment"
+    "goalDescription": "What are your main objectives for implementing AI in your organization?",
+    "goalPlaceholder": "E.g., We want to automate our customer service processes and implement predictive analytics for sales forecasting...",
+    "exampleGoalsTitle": "Example Goals",
+    "exampleGoals": {
+      "goal1": "Implement AI-powered customer service automation to reduce response times and improve customer satisfaction",
+      "goal2": "Develop predictive maintenance capabilities for our manufacturing equipment to reduce downtime",
+      "goal3": "Integrate machine learning into our sales process to better predict customer behavior and optimize pricing"
+    },
+    "whatToExpect": "What to Expect",
+    "expectationsList": {
+      "evaluation": "Comprehensive evaluation of your AI readiness",
+      "areas": "Assessment across key business areas",
+      "recommendations": "Tailored recommendations for improvement",
+      "insights": "Actionable insights and next steps"
+    },
+    "timeRequired": "Time Required",
+    "timeEstimate": "This assessment takes approximately 15-20 minutes to complete",
+    "startButton": "Start Your AI Readiness Journey"
   },
   "setup": {
     "title": "Let's Get Started",
