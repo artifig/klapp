@@ -1,4 +1,5 @@
 {
+  "Navigation": "Navigeerimine",
   "app": {
     "title": "Tehisaru valmisoleku hindamine",
     "description": "Hinda oma ettevõtte tehisaru valmisolekut ja saa personaalseid soovitusi"
@@ -31,7 +32,17 @@
     },
     "timeRequired": "Ajakulu",
     "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit",
-    "startButton": "Alusta tehisaru hindamisteekonda"
+    "startButton": "Alusta tehisaru hindamisteekonda",
+    "contextCard": {
+      "title": "Tehisaru valmisoleku hindamine",
+      "description": "Tere tulemast tehisaru valmisoleku hindamise tööriista! See aitab teil mõista oma organisatsiooni valmisolekut tehisaru rakendamiseks.",
+      "steps": {
+        "step1": "Täitke lühike küsimustik",
+        "step2": "Saage ülevaade oma organisatsiooni valmisolekust",
+        "step3": "Tuvastage võimalused ja väljakutsed",
+        "step4": "Saage personaalsed soovitused edasisteks sammudeks"
+      }
+    }
   },
   "setup": {
     "title": "Alustame",

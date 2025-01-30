@@ -1,23 +1,21 @@
-import type { Metadata } from "next";
-import { EmbedProvider } from "@/context/EmbedContext";
-import "./globals.css";
+import { ReactNode } from 'react';
+import './globals.css';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "AI Readiness Assessment",
-  description: "Assess your company's AI readiness level",
+  title: 'AI Readiness Assessment',
+  description: 'Assess your company\'s AI readiness level',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: ReactNode;
+}) {
   return (
     <html suppressHydrationWarning>
-      <body>
-        <EmbedProvider>
-          {children}
-        </EmbedProvider>
+      <body suppressHydrationWarning>
+        {children}
       </body>
     </html>
   );

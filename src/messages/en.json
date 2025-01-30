@@ -31,7 +31,17 @@
     },
     "timeRequired": "Time Required",
     "timeEstimate": "This assessment takes approximately 15-20 minutes to complete",
-    "startButton": "Start Your AI Readiness Journey"
+    "startButton": "Start Your AI Readiness Journey",
+    "contextCard": {
+      "title": "AI Readiness Assessment",
+      "description": "Welcome to the AI Readiness Assessment tool! This will help you understand your organization's readiness for implementing AI.",
+      "steps": {
+        "step1": "Complete a brief questionnaire",
+        "step2": "Get an overview of your organization's readiness",
+        "step3": "Identify opportunities and challenges",
+        "step4": "Receive personalized recommendations for next steps"
+      }
+    }
   },
   "setup": {
     "title": "Let's Get Started",

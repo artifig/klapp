@@ -20,7 +20,7 @@ const navigationItems: NavigationItem[] = [
 ];
 
 export const Navbar = () => {
-  const t = useTranslations('Navigation');
+  const t = useTranslations('nav');
   const pathname = usePathname();
 
   const isActive = (path: string) => {

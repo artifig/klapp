@@ -34,7 +34,7 @@ const AnswerOption = ({ value, label, isSelected, onClick }: AnswerOptionProps) 
 );
 
 export const AssessmentInteractiveCard = () => {
-  const t = useTranslations('Assessment');
+  const t = useTranslations('assessment');
   const {
     currentCategory,
     currentQuestion,

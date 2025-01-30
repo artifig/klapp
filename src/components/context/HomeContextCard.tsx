@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 
 export const HomeContextCard = () => {
-  const t = useTranslations('Home');
+  const t = useTranslations('home');
 
   return (
     <Card title={t('contextCard.title')}>

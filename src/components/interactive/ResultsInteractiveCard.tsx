@@ -39,7 +39,7 @@ const ProviderCard = ({ provider, onContact }: ProviderCardProps) => (
 );
 
 export const ResultsInteractiveCard = () => {
-  const t = useTranslations('Results');
+  const t = useTranslations('results');
   const { formData, results, matchedProviders } = useAssessmentContext();
   const [isExporting, setIsExporting] = useState(false);
 

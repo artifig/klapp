@@ -32,7 +32,7 @@ const CategoryResult = ({ category, score }: CategoryResultProps) => (
 );
 
 export const ResultsContextCard = () => {
-  const t = useTranslations('Results');
+  const t = useTranslations('results');
   const { goal, formData, categories, answers } = useAssessmentContext();
 
   // Calculate category scores

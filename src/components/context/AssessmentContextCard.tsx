@@ -30,7 +30,7 @@ const CategoryItem = ({ name, isActive, isCompleted, onClick }: CategoryItemProp
 );
 
 export const AssessmentContextCard = () => {
-  const t = useTranslations('Assessment');
+  const t = useTranslations('assessment');
   const { 
     categories,
     currentCategory,
