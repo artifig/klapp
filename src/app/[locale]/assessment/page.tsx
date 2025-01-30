@@ -275,58 +275,107 @@ export default function AssessmentPage() {
           {/* Right Column - Current Question */}
           {currentQuestion && (
             <Card className="flex flex-col">
-              <CardHeader>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm text-orange-500 uppercase tracking-wider">
-                    {currentQuestion.categoryId}
-                  </div>
-                  <div className="text-sm text-gray-400">
-                    Question {currentQuestionIndex + 1} / {questions.length}
-                  </div>
-                </div>
-                {/* Category Progress */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm text-gray-400">
-                    <span>Category Progress</span>
-                    <span>{currentCategoryProgress?.answered || 0}/{currentCategoryProgress?.total || 0} Questions</span>
-                  </div>
-                  <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-orange-500 transition-all duration-300 ease-in-out"
-                      style={{ width: `${currentCategoryProgress?.progress || 0}%` }}
-                    />
+              <CardHeader className="space-y-6">
+                {/* Title and Progress Stats */}
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-semibold text-white">
+                    {t('assessment.title')}
+                  </h2>
+                  <div className="px-3 py-1 bg-gray-800 rounded-full text-sm text-gray-400">
+                    Question {currentQuestionIndex + 1} of {questions.length}
                   </div>
                 </div>
-                {/* Overall Progress */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm text-gray-400">
-                    <span>Overall Progress</span>
-                    <span>{Math.round(progress)}%</span>
+
+                {/* Compact Progress Statistics */}
+                <div className="space-y-4 p-3 bg-gray-900/50 rounded-lg border border-gray-800">
+                  {/* Main Stats */}
+                  <div className="grid grid-cols-3 gap-3">
+                    {/* Overall Progress */}
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-400">Overall</div>
+                      <div className="text-lg font-medium text-orange-500">
+                        {Math.round(progress)}%
+                      </div>
+                      <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-orange-500 transition-all duration-300"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Category Progress */}
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-400">Category</div>
+                      <div className="text-lg font-medium text-orange-500">
+                        {currentCategoryProgress?.answered || 0}
+                        <span className="text-gray-600">/</span>
+                        {currentCategoryProgress?.total || 0}
+                      </div>
+                      <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-orange-500 transition-all duration-300"
+                          style={{ width: `${currentCategoryProgress?.progress || 0}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Current Category */}
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-400">Section</div>
+                      <div className="text-sm font-medium text-orange-500 truncate" title={currentQuestion.categoryId}>
+                        {currentQuestion.categoryId}
+                      </div>
+                      <div className="text-sm text-gray-300 truncate" title={assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryText}>
+                        {assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryText}
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-orange-500 transition-all duration-300 ease-in-out"
-                      style={{ width: `${progress}%` }}
-                    />
+
+                  {/* Category Completion Overview */}
+                  <div className="border-t border-gray-800 pt-3">
+                    <div className="text-xs text-gray-400 mb-2">Categories Completion</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {categories.map(cat => {
+                        const isCurrentCategory = currentQuestion?.categoryId === cat.categoryId;
+                        return (
+                          <div
+                            key={cat.categoryId}
+                            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-help
+                              ${cat.progress === 100
+                                ? 'bg-green-500'
+                                : isCurrentCategory
+                                  ? 'bg-orange-500'
+                                  : cat.progress > 0
+                                    ? 'bg-gray-600'
+                                    : 'bg-gray-800'
+                              }`}
+                            title={`${assessmentStructure.find(s => s.category.categoryId === cat.categoryId)?.category.categoryText}: ${Math.round(cat.progress)}%`}
+                          />
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
+
+                {/* Category Description */}
+                <div className="text-sm text-gray-400 bg-gray-900/30 p-3 rounded-lg border border-gray-800">
+                  {assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryDescription}
+                </div>
+
+                {/* Current Question */}
                 <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-300">
-                      {assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryText}
-                    </h3>
-                    <p className="text-sm text-gray-400 mt-1">
-                      {assessmentStructure.find(cat => cat.category.categoryId === currentQuestion.categoryId)?.category.categoryDescription}
-                    </p>
+                  <div className="text-xl font-medium text-white">
+                    {currentQuestion.question.questionText}
                   </div>
-                  <CardTitle>{currentQuestion.question.questionText}</CardTitle>
+                  {showError && (
+                    <p className="text-red-500 text-sm">
+                      {t('assessment.completeAllQuestions')}
+                    </p>
+                  )}
                 </div>
-                {showError && (
-                  <p className="text-red-500 text-sm mt-2">
-                    {t('assessment.completeAllQuestions')}
-                  </p>
-                )}
               </CardHeader>
+
               <CardContent className="flex-1 flex flex-col">
                 <div className="flex-1 overflow-y-auto">
                   <div className="grid gap-3">
@@ -334,13 +383,22 @@ export default function AssessmentPage() {
                       <button
                         key={answer.answerId}
                         onClick={() => handleAnswer(currentQuestion.question.questionId, answer.answerId)}
-                        className={`w-full p-4 text-left border transition-all duration-300 ${
-                          answers[currentQuestion.question.questionId] === answer.answerId
+                        className={`w-full p-4 text-left border rounded-lg transition-all duration-300 
+                          ${answers[currentQuestion.question.questionId] === answer.answerId
                             ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10'
                             : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800/50'
-                        }`}
+                          }
+                        `}
                       >
-                        {answer.answerText}
+                        <div className="flex items-center gap-3">
+                          <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0
+                            ${answers[currentQuestion.question.questionId] === answer.answerId
+                              ? 'border-orange-500 bg-orange-500'
+                              : 'border-gray-600'
+                            }`}
+                          />
+                          <span className="text-lg">{answer.answerText}</span>
+                        </div>
                       </button>
                     ))}
                   </div>
