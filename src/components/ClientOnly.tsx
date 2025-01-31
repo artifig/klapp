@@ -1,8 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Loading } from './ui/Loading';
 
-export default function ClientOnly({ children }: { children: React.ReactNode }) {
+interface ClientOnlyProps {
+  children: React.ReactNode;
+  type?: 'card' | 'full';
+}
+
+export default function ClientOnly({ children, type = 'card' }: ClientOnlyProps) {
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
@@ -10,7 +16,7 @@ export default function ClientOnly({ children }: { children: React.ReactNode }) 
   }, []);
 
   if (!hasMounted) {
-    return null;
+    return <Loading type={type} />;
   }
 
   return <>{children}</>;

@@ -5,6 +5,7 @@ import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
 import { getCategories, getQuestions, saveResult, AirtableCategory, AirtableQuestion } from '@/lib/airtable';
 import { useLocale } from 'next-intl';
+import { Loading } from '@/components/ui/Loading';
 
 interface Category extends Omit<AirtableCategory, 'name_en' | 'name_et'> {
   name: string;
@@ -224,11 +225,18 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   };
 
   if (state.isLoading) {
-    return <div>Loading...</div>;
+    return <Loading type="full" />;
   }
 
   if (state.error) {
-    return <div>Error: {state.error}</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-red-600">
+          <h2 className="text-xl font-semibold mb-2">Error Loading Assessment</h2>
+          <p>{state.error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
