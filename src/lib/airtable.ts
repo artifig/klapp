@@ -121,16 +121,79 @@ export async function saveResult(result: {
     
     console.log('Saving assessment with company type:', properCompanyType);
 
+    // Get all method answers to map scores to texts
+    const methodAnswers = await getMethodAnswers();
+    const methodQuestions = await getQuestions();
+    const methodCategories = await getCategories();
+
+    // Create mappings for easy lookup
+    const answerMap = new Map(methodAnswers.map(a => [a.id, a]));
+    const questionMap = new Map(methodQuestions.map(q => [q.id, q]));
+    const categoryMap = new Map(methodCategories.map(c => [c.id, c]));
+
+    // Prepare the detailed assessment results
+    const detailedResults = result.categories.map(category => {
+      const originalCategory = categoryMap.get(category.id);
+      if (!originalCategory) return null;
+
+      const categoryAnswers = category.questions.map(question => {
+        const originalQuestion = questionMap.get(question.id);
+        if (!originalQuestion) return null;
+
+        const answerScore = result.answers[question.id];
+        const matchingAnswer = methodAnswers.find(a => 
+          a.questionId.includes(question.id) && 
+          Math.abs(a.answerScore - answerScore) < 0.01
+        );
+
+        return {
+          questionId: originalQuestion.questionId,
+          questionText_et: originalQuestion.questionText_et,
+          questionText_en: originalQuestion.questionText_en,
+          answer: matchingAnswer ? {
+            answerId: matchingAnswer.answerId,
+            answerText_et: matchingAnswer.answerText_et,
+            answerText_en: matchingAnswer.answerText_en,
+            answerScore: matchingAnswer.answerScore
+          } : {
+            answerScore
+          }
+        };
+      }).filter(Boolean);
+
+      // Calculate category average
+      const validScores = categoryAnswers
+        .map(q => q?.answer.answerScore)
+        .filter((score): score is number => typeof score === 'number');
+      const categoryAverage = validScores.length > 0
+        ? validScores.reduce((sum, score) => sum + score, 0) / validScores.length
+        : 0;
+
+      return {
+        categoryId: originalCategory.categoryId,
+        categoryText_et: originalCategory.categoryText_et,
+        categoryText_en: originalCategory.categoryText_en,
+        categoryDescription_et: originalCategory.categoryDescription_et,
+        categoryDescription_en: originalCategory.categoryDescription_en,
+        score: categoryAverage,
+        questions: categoryAnswers
+      };
+    }).filter(Boolean);
+
+    // Calculate overall score
+    const overallScore = detailedResults.length > 0
+      ? detailedResults.reduce((sum, cat) => sum + (cat?.score || 0), 0) / detailedResults.length
+      : 0;
+
     // Prepare comprehensive response content
     const responseContent = {
       metadata: {
         submittedAt: new Date().toISOString(),
         companyType: properCompanyType,
-        goal: result.goal
+        goal: result.goal,
+        overallScore
       },
-      rawAnswers: result.answers,
-      categoryResults: calculateCategoryResults(result.categories, result.answers),
-      overallAverage: calculateOverallAverage(result.categories, result.answers)
+      categories: detailedResults
     };
 
     // Create the record
@@ -142,7 +205,7 @@ export async function saveResult(result: {
           companyName: result.companyName,
           companyType: properCompanyType,
           initialGoal: result.goal,
-          responseContent: JSON.stringify(responseContent),
+          responseContent: JSON.stringify(responseContent, null, 2), // Pretty print JSON
           responseStatus: 'Completed'
         },
       },
