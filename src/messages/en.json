@@ -138,14 +138,24 @@
   "results": {
     "title": "Your AI Readiness Level",
     "summary": "Analysis of your company's AI readiness",
-    "categories": "Categories Overview",
+    "completion": {
+      "title": "Assessment Completion"
+    },
+    "categories": {
+      "title": "Categories Overview"
+    },
     "recommendations": "Recommendations",
     "levels": {
       "red": "Low",
       "yellow": "Medium",
       "green": "High"
     },
-    "downloadReport": "Download Report"
+    "downloadReport": "Download Report",
+    "exportPDF": "Export PDF",
+    "exporting": "Exporting...",
+    "emailResults": "Email Results",
+    "matchedProviders": "Matched Providers",
+    "contactProvider": "Contact Provider"
   },
   "common": {
     "loading": "Loading...",

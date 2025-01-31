@@ -143,14 +143,24 @@
   "results": {
     "title": "Teie tehisintellekti valmisoleku tase",
     "summary": "Teie ettevõtte tehisintellekti valmisoleku analüüs",
-    "categories": "Kategooriate ülevaade",
+    "completion": {
+      "title": "Hindamise lõpetatus"
+    },
+    "categories": {
+      "title": "Kategooriate ülevaade"
+    },
     "recommendations": "Soovitused",
     "levels": {
       "red": "Madal",
       "yellow": "Keskmine",
       "green": "Kõrge"
     },
-    "downloadReport": "Laadi raport alla"
+    "downloadReport": "Laadi raport alla",
+    "exportPDF": "Ekspordi PDF",
+    "exporting": "Eksportimine...",
+    "emailResults": "Saada tulemused e-postiga",
+    "matchedProviders": "Sobivad teenusepakkujad",
+    "contactProvider": "Võta ühendust"
   },
   "common": {
     "loading": "Laadimine...",

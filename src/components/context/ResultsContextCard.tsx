@@ -36,7 +36,7 @@ export const ResultsContextCard = () => {
   const t = useTranslations('results');
   const { 
     categories,
-    completedCategories,
+    completedCategories = [],
     answers
   } = useAssessmentContext();
 
