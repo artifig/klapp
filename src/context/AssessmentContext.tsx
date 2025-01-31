@@ -8,13 +8,28 @@ import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
 
-interface Category extends Omit<AirtableCategory, 'name_en' | 'name_et'> {
+// Map company types to their assessment categories
+const COMPANY_TYPE_MAPPING = {
+  startup: 'startup',
+  scaleup: 'sme', // Map scaleup to sme
+  sme: 'sme',
+  enterprise: 'enterprise'
+} as const;
+
+interface Category {
+  id: string;
+  key: string;
   name: string;
+  order: number;
   questions: Question[];
+  companyType: string[]; // Match Airtable schema
 }
 
-interface Question extends Omit<AirtableQuestion, 'text_en' | 'text_et'> {
+interface Question {
+  id: string;
   text: string;
+  categoryId: string[];
+  order: number;
 }
 
 interface FormData {
@@ -122,22 +137,35 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           getQuestions()
         ]);
 
-        // Transform categories and questions based on locale
-        const categories: Category[] = categoriesData.map(cat => ({
-          id: cat.id,
-          key: cat.key,
-          name: locale === 'et' ? cat.name_et : cat.name_en,
-          order: cat.order,
-          questions: questionsData
-            .filter(q => q.categoryId === cat.id)
-            .map(q => ({
-              id: q.id,
-              text: locale === 'et' ? q.text_et : q.text_en,
-              categoryId: q.categoryId,
-              order: q.order
-            }))
-            .sort((a, b) => a.order - b.order)
-        }));
+        // Get the mapped company type for filtering
+        const mappedCompanyType = state.formData.companyType 
+          ? COMPANY_TYPE_MAPPING[state.formData.companyType as keyof typeof COMPANY_TYPE_MAPPING]
+          : null;
+
+        // Transform categories and questions based on locale and company type
+        const categories: Category[] = categoriesData
+          .filter(cat => {
+            // If no company type selected yet, show all categories
+            if (!mappedCompanyType) return true;
+            // Otherwise, filter based on company type
+            return cat.companyType.includes(mappedCompanyType);
+          })
+          .map(cat => ({
+            id: cat.id,
+            key: cat.categoryId,
+            name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
+            order: parseInt(cat.id, 10), // Use ID as order if no explicit order field
+            companyType: cat.companyType,
+            questions: questionsData
+              .filter(q => q.categoryId.includes(cat.id))
+              .map(q => ({
+                id: q.id,
+                text: locale === 'et' ? q.questionText_et : q.questionText_en,
+                categoryId: q.categoryId,
+                order: parseInt(q.id, 10) // Use ID as order if no explicit order field
+              }))
+              .sort((a, b) => a.order - b.order)
+          }));
 
         setState(prev => ({
           ...prev,
@@ -155,7 +183,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     };
 
     fetchData();
-  }, [setState, locale]);
+  }, [setState, locale, state.formData.companyType]); // Add companyType to dependencies
 
   const setGoal = useCallback((goal: string) => {
     setState(prev => ({ ...prev, goal }));
