@@ -127,8 +127,31 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       (acc, category) => acc + category.questions.length,
       0
     );
-    const answeredQuestions = Object.keys(state.answers).length;
-    const newProgress = totalQuestions > 0 ? answeredQuestions / totalQuestions : 0;
+
+    // Get only valid answers that correspond to current questions
+    const validAnswers = Object.entries(state.answers).filter(([questionId]) => 
+      state.categories.some(cat => 
+        cat.questions.some(q => q.id === questionId)
+      )
+    );
+    const answeredQuestions = validAnswers.length;
+    const newProgress = Math.min(totalQuestions > 0 ? answeredQuestions / totalQuestions : 0, 1);
+
+    console.log('Progress Debug:', {
+      totalQuestions,
+      answeredQuestions,
+      validAnswerCount: validAnswers.length,
+      totalAnswerCount: Object.keys(state.answers).length,
+      newProgress,
+      categoriesLength: state.categories.length,
+      isInitialLoad,
+      formData: {
+        name: !!state.formData.name,
+        email: !!state.formData.email,
+        companyName: !!state.formData.companyName,
+        companyType: !!state.formData.companyType
+      }
+    });
 
     if (newProgress !== state.progress) {
       setState(prev => ({ ...prev, progress: newProgress }));
@@ -139,16 +162,62 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     // 2. There are categories loaded
     // 3. We're not on initial load
     // 4. User has filled out the form data
-    if (newProgress === 1 && 
+    const allQuestionsAnswered = validAnswers.length >= totalQuestions;
+    const shouldNavigate = allQuestionsAnswered && 
         state.categories.length > 0 && 
         !isInitialLoad &&
         state.formData.name && 
         state.formData.email && 
         state.formData.companyName && 
-        state.formData.companyType) {
-      router.push(routes.results);
+        state.formData.companyType;
+
+    console.log('Navigation Check:', {
+      allQuestionsAnswered,
+      validAnswersCount: validAnswers.length,
+      totalQuestions,
+      hasCategories: state.categories.length > 0,
+      notInitialLoad: !isInitialLoad,
+      hasFormData: {
+        name: !!state.formData.name,
+        email: !!state.formData.email,
+        companyName: !!state.formData.companyName,
+        companyType: !!state.formData.companyType
+      },
+      shouldNavigate
+    });
+    
+    if (shouldNavigate) {
+      console.log('Attempting to save and navigate to results...');
+      
+      // Clean up answers before saving - only include valid answers
+      const cleanAnswers = Object.fromEntries(validAnswers);
+      
+      // Save results before navigating
+      saveResult({
+        name: state.formData.name,
+        email: state.formData.email,
+        companyName: state.formData.companyName,
+        companyType: state.formData.companyType,
+        goal: state.goal || '',
+        answers: cleanAnswers,
+        categories: state.categories.map(cat => ({
+          id: cat.id,
+          key: cat.key,
+          name: cat.name,
+          questions: cat.questions.map(q => ({
+            id: q.id,
+            text: q.text
+          }))
+        }))
+      }).then(() => {
+        console.log('Save successful, navigating to results...');
+        router.push(routes.results);
+      }).catch(error => {
+        console.error('Error saving assessment results:', error);
+        // You might want to show an error message to the user here
+      });
     }
-  }, [state.answers, state.categories, state.progress, state.formData, isInitialLoad, setState, router]);
+  }, [state.answers, state.categories, state.progress, state.formData, isInitialLoad, setState, router, state.goal]);
 
   // Fetch categories and questions from Airtable with caching
   useEffect(() => {
@@ -222,8 +291,19 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       // Use company type directly from form data without mapping
       const companyType = state.formData.companyType;
 
+      // Normalize company type to match Airtable format
+      const companyTypeMap: Record<string, string> = {
+        'startup': 'Startup',
+        'scale-up': 'Scaleup',
+        'scaleup': 'Scaleup',
+        'sme': 'SME',
+        'enterprise': 'Enterprise'
+      };
+      const normalizedCompanyType = companyTypeMap[companyType.toLowerCase().trim()] || companyType;
+
       console.log('Processing data:', {
-        companyType: state.formData.companyType,
+        rawCompanyType: companyType,
+        normalizedCompanyType,
         totalCategories: categoriesData.length,
         totalQuestions: questionsData.length,
         totalAnswers: answersData?.length || 0
@@ -232,38 +312,24 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       // Transform categories and questions based on locale and company type
       const categories: Category[] = categoriesData
         .filter(cat => {
-          if (!companyType) return true;
+          if (!normalizedCompanyType) return false; // Don't show any categories if no company type selected
           const includes = cat.companyType.some(type => 
-            type.toUpperCase() === companyType.toUpperCase()
+            type.trim().toUpperCase() === normalizedCompanyType.trim().toUpperCase()
           );
-          console.log(`Category ${cat.categoryId} company types:`, cat.companyType, 'includes type:', includes);
+          console.log(`Category ${cat.categoryId} (${cat.categoryText_en}) company types:`, cat.companyType, 'includes type:', includes);
           return includes;
         })
         .map(cat => {
           const questions = questionsData
             .filter(q => q.categoryId.includes(cat.id))
-            .map(q => {
-              console.log('Processing question:', {
-                id: q.id,
-                answerId: q.answerId,
-                rawQuestion: q
-              });
-              return {
-                id: q.id,
-                text: locale === 'et' ? q.questionText_et : q.questionText_en,
-                categoryId: q.categoryId,
-                order: parseInt(q.id, 10),
-                answerId: q.answerId || []
-              };
-            })
-            .sort((a, b) => a.order - b.order);
-
-          console.log(`Category ${cat.categoryId} has ${questions.length} questions with answers:`, 
-            questions.map(q => ({
+            .map(q => ({
               id: q.id,
-              answerId: q.answerId
+              text: locale === 'et' ? q.questionText_et : q.questionText_en,
+              categoryId: q.categoryId,
+              order: parseInt(q.id, 10),
+              answerId: q.answerId || []
             }))
-          );
+            .sort((a, b) => a.order - b.order);
 
           return {
             id: cat.id,
@@ -276,19 +342,27 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         })
         .sort((a, b) => a.order - b.order);
 
-      console.log('Processed categories:', {
-        totalCategories: categories.length,
-        categoriesWithQuestions: categories.map(c => ({
-          id: c.id,
-          name: c.name,
-          questionCount: c.questions.length
-        }))
+      console.log('Filtered categories for company type:', {
+        companyType: normalizedCompanyType,
+        totalFilteredCategories: categories.length,
+        categoryNames: categories.map(c => c.name)
+      });
+
+      // Reset answers when company type changes to avoid keeping answers from other company types
+      const currentAnswers = { ...state.answers };
+      const validQuestionIds = new Set(categories.flatMap(cat => cat.questions.map(q => q.id)));
+      const cleanedAnswers: Record<string, number> = {};
+      Object.entries(currentAnswers).forEach(([qId, value]) => {
+        if (validQuestionIds.has(qId)) {
+          cleanedAnswers[qId] = value;
+        }
       });
 
       setState(prev => {
         const newState = {
           ...prev,
           categories,
+          answers: cleanedAnswers, // Use cleaned answers
           methodAnswers: answersData || [],
           isLoading: false,
           ...((!prev.currentCategory && categories.length > 0) && {
@@ -301,7 +375,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           categoryCount: newState.categories.length,
           currentCategory: newState.currentCategory?.name,
           currentQuestion: newState.currentQuestion?.text,
-          methodAnswersCount: newState.methodAnswers?.length || 0
+          methodAnswersCount: newState.methodAnswers?.length || 0,
+          answerCount: Object.keys(newState.answers).length
         });
 
         return newState;

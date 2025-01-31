@@ -104,21 +104,43 @@ export async function saveResult(result: {
   companyType: string;
   goal: string;
   answers: Record<string, number>;
+  categories: { id: string; key: string; name: string; questions: { id: string; text: string }[] }[];
 }): Promise<void> {
   try {
-    // Prepare response content with answers and metadata
+    // Clean up company type and ensure proper capitalization
+    const companyTypeMap: Record<string, string> = {
+      'startup': 'Startup',
+      'scale-up': 'Scaleup',
+      'scaleup': 'Scaleup',
+      'sme': 'SME',
+      'enterprise': 'Enterprise'
+    };
+    
+    const cleanCompanyType = result.companyType.replace(/['"]+/g, '').trim().toLowerCase();
+    const properCompanyType = companyTypeMap[cleanCompanyType] || cleanCompanyType;
+    
+    console.log('Saving assessment with company type:', properCompanyType);
+
+    // Prepare comprehensive response content
     const responseContent = {
-      answers: result.answers,
-      submittedAt: new Date().toISOString()
+      metadata: {
+        submittedAt: new Date().toISOString(),
+        companyType: properCompanyType,
+        goal: result.goal
+      },
+      rawAnswers: result.answers,
+      categoryResults: calculateCategoryResults(result.categories, result.answers),
+      overallAverage: calculateOverallAverage(result.categories, result.answers)
     };
 
+    // Create the record
     await base('AssessmentResponses').create([
       {
         fields: {
           contactName: result.name,
           contactEmail: result.email,
           companyName: result.companyName,
-          companyType: result.companyType, // Use company type directly from form
+          companyType: properCompanyType,
           initialGoal: result.goal,
           responseContent: JSON.stringify(responseContent),
           responseStatus: 'Completed'
@@ -127,8 +149,55 @@ export async function saveResult(result: {
     ]);
   } catch (error) {
     console.error('Error saving result:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+    }
     throw error;
   }
+}
+
+// Helper function to calculate category results
+function calculateCategoryResults(
+  categories: { id: string; key: string; name: string; questions: { id: string; text: string }[] }[],
+  answers: Record<string, number>
+) {
+  const categoryResults: Record<string, { average: number; answers: Record<string, number> }> = {};
+  
+  categories.forEach(category => {
+    const categoryAnswers: Record<string, number> = {};
+    let totalScore = 0;
+    let answeredQuestions = 0;
+    
+    category.questions.forEach(question => {
+      const score = answers[question.id];
+      if (typeof score === 'number') {
+        categoryAnswers[question.id] = score;
+        totalScore += score;
+        answeredQuestions++;
+      }
+    });
+
+    categoryResults[category.id] = {
+      average: answeredQuestions > 0 ? totalScore / answeredQuestions : 0,
+      answers: categoryAnswers
+    };
+  });
+
+  return categoryResults;
+}
+
+// Helper function to calculate overall average
+function calculateOverallAverage(
+  categories: { id: string; key: string; name: string; questions: { id: string; text: string }[] }[],
+  answers: Record<string, number>
+) {
+  const categoryResults = calculateCategoryResults(categories, answers);
+  const totalAverage = Object.values(categoryResults).reduce((sum, cat) => sum + cat.average, 0);
+  return categories.length > 0 ? totalAverage / categories.length : 0;
 }
 
 // Helper function to generate consistent keys
