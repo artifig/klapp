@@ -389,10 +389,16 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   }, [setState]);
 
   const setFormData = useCallback((formData: FormData) => {
+    console.log('Selected company type:', formData.companyType);
     setState(prev => ({ ...prev, formData }));
   }, [setState]);
 
   const setCurrentCategory = useCallback((category: Category) => {
+    console.log('Selected category:', {
+      name: category.name,
+      id: category.id,
+      questionCount: category.questions.length
+    });
     setState(prev => ({
       ...prev,
       currentCategory: category,
@@ -402,29 +408,38 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
 
   const setAnswer = useCallback((questionId: string, value: number) => {
     setState(prev => {
+      const currentCategory = prev.currentCategory;
+      const currentQuestion = prev.currentQuestion;
+      
+      if (!currentCategory || !currentQuestion) return prev;
+
+      console.log('Selected answer:', {
+        category: currentCategory.name,
+        question: currentQuestion.text,
+        answerScore: value
+      });
+
+      // Update answers
       const newAnswers = { ...prev.answers, [questionId]: value };
       
-      // Find next category if current category is completed
-      const currentCategory = prev.currentCategory;
-      if (currentCategory) {
-        const allCategoryQuestionsAnswered = currentCategory.questions.every(
-          q => newAnswers[q.id]
-        );
-        
-        if (allCategoryQuestionsAnswered) {
-          const currentIndex = prev.categories.findIndex(c => c.id === currentCategory.id);
-          const nextCategory = prev.categories[currentIndex + 1];
-          
-          return {
-            ...prev,
-            answers: newAnswers,
-            completedCategories: [...(prev.completedCategories || []), currentCategory.id],
-            currentCategory: nextCategory || null,
-            currentQuestion: nextCategory ? nextCategory.questions[0] : null
-          };
-        }
-      }
+      // Check if this was the last question in the category
+      const currentQuestionIndex = currentCategory.questions.findIndex(q => q.id === questionId);
+      const isLastQuestion = currentQuestionIndex === currentCategory.questions.length - 1;
       
+      // Check if all questions in current category are now answered
+      const allCategoryQuestionsAnswered = currentCategory.questions.every(q => 
+        q.id === questionId ? true : !!newAnswers[q.id]
+      );
+
+      console.log('Answer state check:', {
+        currentQuestionIndex,
+        isLastQuestion,
+        allCategoryQuestionsAnswered,
+        totalQuestions: currentCategory.questions.length,
+        answeredQuestions: Object.keys(newAnswers).length
+      });
+
+      // Just update the answer, navigation will be handled by moveToNextQuestion
       return { ...prev, answers: newAnswers };
     });
   }, [setState]);
@@ -436,26 +451,69 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   const moveToNextQuestion = useCallback(() => {
     if (!state.currentCategory || !state.currentQuestion) return;
 
-    const currentQuestionIndex = state.currentCategory.questions.findIndex(
+    const currentCategory = state.currentCategory;
+    const currentQuestionIndex = currentCategory.questions.findIndex(
       q => q.id === state.currentQuestion?.id
     );
     
     if (currentQuestionIndex === -1) return;
 
-    const nextQuestion = state.currentCategory.questions[currentQuestionIndex + 1];
-
-    if (nextQuestion) {
-      setState(prev => ({ ...prev, currentQuestion: nextQuestion }));
-    } else {
-      const currentCategoryId = state.currentCategory.id;
-      setState(prev => ({
-        ...prev,
-        completedCategories: [...prev.completedCategories, currentCategoryId],
-        currentQuestion: null,
-        currentCategory: null
+    setState(prev => {
+      const nextQuestion = currentCategory.questions[currentQuestionIndex + 1];
+      
+      // Check if all questions in current category are answered
+      const categoryAnswers = currentCategory.questions.map(q => ({
+        questionId: q.id,
+        hasAnswer: !!prev.answers[q.id],
+        answer: prev.answers[q.id]
       }));
-    }
-  }, [state.currentCategory, state.currentQuestion, setState]);
+
+      const allCategoryQuestionsAnswered = categoryAnswers.every(q => q.hasAnswer);
+      const isLastQuestion = !nextQuestion;
+
+      console.log('Navigation state:', {
+        currentCategory: currentCategory.name,
+        currentQuestionIndex,
+        isLastQuestion,
+        allCategoryQuestionsAnswered,
+        categoryAnswers
+      });
+
+      // If there's a next question and not all questions are answered, move to it
+      if (nextQuestion && !allCategoryQuestionsAnswered) {
+        return { ...prev, currentQuestion: nextQuestion };
+      }
+
+      // If all questions are answered or this is the last question, try to move to next category
+      if (allCategoryQuestionsAnswered || isLastQuestion) {
+        const currentCategoryIndex = prev.categories.findIndex(c => c.id === currentCategory.id);
+        const nextCategory = prev.categories[currentCategoryIndex + 1];
+
+        // Only add to completed categories if not already there
+        const newCompletedCategories = prev.completedCategories.includes(currentCategory.id)
+          ? prev.completedCategories
+          : [...prev.completedCategories, currentCategory.id];
+
+        if (nextCategory) {
+          return {
+            ...prev,
+            completedCategories: newCompletedCategories,
+            currentCategory: nextCategory,
+            currentQuestion: nextCategory.questions[0]
+          };
+        } else {
+          return {
+            ...prev,
+            completedCategories: newCompletedCategories,
+            currentCategory: null,
+            currentQuestion: null
+          };
+        }
+      }
+
+      return prev;
+    });
+  }, [state.currentCategory, state.currentQuestion]);
 
   const resetAssessment = useCallback(() => {
     setState(defaultState);
