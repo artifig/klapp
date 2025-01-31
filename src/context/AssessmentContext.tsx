@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
-import { getCategories, getQuestions, saveResult, AirtableCategory, AirtableQuestion } from '@/lib/airtable';
+import { getCategories, getQuestions, saveResult, AirtableMethodCategory, AirtableMethodQuestion } from '@/lib/airtable';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
@@ -61,6 +61,14 @@ interface AssessmentState {
   error: string | null;
 }
 
+interface CacheData {
+  categories: AirtableMethodCategory[];
+  questions: AirtableMethodQuestion[];
+  timestamp: number;
+}
+
+const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
+
 interface AssessmentContextType {
   goal: string | null;
   formData: FormData | null;
@@ -104,6 +112,7 @@ const AssessmentContext = createContext<AssessmentContextType | undefined>(undef
 
 export function AssessmentProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = usePersistentState<AssessmentState>('assessment_state', defaultState);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const locale = useLocale();
   const router = useRouter();
 
@@ -126,52 +135,38 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     }
   }, [state.answers, state.categories, state.progress, setState, router]);
 
-  // Fetch categories and questions from Airtable
+  // Fetch categories and questions from Airtable with caching
   useEffect(() => {
     const fetchData = async () => {
       try {
         setState(prev => ({ ...prev, isLoading: true, error: null }));
         
+        // Check cache first
+        const cachedData = localStorage.getItem('assessment_data');
+        if (cachedData) {
+          const { categories, questions, timestamp }: CacheData = JSON.parse(cachedData);
+          if (Date.now() - timestamp < CACHE_DURATION) {
+            processData(categories, questions);
+            setIsInitialLoad(false);
+            return;
+          }
+        }
+
+        // Fetch fresh data if cache is invalid or missing
         const [categoriesData, questionsData] = await Promise.all([
           getCategories(),
           getQuestions()
         ]);
 
-        // Get the mapped company type for filtering
-        const mappedCompanyType = state.formData.companyType 
-          ? COMPANY_TYPE_MAPPING[state.formData.companyType as keyof typeof COMPANY_TYPE_MAPPING]
-          : null;
-
-        // Transform categories and questions based on locale and company type
-        const categories: Category[] = categoriesData
-          .filter(cat => {
-            // If no company type selected yet, show all categories
-            if (!mappedCompanyType) return true;
-            // Otherwise, filter based on company type
-            return cat.companyType.includes(mappedCompanyType);
-          })
-          .map(cat => ({
-            id: cat.id,
-            key: cat.categoryId,
-            name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
-            order: parseInt(cat.id, 10), // Use ID as order if no explicit order field
-            companyType: cat.companyType,
-            questions: questionsData
-              .filter(q => q.categoryId.includes(cat.id))
-              .map(q => ({
-                id: q.id,
-                text: locale === 'et' ? q.questionText_et : q.questionText_en,
-                categoryId: q.categoryId,
-                order: parseInt(q.id, 10) // Use ID as order if no explicit order field
-              }))
-              .sort((a, b) => a.order - b.order)
-          }));
-
-        setState(prev => ({
-          ...prev,
-          categories: categories.sort((a, b) => a.order - b.order),
-          isLoading: false
+        // Cache the fresh data
+        localStorage.setItem('assessment_data', JSON.stringify({
+          categories: categoriesData,
+          questions: questionsData,
+          timestamp: Date.now()
         }));
+
+        processData(categoriesData, questionsData);
+        setIsInitialLoad(false);
       } catch (error) {
         console.error('Error fetching assessment data:', error);
         setState(prev => ({
@@ -182,8 +177,45 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       }
     };
 
+    const processData = (categoriesData: AirtableMethodCategory[], questionsData: AirtableMethodQuestion[]) => {
+      // Get the mapped company type for filtering
+      const mappedCompanyType = state.formData.companyType 
+        ? COMPANY_TYPE_MAPPING[state.formData.companyType as keyof typeof COMPANY_TYPE_MAPPING]
+        : null;
+
+      // Transform categories and questions based on locale and company type
+      const categories: Category[] = categoriesData
+        .filter(cat => {
+          if (!mappedCompanyType) return true;
+          return cat.companyType.includes(mappedCompanyType);
+        })
+        .map(cat => ({
+          id: cat.id,
+          key: cat.categoryId,
+          name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
+          order: parseInt(cat.id, 10),
+          companyType: cat.companyType,
+          questions: questionsData
+            .filter(q => q.categoryId.includes(cat.id))
+            .map(q => ({
+              id: q.id,
+              text: locale === 'et' ? q.questionText_et : q.questionText_en,
+              categoryId: q.categoryId,
+              order: parseInt(q.id, 10)
+            }))
+            .sort((a, b) => a.order - b.order)
+        }))
+        .sort((a, b) => a.order - b.order);
+
+      setState(prev => ({
+        ...prev,
+        categories,
+        isLoading: false
+      }));
+    };
+
     fetchData();
-  }, [setState, locale, state.formData.companyType]); // Add companyType to dependencies
+  }, [setState, locale, state.formData.companyType]);
 
   const setGoal = useCallback((goal: string) => {
     setState(prev => ({ ...prev, goal }));
@@ -295,7 +327,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     isStepAccessible
   };
 
-  if (state.isLoading) {
+  // Show loading state only on initial load
+  if (isInitialLoad && state.isLoading) {
     return <Loading type="full" />;
   }
 
