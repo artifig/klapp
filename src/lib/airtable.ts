@@ -452,22 +452,24 @@ export async function saveResult(result: {
       }
     });
 
-    // Calculate overall score from answers directly
-    const scores = Object.values(result.answers);
-    const overallScore = scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0;
+    // Calculate category results and overall average
+    const categoryResults = calculateCategoryResults(result.categories, result.answers);
+    const overallAverage = calculateOverallAverage(result.categories, result.answers);
 
     // Prepare simplified response content
     const responseContent = {
       metadata: {
         companyType: properCompanyType,
         goal: result.goal,
-        overallScore
+        overallScore: overallAverage
       },
       answers: airtableAnswers, // Use Airtable record IDs
+      categoryScores: categoryResults,
       categories: result.categories.map(cat => ({
         id: cat.id,
         key: cat.key,
         name: cat.name,
+        averageScore: categoryResults[cat.id]?.average || 0,
         questions: cat.questions.map(q => ({
           id: q.airtableId, // Use Airtable record ID
           logicalId: q.id, // Keep logical ID for reference
