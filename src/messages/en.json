@@ -49,7 +49,7 @@
     },
     "companyTypes": {
       "startup": "Startup",
-      "scaleup": "Scale-up",
+      "scaleup": "Scaleup",
       "sme": "SME",
       "enterprise": "Enterprise"
     },
