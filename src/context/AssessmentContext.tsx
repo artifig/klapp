@@ -110,6 +110,7 @@ const AssessmentContext = createContext<AssessmentContextType | undefined>(undef
 export function AssessmentProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = usePersistentState<AssessmentState>('assessment_state', defaultState);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const locale = useLocale();
   const router = useRouter();
 
@@ -157,11 +158,6 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       setState(prev => ({ ...prev, progress: newProgress }));
     }
 
-    // Only auto-navigate to results if:
-    // 1. All questions are answered (progress is 1)
-    // 2. There are categories loaded
-    // 3. We're not on initial load
-    // 4. User has filled out the form data
     const allQuestionsAnswered = validAnswers.length >= totalQuestions;
     const shouldNavigate = allQuestionsAnswered && 
         state.categories.length > 0 && 
@@ -186,8 +182,10 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       shouldNavigate
     });
     
-    if (shouldNavigate) {
+    // Only proceed with save if not already saving
+    if (shouldNavigate && !isSaving) {
       console.log('Attempting to save and navigate to results...');
+      setIsSaving(true);
       
       // Clean up answers before saving - only include valid answers
       const cleanAnswers = Object.fromEntries(validAnswers);
@@ -214,10 +212,10 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         router.push(routes.results);
       }).catch(error => {
         console.error('Error saving assessment results:', error);
-        // You might want to show an error message to the user here
+        setIsSaving(false); // Reset saving state on error
       });
     }
-  }, [state.answers, state.categories, state.progress, state.formData, isInitialLoad, setState, router, state.goal]);
+  }, [state.answers, state.categories, state.progress, state.formData, isInitialLoad, setState, router, state.goal, isSaving]);
 
   // Fetch categories and questions from Airtable with caching
   useEffect(() => {
