@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import { useAssessmentContext } from '@/context/AssessmentContext';
+import ClientOnly from '@/components/ClientOnly';
 
 interface Provider {
   id: string;
@@ -40,7 +41,7 @@ const ProviderCard = ({ provider, onContact }: ProviderCardProps) => (
 
 export const ResultsInteractiveCard = () => {
   const t = useTranslations('results');
-  const { formData, results, matchedProviders } = useAssessmentContext();
+  const { formData, matchedProviders } = useAssessmentContext();
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportPDF = async () => {
@@ -64,43 +65,45 @@ export const ResultsInteractiveCard = () => {
   };
 
   return (
-    <Card>
-      <div className="space-y-6">
-        {/* Export Actions */}
-        <div className="flex space-x-4">
-          <button
-            onClick={handleExportPDF}
-            disabled={isExporting}
-            className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
-          >
-            {isExporting ? t('exporting') : t('exportPDF')}
-          </button>
-          <button
-            onClick={handleEmailResults}
-            disabled={!formData?.email}
-            className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
-          >
-            {t('emailResults')}
-          </button>
-        </div>
+    <ClientOnly>
+      <Card>
+        <div className="space-y-6">
+          {/* Export Actions */}
+          <div className="flex space-x-4">
+            <button
+              onClick={handleExportPDF}
+              disabled={isExporting}
+              className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+            >
+              {isExporting ? t('exporting') : t('exportPDF')}
+            </button>
+            <button
+              onClick={handleEmailResults}
+              disabled={!formData?.email}
+              className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+            >
+              {t('emailResults')}
+            </button>
+          </div>
 
-        {/* Matched Providers */}
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {t('matchedProviders')}
-          </h3>
-          <div className="space-y-4">
-            {matchedProviders?.map((provider) => (
-              <ProviderCard
-                key={provider.id}
-                provider={provider}
-                onContact={handleContactProvider}
-              />
-            ))}
+          {/* Matched Providers */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              {t('matchedProviders')}
+            </h3>
+            <div className="space-y-4">
+              {matchedProviders?.map((provider) => (
+                <ProviderCard
+                  key={provider.id}
+                  provider={provider}
+                  onContact={handleContactProvider}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </ClientOnly>
   );
 };
 

@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import { useAssessmentContext } from '@/context/AssessmentContext';
-import { useEffect, useState } from 'react';
+import ClientOnly from '@/components/ClientOnly';
 
 interface RequirementItemProps {
   label: string;
@@ -22,11 +22,6 @@ const RequirementItem = ({ label, isComplete }: RequirementItemProps) => (
 export const SetupContextCard = () => {
   const t = useTranslations('setup');
   const { goal, formData } = useAssessmentContext();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const requirements = [
     { key: 'name', value: formData?.name },
@@ -36,33 +31,33 @@ export const SetupContextCard = () => {
   ];
 
   return (
-    <Card title={t('contextCard.title')}>
-      <div className="space-y-6">
-        <div>
-          <h3 className="font-medium text-gray-900 mb-2">
-            {t('contextCard.requirements')}
-          </h3>
-          <div className="divide-y">
-            {requirements.map(({ key, value }) => (
-              <RequirementItem
-                key={key}
-                label={t(`${key}Label`)}
-                isComplete={!!value}
-              />
-            ))}
+    <ClientOnly>
+      <Card title={t('contextCard.title')}>
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-medium text-gray-900 mb-2">
+              {t('contextCard.requirements')}
+            </h3>
+            <div className="divide-y">
+              {requirements.map(({ key, value }) => (
+                <RequirementItem
+                  key={key}
+                  label={t(`${key}Label`)}
+                  isComplete={!!value}
+                />
+              ))}
+            </div>
           </div>
-        </div>
 
-        {isClient && goal && (
           <div>
             <h3 className="font-medium text-gray-900 mb-2">
               {t('contextCard.yourGoal')}
             </h3>
-            <p className="text-gray-600">{goal}</p>
+            <p className="text-gray-600">{goal || t('goal.empty')}</p>
           </div>
-        )}
-      </div>
-    </Card>
+        </div>
+      </Card>
+    </ClientOnly>
   );
 };
 
