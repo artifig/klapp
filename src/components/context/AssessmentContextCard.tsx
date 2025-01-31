@@ -35,7 +35,7 @@ export const AssessmentContextCard = () => {
   const { 
     categories,
     currentCategory,
-    completedCategories,
+    completedCategories = [],
     setCurrentCategory,
     progress 
   } = useAssessmentContext();
