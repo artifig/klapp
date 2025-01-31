@@ -1,8 +1,8 @@
 {
   "Navigation": "Navigeerimine",
   "app": {
-    "title": "Tehisintellekti valmisoleku hindamine",
-    "description": "Hinda oma ettevõtte valmisolekut tehisintellekti rakendamiseks ja saa personaalseid soovitusi"
+    "title": "Tehisaru valmisoleku hindamine",
+    "description": "Hinda oma ettevõtte valmisolekut tehisaru rakendamiseks ja saa personaalseid soovitusi"
   },
   "nav": {
     "home": "Avaleht",
@@ -15,21 +15,21 @@
   },
   "home": {
     "goalLabel": "Teie eesmärk",
-    "goalDescription": "Millised on teie peamised eesmärgid tehisintellekti juurutamisel oma organisatsioonis?",
+    "goalDescription": "Millised on teie peamised eesmärgid tehisaru juurutamisel oma organisatsioonis?",
     "goalPlaceholder": "Näiteks: Soovime automatiseerida klienditeeninduse protsesse ja rakendada müügiprognoosimiseks ennustavat analüütikat...",
     "whatToExpect": "Mida oodata",
     "expectationsList": {
-      "evaluation": "Põhjalik hinnang teie tehisintellekti valmisolekule",
+      "evaluation": "Põhjalik hinnang teie tehisaru valmisolekule",
       "areas": "Hindamine põhilistes ärivaldkondades",
       "recommendations": "Kohandatud soovitused parendamiseks",
       "insights": "Praktilised teadmised ja järgmised sammud"
     },
     "timeRequired": "Ajakulu",
     "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit",
-    "startButton": "Alusta tehisintellekti valmisoleku teekonda",
+    "startButton": "Alusta tehisaru valmisoleku teekonda",
     "contextCard": {
-      "title": "Tehisintellekti valmisoleku hindamine",
-      "description": "Tere tulemast tehisintellekti valmisoleku hindamise tööriista! See aitab teil mõista oma organisatsiooni valmisolekut tehisintellekti juurutamiseks.",
+      "title": "Tehisaru valmisoleku hindamine",
+      "description": "Tere tulemast tehisaru valmisoleku hindamise tööriista! See aitab teil mõista oma organisatsiooni valmisolekut tehisaru juurutamiseks.",
       "steps": {
         "step1": "Täitke lühike küsimustik",
         "step2": "Saage ülevaade oma organisatsiooni valmisolekust",
@@ -105,7 +105,7 @@
     }
   },
   "assessment": {
-    "title": "Tehisintellekti valmisoleku hindamine",
+    "title": "Tehisaru valmisoleku hindamine",
     "progress": "Progress",
     "previousQuestion": "Eelmine küsimus",
     "nextQuestion": "Järgmine küsimus",
@@ -144,8 +144,8 @@
     }
   },
   "results": {
-    "title": "Teie tehisintellekti valmisoleku tase",
-    "summary": "Teie ettevõtte tehisintellekti valmisoleku analüüs",
+    "title": "Teie tehisaru valmisoleku tase",
+    "summary": "Teie ettevõtte tehisaru valmisoleku analüüs",
     "completion": {
       "title": "Hindamise lõpetatus"
     },
