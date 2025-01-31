@@ -10,10 +10,10 @@ import { Loading } from '@/components/ui/Loading';
 
 // Map company types to their assessment categories
 const COMPANY_TYPE_MAPPING = {
-  startup: 'startup',
-  scaleup: 'sme', // Map scaleup to sme
-  sme: 'sme',
-  enterprise: 'enterprise'
+  startup: 'STARTUP',
+  scaleup: 'SME', // Map scaleup to SME
+  sme: 'SME',
+  enterprise: 'ENTERPRISE'
 } as const;
 
 interface Category {
@@ -139,24 +139,33 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Starting data fetch, company type:', state.formData.companyType);
         setState(prev => ({ ...prev, isLoading: true, error: null }));
         
         // Check cache first
         const cachedData = localStorage.getItem('assessment_data');
         if (cachedData) {
+          console.log('Found cached data');
           const { categories, questions, timestamp }: CacheData = JSON.parse(cachedData);
           if (Date.now() - timestamp < CACHE_DURATION) {
             processData(categories, questions);
             setIsInitialLoad(false);
             return;
           }
+          console.log('Cache expired, fetching fresh data');
         }
 
         // Fetch fresh data if cache is invalid or missing
+        console.log('Fetching fresh data from Airtable');
         const [categoriesData, questionsData] = await Promise.all([
           getCategories(),
           getQuestions()
         ]);
+
+        console.log('Fetched data:', {
+          categoriesCount: categoriesData.length,
+          questionsCount: questionsData.length
+        });
 
         // Cache the fresh data
         localStorage.setItem('assessment_data', JSON.stringify({
@@ -183,19 +192,25 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         ? COMPANY_TYPE_MAPPING[state.formData.companyType as keyof typeof COMPANY_TYPE_MAPPING]
         : null;
 
+      console.log('Processing data:', {
+        originalCompanyType: state.formData.companyType,
+        mappedCompanyType,
+        totalCategories: categoriesData.length,
+        totalQuestions: questionsData.length
+      });
+
       // Transform categories and questions based on locale and company type
       const categories: Category[] = categoriesData
         .filter(cat => {
           if (!mappedCompanyType) return true;
-          return cat.companyType.includes(mappedCompanyType);
+          const includes = cat.companyType.some(type => 
+            type.toUpperCase() === mappedCompanyType.toUpperCase()
+          );
+          console.log(`Category ${cat.categoryId} company types:`, cat.companyType, 'includes mapped type:', includes);
+          return includes;
         })
-        .map(cat => ({
-          id: cat.id,
-          key: cat.categoryId,
-          name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
-          order: parseInt(cat.id, 10),
-          companyType: cat.companyType,
-          questions: questionsData
+        .map(cat => {
+          const questions = questionsData
             .filter(q => q.categoryId.includes(cat.id))
             .map(q => ({
               id: q.id,
@@ -203,15 +218,49 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
               categoryId: q.categoryId,
               order: parseInt(q.id, 10)
             }))
-            .sort((a, b) => a.order - b.order)
-        }))
+            .sort((a, b) => a.order - b.order);
+
+          console.log(`Category ${cat.categoryId} has ${questions.length} questions`);
+
+          return {
+            id: cat.id,
+            key: cat.categoryId,
+            name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
+            order: parseInt(cat.id, 10),
+            companyType: cat.companyType,
+            questions
+          };
+        })
         .sort((a, b) => a.order - b.order);
 
-      setState(prev => ({
-        ...prev,
-        categories,
-        isLoading: false
-      }));
+      console.log('Processed categories:', {
+        totalCategories: categories.length,
+        categoriesWithQuestions: categories.map(c => ({
+          id: c.id,
+          name: c.name,
+          questionCount: c.questions.length
+        }))
+      });
+
+      setState(prev => {
+        const newState = {
+          ...prev,
+          categories,
+          isLoading: false,
+          ...((!prev.currentCategory && categories.length > 0) && {
+            currentCategory: categories[0],
+            currentQuestion: categories[0].questions[0] || null
+          })
+        };
+
+        console.log('Setting new state:', {
+          categoryCount: newState.categories.length,
+          currentCategory: newState.currentCategory?.name,
+          currentQuestion: newState.currentQuestion?.text
+        });
+
+        return newState;
+      });
     };
 
     fetchData();
