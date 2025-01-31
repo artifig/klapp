@@ -333,14 +333,15 @@ export async function getMethodQuestions(): Promise<AirtableMethodQuestion[]> {
 
 export async function getMethodAnswers(): Promise<AirtableMethodAnswer[]> {
   try {
+    console.log('Fetching method answers from Airtable...');
+    
     const records = await base('MethodAnswers')
       .select({
-        filterByFormula: '{isActive} = 1',
         sort: [{ field: 'answerId', direction: 'asc' }],
       })
       .all();
 
-    return records.map((record) => ({
+    const mappedAnswers = records.map((record) => ({
       id: record.id,
       answerId: record.get('answerId') as string,
       answerText_et: record.get('answerText_et') as string,
@@ -348,11 +349,25 @@ export async function getMethodAnswers(): Promise<AirtableMethodAnswer[]> {
       answerDescription_et: record.get('answerDescription_et') as string,
       answerDescription_en: record.get('answerDescription_en') as string,
       answerScore: record.get('answerScore') as number,
-      isActive: record.get('isActive') as boolean,
+      isActive: true, // All answers are considered active
       questionId: record.get('questionId') as string[],
     }));
+
+    console.log('Mapped answers:', {
+      count: mappedAnswers.length,
+      sample: mappedAnswers[0] || null
+    });
+
+    return mappedAnswers;
   } catch (error) {
-    console.error('Error fetching method answers:', error);
+    console.error('Error in getMethodAnswers:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+    }
     throw error;
   }
 }

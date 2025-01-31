@@ -1,38 +1,49 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import { useAssessmentContext } from '@/context/AssessmentContext';
 import ClientOnly from '@/components/ClientOnly';
+import { AirtableMethodAnswer } from '@/lib/airtable';
 
 interface AnswerOptionProps {
-  value: number;
-  label: string;
+  answer: AirtableMethodAnswer;
   isSelected: boolean;
   onClick: () => void;
 }
 
-const AnswerOption = ({ value, label, isSelected, onClick }: AnswerOptionProps) => (
-  <button
-    onClick={onClick}
-    className={`w-full text-left p-4 rounded-lg border transition-colors ${
-      isSelected
-        ? 'border-primary bg-primary-50 text-primary'
-        : 'border-gray-200 hover:border-gray-300'
-    }`}
-  >
-    <div className="flex items-center space-x-3">
-      <div
-        className={`w-6 h-6 flex items-center justify-center rounded-full border ${
-          isSelected ? 'border-primary' : 'border-gray-300'
-        }`}
-      >
-        {value}
+const AnswerOption = ({ answer, isSelected, onClick }: AnswerOptionProps) => {
+  const locale = useLocale();
+  const answerText = locale === 'et' ? answer.answerText_et : answer.answerText_en;
+  const answerDescription = locale === 'et' ? answer.answerDescription_et : answer.answerDescription_en;
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left p-4 rounded-lg border transition-colors ${
+        isSelected
+          ? 'border-primary bg-primary-50 text-primary'
+          : 'border-gray-200 hover:border-gray-300'
+      }`}
+    >
+      <div className="flex items-center space-x-3">
+        <div
+          className={`w-6 h-6 flex items-center justify-center rounded-full border ${
+            isSelected ? 'border-primary' : 'border-gray-300'
+          }`}
+        >
+          {answer.answerScore}
+        </div>
+        <div className="flex-1">
+          <div className="font-medium">{answerText}</div>
+          {answerDescription && (
+            <div className="mt-1 text-sm text-gray-500">{answerDescription}</div>
+          )}
+        </div>
       </div>
-      <span className="flex-1">{label}</span>
-    </div>
-  </button>
-);
+    </button>
+  );
+};
 
 export const AssessmentInteractiveCard = () => {
   const t = useTranslations('assessment');
@@ -42,7 +53,8 @@ export const AssessmentInteractiveCard = () => {
     setAnswer,
     getAnswerForQuestion,
     moveToNextQuestion,
-    progress
+    progress,
+    methodAnswers
   } = useAssessmentContext();
 
   if (!currentCategory || !currentQuestion) {
@@ -69,6 +81,34 @@ export const AssessmentInteractiveCard = () => {
   };
 
   const currentAnswer = getAnswerForQuestion(currentQuestion.id);
+  
+  console.log('Question-Answer relationship:', {
+    question: {
+      id: currentQuestion.id,
+      answerId: currentQuestion.answerId || []
+    },
+    availableAnswers: methodAnswers.map(a => ({
+      id: a.id,
+      text: a.answerText_en,
+      score: a.answerScore
+    }))
+  });
+
+  // Filter answers based on the question's answerId array
+  const questionAnswers = !currentQuestion.answerId?.length 
+    ? methodAnswers // Show all answers if no specific answers are linked
+    : methodAnswers.filter((answer: AirtableMethodAnswer) => 
+        currentQuestion.answerId?.includes(answer.id)
+      );
+
+  console.log('AssessmentInteractiveCard state:', {
+    currentQuestionId: currentQuestion.id,
+    totalMethodAnswers: methodAnswers.length,
+    filteredAnswers: questionAnswers.length,
+    currentAnswer,
+    questionAnswerIds: questionAnswers.map(a => a.id),
+    questionAnswerScores: questionAnswers.map(a => a.answerScore)
+  });
 
   return (
     <ClientOnly>
@@ -82,13 +122,12 @@ export const AssessmentInteractiveCard = () => {
           </div>
 
           <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((value) => (
+            {questionAnswers.map((answer: AirtableMethodAnswer) => (
               <AnswerOption
-                key={value}
-                value={value}
-                label={t(`answers.${value}`)}
-                isSelected={currentAnswer === value}
-                onClick={() => handleAnswer(value)}
+                key={answer.id}
+                answer={answer}
+                isSelected={currentAnswer === answer.answerScore}
+                onClick={() => handleAnswer(answer.answerScore)}
               />
             ))}
           </div>

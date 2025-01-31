@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
-import { getCategories, getQuestions, saveResult, AirtableMethodCategory, AirtableMethodQuestion } from '@/lib/airtable';
+import { getCategories, getQuestions, saveResult, AirtableMethodCategory, AirtableMethodQuestion, getMethodAnswers, AirtableMethodAnswer } from '@/lib/airtable';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
@@ -30,6 +30,7 @@ interface Question {
   text: string;
   categoryId: string[];
   order: number;
+  answerId: string[];
 }
 
 interface FormData {
@@ -56,6 +57,7 @@ interface AssessmentState {
   completedCategories: string[];
   answers: Record<string, number>;
   matchedProviders: Provider[];
+  methodAnswers: AirtableMethodAnswer[];
   progress: number;
   isLoading: boolean;
   error: string | null;
@@ -64,6 +66,7 @@ interface AssessmentState {
 interface CacheData {
   categories: AirtableMethodCategory[];
   questions: AirtableMethodQuestion[];
+  answers: AirtableMethodAnswer[];
   timestamp: number;
 }
 
@@ -78,6 +81,7 @@ interface AssessmentContextType {
   completedCategories: string[];
   answers: Record<string, number>;
   matchedProviders: Provider[];
+  methodAnswers: AirtableMethodAnswer[];
   progress: number;
   setGoal: (goal: string) => void;
   setFormData: (data: FormData) => void;
@@ -103,6 +107,7 @@ const defaultState: AssessmentState = {
   completedCategories: [],
   answers: {},
   matchedProviders: [],
+  methodAnswers: [],
   progress: 0,
   isLoading: true,
   error: null
@@ -142,39 +147,52 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         console.log('Starting data fetch, company type:', state.formData.companyType);
         setState(prev => ({ ...prev, isLoading: true, error: null }));
         
-        // Check cache first
-        const cachedData = localStorage.getItem('assessment_data');
-        if (cachedData) {
-          console.log('Found cached data');
-          const { categories, questions, timestamp }: CacheData = JSON.parse(cachedData);
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            processData(categories, questions);
-            setIsInitialLoad(false);
-            return;
-          }
-          console.log('Cache expired, fetching fresh data');
-        }
+        // Force fresh data fetch by clearing cache
+        localStorage.removeItem('assessment_data');
+        console.log('Cache cleared, fetching fresh data...');
 
-        // Fetch fresh data if cache is invalid or missing
+        // Fetch fresh data
         console.log('Fetching fresh data from Airtable');
-        const [categoriesData, questionsData] = await Promise.all([
+        const [categoriesData, questionsData, answersData] = await Promise.all([
           getCategories(),
-          getQuestions()
+          getQuestions(),
+          getMethodAnswers()
         ]);
 
-        console.log('Fetched data:', {
-          categoriesCount: categoriesData.length,
-          questionsCount: questionsData.length
+        console.log('Raw Airtable response:', {
+          categories: categoriesData,
+          questions: questionsData,
+          answers: answersData
         });
 
-        // Cache the fresh data
+        console.log('Fetched data counts:', {
+          categoriesCount: categoriesData?.length || 0,
+          questionsCount: questionsData?.length || 0,
+          answersCount: answersData?.length || 0
+        });
+
+        // Log answers data structure if available
+        if (answersData && answersData.length > 0) {
+          console.log('First answer example:', {
+            id: answersData[0].id,
+            answerId: answersData[0].answerId,
+            answerText: answersData[0].answerText_en,
+            score: answersData[0].answerScore,
+            questionIds: answersData[0].questionId
+          });
+        } else {
+          console.error('No answers data available from Airtable');
+        }
+
+        // Cache the fresh data only if we have all the data
         localStorage.setItem('assessment_data', JSON.stringify({
           categories: categoriesData,
           questions: questionsData,
+          answers: answersData,
           timestamp: Date.now()
         }));
 
-        processData(categoriesData, questionsData);
+        processData(categoriesData, questionsData, answersData);
         setIsInitialLoad(false);
       } catch (error) {
         console.error('Error fetching assessment data:', error);
@@ -186,7 +204,11 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       }
     };
 
-    const processData = (categoriesData: AirtableMethodCategory[], questionsData: AirtableMethodQuestion[]) => {
+    const processData = (
+      categoriesData: AirtableMethodCategory[], 
+      questionsData: AirtableMethodQuestion[],
+      answersData: AirtableMethodAnswer[]
+    ) => {
       // Get the mapped company type for filtering
       const mappedCompanyType = state.formData.companyType 
         ? COMPANY_TYPE_MAPPING[state.formData.companyType as keyof typeof COMPANY_TYPE_MAPPING]
@@ -196,7 +218,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         originalCompanyType: state.formData.companyType,
         mappedCompanyType,
         totalCategories: categoriesData.length,
-        totalQuestions: questionsData.length
+        totalQuestions: questionsData.length,
+        totalAnswers: answersData?.length || 0
       });
 
       // Transform categories and questions based on locale and company type
@@ -212,15 +235,28 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         .map(cat => {
           const questions = questionsData
             .filter(q => q.categoryId.includes(cat.id))
-            .map(q => ({
-              id: q.id,
-              text: locale === 'et' ? q.questionText_et : q.questionText_en,
-              categoryId: q.categoryId,
-              order: parseInt(q.id, 10)
-            }))
+            .map(q => {
+              console.log('Processing question:', {
+                id: q.id,
+                answerId: q.answerId,
+                rawQuestion: q
+              });
+              return {
+                id: q.id,
+                text: locale === 'et' ? q.questionText_et : q.questionText_en,
+                categoryId: q.categoryId,
+                order: parseInt(q.id, 10),
+                answerId: q.answerId || []
+              };
+            })
             .sort((a, b) => a.order - b.order);
 
-          console.log(`Category ${cat.categoryId} has ${questions.length} questions`);
+          console.log(`Category ${cat.categoryId} has ${questions.length} questions with answers:`, 
+            questions.map(q => ({
+              id: q.id,
+              answerId: q.answerId
+            }))
+          );
 
           return {
             id: cat.id,
@@ -246,6 +282,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         const newState = {
           ...prev,
           categories,
+          methodAnswers: answersData || [],
           isLoading: false,
           ...((!prev.currentCategory && categories.length > 0) && {
             currentCategory: categories[0],
@@ -256,7 +293,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         console.log('Setting new state:', {
           categoryCount: newState.categories.length,
           currentCategory: newState.currentCategory?.name,
-          currentQuestion: newState.currentQuestion?.text
+          currentQuestion: newState.currentQuestion?.text,
+          methodAnswersCount: newState.methodAnswers?.length || 0
         });
 
         return newState;
