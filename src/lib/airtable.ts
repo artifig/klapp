@@ -187,8 +187,15 @@ async function getGlobalCache(): Promise<GlobalCacheData> {
     const isExpired = Date.now() - parsed.timestamp > CACHE_DURATION;
     const isCorrectVersion = parsed.version === CACHE_VERSION;
 
-    if (!isExpired && isCorrectVersion) {
-      console.log('📦 Using global cached data');
+    if (!isExpired && isCorrectVersion && 
+        parsed.categories?.length > 0 && 
+        parsed.questions?.length > 0 && 
+        parsed.answers?.length > 0) {
+      console.log('📦 Using global cached data', {
+        categoriesCount: parsed.categories.length,
+        questionsCount: parsed.questions.length,
+        answersCount: parsed.answers.length
+      });
       return parsed;
     }
   }
@@ -206,8 +213,8 @@ function normalizeCompanyType(companyType: string): string {
     'enterprise': 'Enterprise'
   };
   
-  const cleanType = companyType.replace(/['"]+/g, '').trim().toLowerCase();
-  return companyTypeMap[cleanType] || cleanType;
+  const cleanType = companyType.toLowerCase().trim();
+  return companyTypeMap[cleanType] || cleanType.toUpperCase();
 }
 
 // Function to filter data based on company type
@@ -219,7 +226,7 @@ function filterDataByCompanyType(
   questions: AirtableMethodQuestion[];
   answers: AirtableMethodAnswer[];
 } {
-  console.log(`🔍 Filtering data for company type: ${companyType}`);
+  console.log(`🔄 Fetching data for company type:`, companyType);
   
   const normalizedCompanyType = normalizeCompanyType(companyType);
   console.log(`🔄 Normalized company type: ${normalizedCompanyType}`);
@@ -228,38 +235,50 @@ function filterDataByCompanyType(
   const filteredCategories = data.categories.filter(category =>
     category.companyType.some(type => 
       normalizeCompanyType(type) === normalizedCompanyType
-    )
+    ) && category.isActive
   );
 
-  // Log the first category's question IDs to verify transformation
-  if (filteredCategories.length > 0) {
-    console.log('First filtered category question IDs:', filteredCategories[0].questionId);
-  }
+  // Get all question IDs from filtered categories
+  const relevantQuestionIds = new Set(
+    filteredCategories.flatMap(cat => cat.questionId)
+  );
 
-  // Create a mapping of questions by their Airtable ID
-  const questionsById = new Map(data.questions.map(q => [q.id, q]));
-  console.log('Questions mapping created with size:', questionsById.size);
+  console.log('Relevant question IDs:', {
+    count: relevantQuestionIds.size,
+    sample: Array.from(relevantQuestionIds).slice(0, 5)
+  });
 
-  // Get all questions for the filtered categories using Airtable record IDs
-  const filteredQuestions = filteredCategories
-    .flatMap(category => category.questionId
-      .map(qId => questionsById.get(qId))
-      .filter((q): q is AirtableMethodQuestion => q !== null && q !== undefined)
+  // Filter questions that belong to our filtered categories and are active
+  const filteredQuestions = data.questions.filter(q => 
+    relevantQuestionIds.has(q.questionId) && q.isActive
+  );
+
+  // Get all answer IDs from filtered questions
+  const relevantAnswerIds = new Set(
+    filteredQuestions.flatMap(q => q.answerId)
+  );
+
+  // Filter answers that belong to our filtered questions and are active
+  const filteredAnswers = data.answers.filter(a => 
+    relevantAnswerIds.has(a.id) && a.isActive
+  );
+
+  // Log summary of filtered data
+  console.log('Raw data received:', {
+    categoriesCount: filteredCategories.length,
+    questionsCount: filteredQuestions.length,
+    answersCount: filteredAnswers.length,
+    sampleQuestion: filteredQuestions[0] || null
+  });
+
+  // Log category questions for debugging
+  filteredCategories.forEach(category => {
+    const categoryQuestions = filteredQuestions.filter(q => 
+      category.questionId.includes(q.questionId)
     );
-
-  console.log('Filtered questions:', filteredQuestions.map(q => ({
-    id: q.id,
-    questionId: q.questionId,
-    text: q.questionText_en
-  })));
-
-  // Get answer IDs from the filtered questions
-  const answerIds = new Set(filteredQuestions.flatMap(q => q.answerId));
-
-  // Filter answers
-  const filteredAnswers = data.answers.filter(answer =>
-    answerIds.has(answer.id)
-  );
+    console.log(`Category ${category.categoryId} has ${categoryQuestions.length} questions:`, 
+      categoryQuestions.map(q => q.questionId));
+  });
 
   return {
     categories: filteredCategories,
@@ -270,8 +289,73 @@ function filterDataByCompanyType(
 
 // Updated function to get data for a specific company type
 export async function getDataForCompanyType(companyType: string) {
-  const globalData = await getGlobalCache();
-  return filterDataByCompanyType(globalData, companyType);
+  console.log('🔄 Fetching data for company type:', companyType);
+  
+  try {
+    // Fetch all data in parallel
+    const [categories, questions, answers] = await Promise.all([
+      getMethodCategories(),
+      getMethodQuestions(),
+      getMethodAnswers()
+    ]);
+
+    // Normalize company type for comparison
+    const normalizedCompanyType = normalizeCompanyType(companyType);
+    console.log('🔄 Normalized company type:', normalizedCompanyType);
+
+    // Filter categories for this company type
+    const filteredCategories = categories.filter(category =>
+      category.companyType.some(type => 
+        normalizeCompanyType(type) === normalizedCompanyType
+      ) && category.isActive
+    );
+
+    // Create a map of questions by their Airtable ID for faster lookup
+    const questionsById = new Map(questions.map(q => [q.id, q]));
+
+    // For each category, find its questions using the Airtable record IDs
+    const categoryQuestions = new Set<string>();
+    filteredCategories.forEach(category => {
+      category.questionId.forEach(qId => {
+        const question = questionsById.get(qId);
+        if (question && question.isActive) {
+          categoryQuestions.add(question.id);
+        }
+      });
+    });
+
+    // Filter questions that belong to our filtered categories
+    const filteredQuestions = questions.filter(q => 
+      categoryQuestions.has(q.id) && q.isActive
+    );
+
+    // Get answer IDs from filtered questions
+    const answerIds = new Set(
+      filteredQuestions.flatMap(q => q.answerId)
+    );
+
+    // Filter answers
+    const filteredAnswers = answers.filter(a => 
+      answerIds.has(a.id) && a.isActive
+    );
+
+    console.log('📊 Data filtered:', {
+      categoriesCount: filteredCategories.length,
+      questionsCount: filteredQuestions.length,
+      answersCount: filteredAnswers.length,
+      sampleCategory: filteredCategories[0]?.categoryId,
+      sampleQuestionCount: filteredCategories[0]?.questionId.length
+    });
+
+    return {
+      categories: filteredCategories,
+      questions: filteredQuestions,
+      answers: filteredAnswers
+    };
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
 }
 
 // Function to force refresh the global cache
