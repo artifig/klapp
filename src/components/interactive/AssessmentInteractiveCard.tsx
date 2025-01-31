@@ -6,6 +6,7 @@ import { useAssessmentContext } from '@/context/AssessmentContext';
 import ClientOnly from '@/components/ClientOnly';
 import { AirtableMethodAnswer } from '@/lib/airtable';
 import { useState, useEffect } from 'react';
+import type { AssessmentState, Category, Question } from '@/context/AssessmentContext';
 
 interface AnswerOptionProps {
   answer: AirtableMethodAnswer;
@@ -55,7 +56,8 @@ export const AssessmentInteractiveCard = () => {
     getAnswerForQuestion,
     moveToNextQuestion,
     progress,
-    methodAnswers
+    methodAnswers,
+    setState
   } = useAssessmentContext();
 
   // Add state for randomized answers
@@ -96,24 +98,64 @@ export const AssessmentInteractiveCard = () => {
   }
 
   const handleAnswer = (score: number) => {
-    setAnswer(currentQuestion.id, score);
-    // Automatically move to the next question after a short delay
-    setTimeout(moveToNextQuestion, 300);
+    // Set the answer and move to next question in one update
+    setState((prev: AssessmentState) => {
+      const currentCategory = prev.currentCategory;
+      const currentQuestion = prev.currentQuestion;
+      
+      if (!currentCategory || !currentQuestion) return prev;
+
+      // Update answers
+      const newAnswers = { ...prev.answers, [currentQuestion.id]: score };
+      
+      // Move to next question immediately
+      const currentQuestionIndex = currentCategory.questions.findIndex(q => q.id === currentQuestion.id);
+      const nextQuestion = currentCategory.questions[currentQuestionIndex + 1];
+      
+      // Check if all questions in current category are now answered
+      const allCategoryQuestionsAnswered = currentCategory.questions.every((q: Question) => 
+        q.id === currentQuestion.id ? true : !!newAnswers[q.id]
+      );
+
+      // If there's a next question and not all questions are answered, move to it
+      if (nextQuestion && !allCategoryQuestionsAnswered) {
+        return { ...prev, answers: newAnswers, currentQuestion: nextQuestion };
+      }
+
+      // If all questions are answered or this is the last question, try to move to next category
+      if (allCategoryQuestionsAnswered || !nextQuestion) {
+        const currentCategoryIndex = prev.categories.findIndex((c: Category) => c.id === currentCategory.id);
+        const nextCategory = prev.categories[currentCategoryIndex + 1];
+
+        // Only add to completed categories if not already there
+        const newCompletedCategories = prev.completedCategories.includes(currentCategory.id)
+          ? prev.completedCategories
+          : [...prev.completedCategories, currentCategory.id];
+
+        if (nextCategory) {
+          return {
+            ...prev,
+            answers: newAnswers,
+            completedCategories: newCompletedCategories,
+            currentCategory: nextCategory,
+            currentQuestion: nextCategory.questions[0]
+          };
+        } else {
+          return {
+            ...prev,
+            answers: newAnswers,
+            completedCategories: newCompletedCategories,
+            currentCategory: null,
+            currentQuestion: null
+          };
+        }
+      }
+
+      return { ...prev, answers: newAnswers };
+    });
   };
 
   const currentAnswer = getAnswerForQuestion(currentQuestion.id);
-  
-  console.log('Question-Answer relationship:', {
-    question: {
-      id: currentQuestion.id,
-      answerId: currentQuestion.answerId || []
-    },
-    availableAnswers: methodAnswers.map(a => ({
-      id: a.id,
-      text: a.answerText_en,
-      score: a.answerScore
-    }))
-  });
 
   // Filter answers based on the question's answerId array
   const questionAnswers = !currentQuestion.answerId?.length 
@@ -121,15 +163,6 @@ export const AssessmentInteractiveCard = () => {
     : methodAnswers.filter((answer: AirtableMethodAnswer) => 
         currentQuestion.answerId?.includes(answer.id)
       );
-
-  console.log('AssessmentInteractiveCard state:', {
-    currentQuestionId: currentQuestion.id,
-    totalMethodAnswers: methodAnswers.length,
-    filteredAnswers: questionAnswers.length,
-    currentAnswer,
-    questionAnswerIds: questionAnswers.map(a => a.id),
-    questionAnswerScores: questionAnswers.map(a => a.answerScore)
-  });
 
   return (
     <ClientOnly>

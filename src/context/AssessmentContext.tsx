@@ -64,6 +64,9 @@ interface CacheData {
 
 const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
 
+// Export types
+export type { Category, Question, FormData, Provider, AssessmentState };
+
 interface AssessmentContextType {
   goal: string | null;
   formData: FormData | null;
@@ -83,6 +86,7 @@ interface AssessmentContextType {
   moveToNextQuestion: () => void;
   resetAssessment: () => void;
   isStepAccessible: (path: string) => boolean;
+  setState: (updater: (prev: AssessmentState) => AssessmentState) => void;
 }
 
 const defaultState: AssessmentState = {
@@ -111,6 +115,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   const [state, setState] = usePersistentState<AssessmentState>('assessment_state', defaultState);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
   const locale = useLocale();
   const router = useRouter();
 
@@ -144,7 +149,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     }
 
     // Only check completion if we have categories and not in initial load
-    if (state.categories.length === 0 || isInitialLoad) return;
+    if (state.categories.length === 0 || isInitialLoad || hasCompletedAssessment) return;
 
     // Check if assessment is complete
     const allQuestionsAnswered = validAnswers.length >= totalQuestions;
@@ -166,6 +171,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       hasCategories: state.categories.length > 0,
       hasRequiredFields,
       isSaving,
+      hasCompletedAssessment,
       currentCategory: state.currentCategory?.name
     });
     
@@ -174,9 +180,11 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     // 2. We have all required form data
     // 3. We're not already saving
     // 4. We've finished the last category (currentCategory is null)
-    if (isComplete && hasRequiredFields && !isSaving && state.currentCategory === null) {
+    // 5. We haven't already completed the assessment
+    if (isComplete && hasRequiredFields && !isSaving && state.currentCategory === null && !hasCompletedAssessment) {
       console.log('Assessment complete, saving results...');
       setIsSaving(true);
+      setHasCompletedAssessment(true);
       
       // Clean up answers before saving
       const cleanAnswers = Object.fromEntries(validAnswers);
@@ -205,10 +213,10 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       }).catch(error => {
         console.error('Error saving assessment results:', error);
         setIsSaving(false);
+        setHasCompletedAssessment(false);
       });
     }
   }, [
-    // Only include essential dependencies that should trigger completion check
     state.answers,
     state.categories,
     state.completedCategories,
@@ -216,6 +224,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     state.formData,
     isInitialLoad,
     isSaving,
+    hasCompletedAssessment,
     locale,
     router,
     setState
@@ -225,25 +234,25 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     // Skip fetching if we're in the process of saving results
     if (isSaving) {
-      console.log('Skipping data fetch while saving results');
+      console.log('⏳ Skipping data fetch while saving results');
       return;
     }
 
     // Skip fetching if we don't have a company type yet
     if (!state.formData.companyType) {
-      console.log('No company type selected yet, skipping fetch');
+      console.log('ℹ️ No company type selected yet');
       return;
     }
 
     // Skip fetching if we already have categories for this company type
     if (state.categories.length > 0 && state.categories[0].companyType.includes(state.formData.companyType)) {
-      console.log('Already have categories for this company type');
+      console.log('✓ Using existing categories');
       return;
     }
 
     const fetchData = async () => {
       try {
-        console.log('Starting data fetch, company type:', state.formData.companyType);
+        console.log('🔄 Fetching data for company type:', state.formData.companyType);
         setState(prev => ({ ...prev, isLoading: true, error: null }));
         
         // Check cache first
@@ -251,14 +260,14 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         if (cachedData) {
           const parsed = JSON.parse(cachedData) as CacheData;
           if (Date.now() - parsed.timestamp < CACHE_DURATION) {
-            console.log('Using cached data');
+            console.log('📦 Using cached data');
             processData(parsed.categories, parsed.questions, parsed.answers);
             return;
           }
         }
 
         // Fetch fresh data
-        console.log('Fetching fresh data from Airtable');
+        console.log('🌐 Fetching fresh data from Airtable');
         const [categoriesData, questionsData, answersData] = await Promise.all([
           getCategories(),
           getQuestions(),
@@ -275,7 +284,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
 
         processData(categoriesData, questionsData, answersData);
       } catch (error) {
-        console.error('Error fetching assessment data:', error);
+        console.error('❌ Error fetching assessment data:', error);
         setState(prev => ({
           ...prev,
           isLoading: false,
@@ -292,10 +301,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     questionsData: AirtableMethodQuestion[],
     answersData: AirtableMethodAnswer[]
   ) => {
-    // Use company type directly from form data without mapping
     const companyType = state.formData.companyType;
-
-    // Normalize company type to match Airtable format
     const companyTypeMap: Record<string, string> = {
       'startup': 'Startup',
       'scale-up': 'Scaleup',
@@ -305,23 +311,13 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     };
     const normalizedCompanyType = companyTypeMap[companyType.toLowerCase().trim()] || companyType;
 
-    console.log('Processing data:', {
-      rawCompanyType: companyType,
-      normalizedCompanyType,
-      totalCategories: categoriesData.length,
-      totalQuestions: questionsData.length,
-      totalAnswers: answersData?.length || 0
-    });
-
     // Transform categories and questions based on locale and company type
     const categories: Category[] = categoriesData
       .filter(cat => {
-        if (!normalizedCompanyType) return false; // Don't show any categories if no company type selected
-        const includes = cat.companyType.some(type => 
+        if (!normalizedCompanyType) return false;
+        return cat.companyType.some(type => 
           type.trim().toUpperCase() === normalizedCompanyType.trim().toUpperCase()
         );
-        console.log(`Category ${cat.categoryId} (${cat.categoryText_en}) company types:`, cat.companyType, 'includes type:', includes);
-        return includes;
       })
       .map(cat => {
         const questions = questionsData
@@ -346,13 +342,9 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       })
       .sort((a, b) => a.order - b.order);
 
-    console.log('Filtered categories for company type:', {
-      companyType: normalizedCompanyType,
-      totalFilteredCategories: categories.length,
-      categoryNames: categories.map(c => c.name)
-    });
+    console.log(`📊 Loaded ${categories.length} categories for ${normalizedCompanyType}`);
 
-    // Reset answers when company type changes to avoid keeping answers from other company types
+    // Reset answers when company type changes
     const currentAnswers = { ...state.answers };
     const validQuestionIds = new Set(categories.flatMap(cat => cat.questions.map(q => q.id)));
     const cleanedAnswers: Record<string, number> = {};
@@ -366,7 +358,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       const newState = {
         ...prev,
         categories,
-        answers: cleanedAnswers, // Use cleaned answers
+        answers: cleanedAnswers,
         methodAnswers: answersData || [],
         isLoading: false,
         ...((!prev.currentCategory && categories.length > 0) && {
@@ -374,14 +366,6 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           currentQuestion: categories[0].questions[0] || null
         })
       };
-
-      console.log('Setting new state:', {
-        categoryCount: newState.categories.length,
-        currentCategory: newState.currentCategory?.name,
-        currentQuestion: newState.currentQuestion?.text,
-        methodAnswersCount: newState.methodAnswers?.length || 0,
-        answerCount: Object.keys(newState.answers).length
-      });
 
       return newState;
     });
@@ -416,11 +400,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       
       if (!currentCategory || !currentQuestion) return prev;
 
-      console.log('Selected answer:', {
-        category: currentCategory.name,
-        question: currentQuestion.text,
-        answerScore: value
-      });
+      console.log(`💬 Answer selected: ${value} for question in category "${currentCategory.name}"`);
 
       // Update answers
       const newAnswers = { ...prev.answers, [questionId]: value };
@@ -433,14 +413,6 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       const allCategoryQuestionsAnswered = currentCategory.questions.every(q => 
         q.id === questionId ? true : !!newAnswers[q.id]
       );
-
-      console.log('Answer state check:', {
-        currentQuestionIndex,
-        isLastQuestion,
-        allCategoryQuestionsAnswered,
-        totalQuestions: currentCategory.questions.length,
-        answeredQuestions: Object.keys(newAnswers).length
-      });
 
       // Just update the answer, navigation will be handled by moveToNextQuestion
       return { ...prev, answers: newAnswers };
@@ -474,13 +446,9 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       const allCategoryQuestionsAnswered = categoryAnswers.every(q => q.hasAnswer);
       const isLastQuestion = !nextQuestion;
 
-      console.log('Navigation state:', {
-        currentCategory: currentCategory.name,
-        currentQuestionIndex,
-        isLastQuestion,
-        allCategoryQuestionsAnswered,
-        categoryAnswers
-      });
+      if (isLastQuestion) {
+        console.log(`✅ Category "${currentCategory.name}" completed`);
+      }
 
       // If there's a next question and not all questions are answered, move to it
       if (nextQuestion && !allCategoryQuestionsAnswered) {
@@ -498,6 +466,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           : [...prev.completedCategories, currentCategory.id];
 
         if (nextCategory) {
+          console.log(`➡️ Moving to next category: "${nextCategory.name}"`);
           return {
             ...prev,
             completedCategories: newCompletedCategories,
@@ -505,6 +474,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
             currentQuestion: nextCategory.questions[0]
           };
         } else {
+          console.log('🎉 Assessment completed!');
           return {
             ...prev,
             completedCategories: newCompletedCategories,
@@ -519,6 +489,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   }, [state.currentCategory, state.currentQuestion]);
 
   const resetAssessment = useCallback(() => {
+    setHasCompletedAssessment(false);
     setState(defaultState);
   }, [setState]);
 
@@ -552,7 +523,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     getAnswerForQuestion,
     moveToNextQuestion,
     resetAssessment,
-    isStepAccessible
+    isStepAccessible,
+    setState
   };
 
   // Show loading state only on initial load
