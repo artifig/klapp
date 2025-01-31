@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { useAssessmentContext } from '@/context/AssessmentContext';
 import ClientOnly from '@/components/ClientOnly';
 import { AirtableMethodAnswer } from '@/lib/airtable';
+import { useState, useEffect } from 'react';
 
 interface AnswerOptionProps {
   answer: AirtableMethodAnswer;
@@ -57,6 +58,24 @@ export const AssessmentInteractiveCard = () => {
     methodAnswers
   } = useAssessmentContext();
 
+  // Add state for randomized answers
+  const [randomizedAnswers, setRandomizedAnswers] = useState<AirtableMethodAnswer[]>([]);
+
+  // Update randomized answers when the question changes
+  useEffect(() => {
+    if (currentQuestion) {
+      const answers = !currentQuestion.answerId?.length 
+        ? methodAnswers
+        : methodAnswers.filter((answer: AirtableMethodAnswer) => 
+            currentQuestion.answerId?.includes(answer.id)
+          );
+      
+      // Randomize the answers
+      const shuffled = [...answers].sort(() => Math.random() - 0.5);
+      setRandomizedAnswers(shuffled);
+    }
+  }, [currentQuestion, methodAnswers]);
+
   if (!currentCategory || !currentQuestion) {
     return (
       <ClientOnly>
@@ -76,8 +95,10 @@ export const AssessmentInteractiveCard = () => {
     );
   }
 
-  const handleAnswer = (value: number) => {
-    setAnswer(currentQuestion.id, value);
+  const handleAnswer = (score: number) => {
+    setAnswer(currentQuestion.id, score);
+    // Automatically move to the next question after a short delay
+    setTimeout(moveToNextQuestion, 300);
   };
 
   const currentAnswer = getAnswerForQuestion(currentQuestion.id);
@@ -122,7 +143,7 @@ export const AssessmentInteractiveCard = () => {
           </div>
 
           <div className="space-y-3">
-            {questionAnswers.map((answer: AirtableMethodAnswer) => (
+            {randomizedAnswers.map((answer: AirtableMethodAnswer) => (
               <AnswerOption
                 key={answer.id}
                 answer={answer}
@@ -132,22 +153,12 @@ export const AssessmentInteractiveCard = () => {
             ))}
           </div>
 
-          {currentAnswer && (
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-500">
-                {t('questionProgress', {
-                  current: currentCategory.questions.findIndex(q => q.id === currentQuestion.id) + 1,
-                  total: currentCategory.questions.length
-                })}
-              </div>
-              <button
-                onClick={moveToNextQuestion}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              >
-                {t('nextQuestion')}
-              </button>
-            </div>
-          )}
+          <div className="text-sm text-gray-500">
+            {t('questionProgress', {
+              current: currentCategory.questions.findIndex(q => q.id === currentQuestion.id) + 1,
+              total: currentCategory.questions.length
+            })}
+          </div>
         </div>
       </Card>
     </ClientOnly>
