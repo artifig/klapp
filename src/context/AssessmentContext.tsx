@@ -122,7 +122,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     }
   }, [isInitialLoad, setState]);
 
-  // Calculate progress whenever answers change
+  // Calculate progress and handle completion
   useEffect(() => {
     const totalQuestions = state.categories.reduce(
       (acc, category) => acc + category.questions.length,
@@ -138,59 +138,50 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     const answeredQuestions = validAnswers.length;
     const newProgress = Math.min(totalQuestions > 0 ? answeredQuestions / totalQuestions : 0, 1);
 
-    console.log('Progress Debug:', {
-      totalQuestions,
-      answeredQuestions,
-      validAnswerCount: validAnswers.length,
-      totalAnswerCount: Object.keys(state.answers).length,
-      newProgress,
-      categoriesLength: state.categories.length,
-      isInitialLoad,
-      formData: {
-        name: !!state.formData.name,
-        email: !!state.formData.email,
-        companyName: !!state.formData.companyName,
-        companyType: !!state.formData.companyType
-      }
-    });
-
+    // Update progress if changed
     if (newProgress !== state.progress) {
       setState(prev => ({ ...prev, progress: newProgress }));
     }
 
-    const allQuestionsAnswered = validAnswers.length >= totalQuestions;
-    const shouldNavigate = allQuestionsAnswered && 
-        state.categories.length > 0 && 
-        !isInitialLoad &&
-        state.formData.name && 
-        state.formData.email && 
-        state.formData.companyName && 
-        state.formData.companyType;
+    // Only check completion if we have categories and not in initial load
+    if (state.categories.length === 0 || isInitialLoad) return;
 
-    console.log('Navigation Check:', {
+    // Check if assessment is complete
+    const allQuestionsAnswered = validAnswers.length >= totalQuestions;
+    const allCategoriesCompleted = state.categories.every(cat => 
+      state.completedCategories.includes(cat.id)
+    );
+    
+    const isComplete = allQuestionsAnswered && allCategoriesCompleted;
+    const hasRequiredFields = state.formData.name && 
+      state.formData.email && 
+      state.formData.companyName && 
+      state.formData.companyType;
+
+    console.log('Completion Check:', {
       allQuestionsAnswered,
+      allCategoriesCompleted,
       validAnswersCount: validAnswers.length,
       totalQuestions,
       hasCategories: state.categories.length > 0,
-      notInitialLoad: !isInitialLoad,
-      hasFormData: {
-        name: !!state.formData.name,
-        email: !!state.formData.email,
-        companyName: !!state.formData.companyName,
-        companyType: !!state.formData.companyType
-      },
-      shouldNavigate
+      hasRequiredFields,
+      isSaving,
+      currentCategory: state.currentCategory?.name
     });
     
-    // Only proceed with save if not already saving
-    if (shouldNavigate && !isSaving) {
-      console.log('Attempting to save and navigate to results...');
+    // Only save and navigate if:
+    // 1. All questions are answered AND all categories are completed
+    // 2. We have all required form data
+    // 3. We're not already saving
+    // 4. We've finished the last category (currentCategory is null)
+    if (isComplete && hasRequiredFields && !isSaving && state.currentCategory === null) {
+      console.log('Assessment complete, saving results...');
       setIsSaving(true);
       
-      // Clean up answers before saving - only include valid answers
+      // Clean up answers before saving
       const cleanAnswers = Object.fromEntries(validAnswers);
       
-      // Save results before navigating
+      // Save results
       saveResult({
         name: state.formData.name,
         email: state.formData.email,
@@ -209,24 +200,62 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         }))
       }).then(() => {
         console.log('Save successful, navigating to results...');
-        router.push(routes.results);
+        setIsSaving(false);
+        router.push(`/${locale}${routes.results}`);
       }).catch(error => {
         console.error('Error saving assessment results:', error);
-        setIsSaving(false); // Reset saving state on error
+        setIsSaving(false);
       });
     }
-  }, [state.answers, state.categories, state.progress, state.formData, isInitialLoad, setState, router, state.goal, isSaving]);
+  }, [
+    // Only include essential dependencies that should trigger completion check
+    state.answers,
+    state.categories,
+    state.completedCategories,
+    state.currentCategory,
+    state.formData,
+    isInitialLoad,
+    isSaving,
+    locale,
+    router,
+    setState
+  ]);
 
   // Fetch categories and questions from Airtable with caching
   useEffect(() => {
+    // Skip fetching if we're in the process of saving results
+    if (isSaving) {
+      console.log('Skipping data fetch while saving results');
+      return;
+    }
+
+    // Skip fetching if we don't have a company type yet
+    if (!state.formData.companyType) {
+      console.log('No company type selected yet, skipping fetch');
+      return;
+    }
+
+    // Skip fetching if we already have categories for this company type
+    if (state.categories.length > 0 && state.categories[0].companyType.includes(state.formData.companyType)) {
+      console.log('Already have categories for this company type');
+      return;
+    }
+
     const fetchData = async () => {
       try {
         console.log('Starting data fetch, company type:', state.formData.companyType);
         setState(prev => ({ ...prev, isLoading: true, error: null }));
         
-        // Force fresh data fetch by clearing cache
-        localStorage.removeItem('assessment_data');
-        console.log('Cache cleared, fetching fresh data...');
+        // Check cache first
+        const cachedData = localStorage.getItem('assessment_data');
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData) as CacheData;
+          if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+            console.log('Using cached data');
+            processData(parsed.categories, parsed.questions, parsed.answers);
+            return;
+          }
+        }
 
         // Fetch fresh data
         console.log('Fetching fresh data from Airtable');
@@ -236,32 +265,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           getMethodAnswers()
         ]);
 
-        console.log('Raw Airtable response:', {
-          categories: categoriesData,
-          questions: questionsData,
-          answers: answersData
-        });
-
-        console.log('Fetched data counts:', {
-          categoriesCount: categoriesData?.length || 0,
-          questionsCount: questionsData?.length || 0,
-          answersCount: answersData?.length || 0
-        });
-
-        // Log answers data structure if available
-        if (answersData && answersData.length > 0) {
-          console.log('First answer example:', {
-            id: answersData[0].id,
-            answerId: answersData[0].answerId,
-            answerText: answersData[0].answerText_en,
-            score: answersData[0].answerScore,
-            questionIds: answersData[0].questionId
-          });
-        } else {
-          console.error('No answers data available from Airtable');
-        }
-
-        // Cache the fresh data only if we have all the data
+        // Cache the fresh data
         localStorage.setItem('assessment_data', JSON.stringify({
           categories: categoriesData,
           questions: questionsData,
@@ -270,7 +274,6 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         }));
 
         processData(categoriesData, questionsData, answersData);
-        setIsInitialLoad(false);
       } catch (error) {
         console.error('Error fetching assessment data:', error);
         setState(prev => ({
@@ -281,108 +284,108 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       }
     };
 
-    const processData = (
-      categoriesData: AirtableMethodCategory[], 
-      questionsData: AirtableMethodQuestion[],
-      answersData: AirtableMethodAnswer[]
-    ) => {
-      // Use company type directly from form data without mapping
-      const companyType = state.formData.companyType;
-
-      // Normalize company type to match Airtable format
-      const companyTypeMap: Record<string, string> = {
-        'startup': 'Startup',
-        'scale-up': 'Scaleup',
-        'scaleup': 'Scaleup',
-        'sme': 'SME',
-        'enterprise': 'Enterprise'
-      };
-      const normalizedCompanyType = companyTypeMap[companyType.toLowerCase().trim()] || companyType;
-
-      console.log('Processing data:', {
-        rawCompanyType: companyType,
-        normalizedCompanyType,
-        totalCategories: categoriesData.length,
-        totalQuestions: questionsData.length,
-        totalAnswers: answersData?.length || 0
-      });
-
-      // Transform categories and questions based on locale and company type
-      const categories: Category[] = categoriesData
-        .filter(cat => {
-          if (!normalizedCompanyType) return false; // Don't show any categories if no company type selected
-          const includes = cat.companyType.some(type => 
-            type.trim().toUpperCase() === normalizedCompanyType.trim().toUpperCase()
-          );
-          console.log(`Category ${cat.categoryId} (${cat.categoryText_en}) company types:`, cat.companyType, 'includes type:', includes);
-          return includes;
-        })
-        .map(cat => {
-          const questions = questionsData
-            .filter(q => q.categoryId.includes(cat.id))
-            .map(q => ({
-              id: q.id,
-              text: locale === 'et' ? q.questionText_et : q.questionText_en,
-              categoryId: q.categoryId,
-              order: parseInt(q.id, 10),
-              answerId: q.answerId || []
-            }))
-            .sort((a, b) => a.order - b.order);
-
-          return {
-            id: cat.id,
-            key: cat.categoryId,
-            name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
-            order: parseInt(cat.id, 10),
-            companyType: cat.companyType,
-            questions
-          };
-        })
-        .sort((a, b) => a.order - b.order);
-
-      console.log('Filtered categories for company type:', {
-        companyType: normalizedCompanyType,
-        totalFilteredCategories: categories.length,
-        categoryNames: categories.map(c => c.name)
-      });
-
-      // Reset answers when company type changes to avoid keeping answers from other company types
-      const currentAnswers = { ...state.answers };
-      const validQuestionIds = new Set(categories.flatMap(cat => cat.questions.map(q => q.id)));
-      const cleanedAnswers: Record<string, number> = {};
-      Object.entries(currentAnswers).forEach(([qId, value]) => {
-        if (validQuestionIds.has(qId)) {
-          cleanedAnswers[qId] = value;
-        }
-      });
-
-      setState(prev => {
-        const newState = {
-          ...prev,
-          categories,
-          answers: cleanedAnswers, // Use cleaned answers
-          methodAnswers: answersData || [],
-          isLoading: false,
-          ...((!prev.currentCategory && categories.length > 0) && {
-            currentCategory: categories[0],
-            currentQuestion: categories[0].questions[0] || null
-          })
-        };
-
-        console.log('Setting new state:', {
-          categoryCount: newState.categories.length,
-          currentCategory: newState.currentCategory?.name,
-          currentQuestion: newState.currentQuestion?.text,
-          methodAnswersCount: newState.methodAnswers?.length || 0,
-          answerCount: Object.keys(newState.answers).length
-        });
-
-        return newState;
-      });
-    };
-
     fetchData();
-  }, [setState, locale, state.formData.companyType]);
+  }, [setState, state.formData.companyType, isSaving]);
+
+  const processData = (
+    categoriesData: AirtableMethodCategory[], 
+    questionsData: AirtableMethodQuestion[],
+    answersData: AirtableMethodAnswer[]
+  ) => {
+    // Use company type directly from form data without mapping
+    const companyType = state.formData.companyType;
+
+    // Normalize company type to match Airtable format
+    const companyTypeMap: Record<string, string> = {
+      'startup': 'Startup',
+      'scale-up': 'Scaleup',
+      'scaleup': 'Scaleup',
+      'sme': 'SME',
+      'enterprise': 'Enterprise'
+    };
+    const normalizedCompanyType = companyTypeMap[companyType.toLowerCase().trim()] || companyType;
+
+    console.log('Processing data:', {
+      rawCompanyType: companyType,
+      normalizedCompanyType,
+      totalCategories: categoriesData.length,
+      totalQuestions: questionsData.length,
+      totalAnswers: answersData?.length || 0
+    });
+
+    // Transform categories and questions based on locale and company type
+    const categories: Category[] = categoriesData
+      .filter(cat => {
+        if (!normalizedCompanyType) return false; // Don't show any categories if no company type selected
+        const includes = cat.companyType.some(type => 
+          type.trim().toUpperCase() === normalizedCompanyType.trim().toUpperCase()
+        );
+        console.log(`Category ${cat.categoryId} (${cat.categoryText_en}) company types:`, cat.companyType, 'includes type:', includes);
+        return includes;
+      })
+      .map(cat => {
+        const questions = questionsData
+          .filter(q => q.categoryId.includes(cat.id))
+          .map(q => ({
+            id: q.id,
+            text: locale === 'et' ? q.questionText_et : q.questionText_en,
+            categoryId: q.categoryId,
+            order: parseInt(q.id, 10),
+            answerId: q.answerId || []
+          }))
+          .sort((a, b) => a.order - b.order);
+
+        return {
+          id: cat.id,
+          key: cat.categoryId,
+          name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
+          order: parseInt(cat.id, 10),
+          companyType: cat.companyType,
+          questions
+        };
+      })
+      .sort((a, b) => a.order - b.order);
+
+    console.log('Filtered categories for company type:', {
+      companyType: normalizedCompanyType,
+      totalFilteredCategories: categories.length,
+      categoryNames: categories.map(c => c.name)
+    });
+
+    // Reset answers when company type changes to avoid keeping answers from other company types
+    const currentAnswers = { ...state.answers };
+    const validQuestionIds = new Set(categories.flatMap(cat => cat.questions.map(q => q.id)));
+    const cleanedAnswers: Record<string, number> = {};
+    Object.entries(currentAnswers).forEach(([qId, value]) => {
+      if (validQuestionIds.has(qId)) {
+        cleanedAnswers[qId] = value;
+      }
+    });
+
+    setState(prev => {
+      const newState = {
+        ...prev,
+        categories,
+        answers: cleanedAnswers, // Use cleaned answers
+        methodAnswers: answersData || [],
+        isLoading: false,
+        ...((!prev.currentCategory && categories.length > 0) && {
+          currentCategory: categories[0],
+          currentQuestion: categories[0].questions[0] || null
+        })
+      };
+
+      console.log('Setting new state:', {
+        categoryCount: newState.categories.length,
+        currentCategory: newState.currentCategory?.name,
+        currentQuestion: newState.currentQuestion?.text,
+        methodAnswersCount: newState.methodAnswers?.length || 0,
+        answerCount: Object.keys(newState.answers).length
+      });
+
+      return newState;
+    });
+  };
 
   const setGoal = useCallback((goal: string) => {
     setState(prev => ({ ...prev, goal }));
