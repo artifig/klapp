@@ -49,6 +49,7 @@
     },
     "companyTypes": {
       "startup": "Startup",
+      "scaleup": "Scale-up",
       "sme": "SME",
       "enterprise": "Enterprise"
     },
@@ -108,6 +109,16 @@
     "yourAnswers": "Your Answers",
     "loadingQuestions": "Loading assessment questions...",
     "noQuestionSelected": "Please select a category to start the assessment",
+    "categories": {
+      "title": "Assessment Categories"
+    },
+    "answers": {
+      "1": "Not Started",
+      "2": "Initial",
+      "3": "In Progress",
+      "4": "Advanced",
+      "5": "Optimized"
+    },
     "contextCard": {
       "title": "Assessment Progress",
       "description": "Track your progress through different assessment categories",

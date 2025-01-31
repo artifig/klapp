@@ -67,7 +67,7 @@ export const AssessmentContextCard = () => {
               {categories.map((category) => (
                 <CategoryItem
                   key={category.id}
-                  name={t(`categories.${category.key}`)}
+                  name={category.name}
                   isActive={currentCategory?.id === category.id}
                   isCompleted={completedCategories.includes(category.id)}
                   onClick={() => setCurrentCategory(category)}

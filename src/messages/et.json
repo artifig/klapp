@@ -115,23 +115,7 @@
     "loadingQuestions": "Hindamisküsimuste laadimine...",
     "noQuestionSelected": "Palun valige hindamise alustamiseks kategooria",
     "categories": {
-      "title": "Hindamise kategooriad",
-      "businessModel": "Ärimudeli valideerimine",
-      "team": "Meeskond ja kultuur",
-      "funding": "Rahastus",
-      "mvp": "MVP arendus",
-      "strategy": "Äristrateegia",
-      "product": "Tootearendus",
-      "operations": "Tegevused ja taristu",
-      "dataTech": "Andmed ja tehnoloogia",
-      "quality": "Kvaliteedijuhtimine",
-      "humanCapital": "Inimkapital",
-      "customerExp": "Kliendikogemus",
-      "finance": "Finants ja risk",
-      "governance": "Juhtimine ja vastavus",
-      "stakeholders": "Huvigruppide kaasamine",
-      "sustainability": "Jätkusuutlikkus",
-      "health": "Tervishoid ja ohutus"
+      "title": "Hindamise kategooriad"
     },
     "answers": {
       "1": "Alustamata",
