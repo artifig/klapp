@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
-import { getCategories, getQuestions, saveResult, AirtableMethodCategory, AirtableMethodQuestion, getMethodAnswers, AirtableMethodAnswer } from '@/lib/airtable';
+import { getCategories, getQuestions, saveResult, getDataForCompanyType, AirtableMethodCategory, AirtableMethodQuestion, getMethodAnswers, AirtableMethodAnswer } from '@/lib/airtable';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
@@ -15,14 +15,16 @@ interface Category {
   order: number;
   questions: Question[];
   companyType: string[]; // Match Airtable schema
+  description?: string;
 }
 
 interface Question {
   id: string;
+  airtableId: string;
   text: string;
   categoryId: string[];
-  order: number;
   answerId: string[];
+  order: number;
 }
 
 interface FormData {
@@ -203,6 +205,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           name: cat.name,
           questions: cat.questions.map(q => ({
             id: q.id,
+            airtableId: q.airtableId,
             text: q.text
           }))
         }))
@@ -244,47 +247,72 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       return;
     }
 
-    // Skip fetching if we already have categories for this company type
-    if (state.categories.length > 0 && state.categories[0].companyType.includes(state.formData.companyType)) {
-      console.log('✓ Using existing categories');
-      return;
-    }
-
     const fetchData = async () => {
       try {
         console.log('🔄 Fetching data for company type:', state.formData.companyType);
-        setState(prev => ({ ...prev, isLoading: true, error: null }));
         
-        // Check cache first
-        const cachedData = localStorage.getItem('assessment_data');
-        if (cachedData) {
-          const parsed = JSON.parse(cachedData) as CacheData;
-          if (Date.now() - parsed.timestamp < CACHE_DURATION) {
-            console.log('📦 Using cached data');
-            processData(parsed.categories, parsed.questions, parsed.answers);
-            return;
-          }
-        }
+        const { categories, questions, answers } = await getDataForCompanyType(state.formData.companyType);
+        
+        console.log('Raw data received:', {
+          categoriesCount: categories.length,
+          questionsCount: questions.length,
+          answersCount: answers.length
+        });
 
-        // Fetch fresh data
-        console.log('🌐 Fetching fresh data from Airtable');
-        const [categoriesData, questionsData, answersData] = await Promise.all([
-          getCategories(),
-          getQuestions(),
-          getMethodAnswers()
-        ]);
+        // Transform and sort categories
+        const transformedCategories = categories
+          .filter((cat: AirtableMethodCategory) => cat.isActive)
+          .map((cat: AirtableMethodCategory) => {
+            // Find questions for this category
+            const categoryQuestions = questions
+              .filter(q => cat.questionId.includes(q.id))
+              .map(q => ({
+                id: q.questionId, // Logical ID (Q1, Q2, etc.)
+                airtableId: q.id, // Airtable record ID
+                text: locale === 'et' ? q.questionText_et : q.questionText_en,
+                categoryId: [cat.categoryId],
+                answerId: q.answerId,
+                order: parseInt(q.questionId.replace('Q', ''), 10) || 0
+              }))
+              .sort((a, b) => a.order - b.order);
 
-        // Cache the fresh data
-        localStorage.setItem('assessment_data', JSON.stringify({
-          categories: categoriesData,
-          questions: questionsData,
-          answers: answersData,
-          timestamp: Date.now()
+            console.log(`Category ${cat.categoryId} has ${categoryQuestions.length} questions:`, 
+              categoryQuestions.map(q => q.id));
+
+            return {
+              id: cat.categoryId,
+              key: cat.categoryId,
+              name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
+              description: locale === 'et' ? cat.categoryDescription_et : cat.categoryDescription_en,
+              companyType: cat.companyType,
+              questions: categoryQuestions,
+              order: parseInt(cat.categoryId.replace('C', ''), 10) || 0
+            };
+          })
+          .sort((a, b) => a.order - b.order);
+
+        console.log('📊 Transformed data:', {
+          categoriesCount: transformedCategories.length,
+          firstCategory: transformedCategories[0] ? {
+            id: transformedCategories[0].id,
+            questionCount: transformedCategories[0].questions.length,
+            sampleQuestions: transformedCategories[0].questions.slice(0, 3).map(q => q.id)
+          } : null,
+          totalQuestions: transformedCategories.reduce((sum, cat) => sum + cat.questions.length, 0)
+        });
+
+        // Store the transformed data in state
+        setState(prev => ({
+          ...prev,
+          categories: transformedCategories,
+          methodAnswers: answers.filter((a: AirtableMethodAnswer) => a.isActive),
+          isLoading: false,
+          error: null
         }));
 
-        processData(categoriesData, questionsData, answersData);
+        console.log('📊 Loaded', transformedCategories.length, 'categories for', state.formData.companyType);
       } catch (error) {
-        console.error('❌ Error fetching assessment data:', error);
+        console.error('Error fetching assessment data:', error);
         setState(prev => ({
           ...prev,
           isLoading: false,
@@ -294,82 +322,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     };
 
     fetchData();
-  }, [setState, state.formData.companyType, isSaving]);
-
-  const processData = (
-    categoriesData: AirtableMethodCategory[], 
-    questionsData: AirtableMethodQuestion[],
-    answersData: AirtableMethodAnswer[]
-  ) => {
-    const companyType = state.formData.companyType;
-    const companyTypeMap: Record<string, string> = {
-      'startup': 'Startup',
-      'scale-up': 'Scaleup',
-      'scaleup': 'Scaleup',
-      'sme': 'SME',
-      'enterprise': 'Enterprise'
-    };
-    const normalizedCompanyType = companyTypeMap[companyType.toLowerCase().trim()] || companyType;
-
-    // Transform categories and questions based on locale and company type
-    const categories: Category[] = categoriesData
-      .filter(cat => {
-        if (!normalizedCompanyType) return false;
-        return cat.companyType.some(type => 
-          type.trim().toUpperCase() === normalizedCompanyType.trim().toUpperCase()
-        );
-      })
-      .map(cat => {
-        const questions = questionsData
-          .filter(q => q.categoryId.includes(cat.id))
-          .map(q => ({
-            id: q.id,
-            text: locale === 'et' ? q.questionText_et : q.questionText_en,
-            categoryId: q.categoryId,
-            order: parseInt(q.id, 10),
-            answerId: q.answerId || []
-          }))
-          .sort((a, b) => a.order - b.order);
-
-        return {
-          id: cat.id,
-          key: cat.categoryId,
-          name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
-          order: parseInt(cat.id, 10),
-          companyType: cat.companyType,
-          questions
-        };
-      })
-      .sort((a, b) => a.order - b.order);
-
-    console.log(`📊 Loaded ${categories.length} categories for ${normalizedCompanyType}`);
-
-    // Reset answers when company type changes
-    const currentAnswers = { ...state.answers };
-    const validQuestionIds = new Set(categories.flatMap(cat => cat.questions.map(q => q.id)));
-    const cleanedAnswers: Record<string, number> = {};
-    Object.entries(currentAnswers).forEach(([qId, value]) => {
-      if (validQuestionIds.has(qId)) {
-        cleanedAnswers[qId] = value;
-      }
-    });
-
-    setState(prev => {
-      const newState = {
-        ...prev,
-        categories,
-        answers: cleanedAnswers,
-        methodAnswers: answersData || [],
-        isLoading: false,
-        ...((!prev.currentCategory && categories.length > 0) && {
-          currentCategory: categories[0],
-          currentQuestion: categories[0].questions[0] || null
-        })
-      };
-
-      return newState;
-    });
-  };
+  }, [state.formData.companyType, locale, isSaving]);
 
   const setGoal = useCallback((goal: string) => {
     setState(prev => ({ ...prev, goal }));
