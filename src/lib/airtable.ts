@@ -106,16 +106,22 @@ export async function saveResult(result: {
   answers: Record<string, number>;
 }): Promise<void> {
   try {
+    // Prepare response content with answers and metadata
+    const responseContent = {
+      answers: result.answers,
+      submittedAt: new Date().toISOString()
+    };
+
     await base('AssessmentResponses').create([
       {
         fields: {
-          companyName: result.companyName,
           contactName: result.name,
           contactEmail: result.email,
-          companyType: result.companyType,
+          companyName: result.companyName,
+          companyType: result.companyType, // Use company type directly from form
           initialGoal: result.goal,
-          responseContent: JSON.stringify(result.answers),
-          responseStatus: 'New'
+          responseContent: JSON.stringify(responseContent),
+          responseStatus: 'Completed'
         },
       },
     ]);

@@ -8,14 +8,6 @@ import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
 
-// Map company types to their assessment categories
-const COMPANY_TYPE_MAPPING = {
-  startup: 'STARTUP',
-  scaleup: 'SME', // Map scaleup to SME
-  sme: 'SME',
-  enterprise: 'ENTERPRISE'
-} as const;
-
 interface Category {
   id: string;
   key: string;
@@ -121,6 +113,14 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   const locale = useLocale();
   const router = useRouter();
 
+  // Reset state on initial load
+  useEffect(() => {
+    if (isInitialLoad) {
+      setState(defaultState);
+      setIsInitialLoad(false);
+    }
+  }, [isInitialLoad, setState]);
+
   // Calculate progress whenever answers change
   useEffect(() => {
     const totalQuestions = state.categories.reduce(
@@ -134,11 +134,21 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       setState(prev => ({ ...prev, progress: newProgress }));
     }
 
-    // Auto-navigate to results when all questions are answered
-    if (newProgress === 1 && state.categories.length > 0) {
+    // Only auto-navigate to results if:
+    // 1. All questions are answered (progress is 1)
+    // 2. There are categories loaded
+    // 3. We're not on initial load
+    // 4. User has filled out the form data
+    if (newProgress === 1 && 
+        state.categories.length > 0 && 
+        !isInitialLoad &&
+        state.formData.name && 
+        state.formData.email && 
+        state.formData.companyName && 
+        state.formData.companyType) {
       router.push(routes.results);
     }
-  }, [state.answers, state.categories, state.progress, setState, router]);
+  }, [state.answers, state.categories, state.progress, state.formData, isInitialLoad, setState, router]);
 
   // Fetch categories and questions from Airtable with caching
   useEffect(() => {
@@ -209,14 +219,11 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       questionsData: AirtableMethodQuestion[],
       answersData: AirtableMethodAnswer[]
     ) => {
-      // Get the mapped company type for filtering
-      const mappedCompanyType = state.formData.companyType 
-        ? COMPANY_TYPE_MAPPING[state.formData.companyType as keyof typeof COMPANY_TYPE_MAPPING]
-        : null;
+      // Use company type directly from form data without mapping
+      const companyType = state.formData.companyType;
 
       console.log('Processing data:', {
-        originalCompanyType: state.formData.companyType,
-        mappedCompanyType,
+        companyType: state.formData.companyType,
         totalCategories: categoriesData.length,
         totalQuestions: questionsData.length,
         totalAnswers: answersData?.length || 0
@@ -225,11 +232,11 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       // Transform categories and questions based on locale and company type
       const categories: Category[] = categoriesData
         .filter(cat => {
-          if (!mappedCompanyType) return true;
+          if (!companyType) return true;
           const includes = cat.companyType.some(type => 
-            type.toUpperCase() === mappedCompanyType.toUpperCase()
+            type.toUpperCase() === companyType.toUpperCase()
           );
-          console.log(`Category ${cat.categoryId} company types:`, cat.companyType, 'includes mapped type:', includes);
+          console.log(`Category ${cat.categoryId} company types:`, cat.companyType, 'includes type:', includes);
           return includes;
         })
         .map(cat => {
@@ -338,7 +345,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           return {
             ...prev,
             answers: newAnswers,
-            completedCategories: [...prev.completedCategories, currentCategory.id],
+            completedCategories: [...(prev.completedCategories || []), currentCategory.id],
             currentCategory: nextCategory || null,
             currentQuestion: nextCategory ? nextCategory.questions[0] : null
           };
