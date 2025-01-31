@@ -53,7 +53,8 @@
       "submit": "Jätka hindamisega"
     },
     "companyTypes": {
-      "startup": "Idufirma",
+      "startup": "Iduettevõte",
+      "scaleup": "Kasvuettevõte",
       "sme": "VKE",
       "enterprise": "Suurettevõte"
     },
