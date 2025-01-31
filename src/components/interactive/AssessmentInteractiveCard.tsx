@@ -42,14 +42,22 @@ export const AssessmentInteractiveCard = () => {
     setAnswer,
     getAnswerForQuestion,
     moveToNextQuestion,
+    progress
   } = useAssessmentContext();
 
   if (!currentCategory || !currentQuestion) {
     return (
       <ClientOnly>
         <Card>
-          <div className="text-center text-gray-500">
-            {t('noQuestionSelected')}
+          <div className="text-center p-8">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              {t('noQuestionSelected')}
+            </h3>
+            <p className="text-gray-600">
+              {progress === 1 
+                ? t('allQuestionsCompleted')
+                : t('selectCategory')}
+            </p>
           </div>
         </Card>
       </ClientOnly>
@@ -58,7 +66,6 @@ export const AssessmentInteractiveCard = () => {
 
   const handleAnswer = (value: number) => {
     setAnswer(currentQuestion.id, value);
-    moveToNextQuestion();
   };
 
   const currentAnswer = getAnswerForQuestion(currentQuestion.id);
@@ -87,7 +94,13 @@ export const AssessmentInteractiveCard = () => {
           </div>
 
           {currentAnswer && (
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-500">
+                {t('questionProgress', {
+                  current: currentCategory.questions.findIndex(q => q.id === currentQuestion.id) + 1,
+                  total: currentCategory.questions.length
+                })}
+              </div>
               <button
                 onClick={moveToNextQuestion}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"

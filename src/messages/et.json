@@ -114,6 +114,9 @@
     "yourAnswers": "Teie vastused",
     "loadingQuestions": "Hindamisküsimuste laadimine...",
     "noQuestionSelected": "Palun valige hindamise alustamiseks kategooria",
+    "selectCategory": "Valige kategooria hindamise alustamiseks",
+    "allQuestionsCompleted": "Olete kõik küsimused vastanud! Vaadake tulemusi.",
+    "questionProgress": "Küsimus {current}/{total}",
     "categories": {
       "title": "Hindamise kategooriad"
     },

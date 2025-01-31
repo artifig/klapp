@@ -5,6 +5,7 @@ import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
 import { getCategories, getQuestions, saveResult, AirtableCategory, AirtableQuestion } from '@/lib/airtable';
 import { useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
 
 interface Category extends Omit<AirtableCategory, 'name_en' | 'name_et'> {
@@ -89,6 +90,26 @@ const AssessmentContext = createContext<AssessmentContextType | undefined>(undef
 export function AssessmentProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = usePersistentState<AssessmentState>('assessment_state', defaultState);
   const locale = useLocale();
+  const router = useRouter();
+
+  // Calculate progress whenever answers change
+  useEffect(() => {
+    const totalQuestions = state.categories.reduce(
+      (acc, category) => acc + category.questions.length,
+      0
+    );
+    const answeredQuestions = Object.keys(state.answers).length;
+    const newProgress = totalQuestions > 0 ? answeredQuestions / totalQuestions : 0;
+
+    if (newProgress !== state.progress) {
+      setState(prev => ({ ...prev, progress: newProgress }));
+    }
+
+    // Auto-navigate to results when all questions are answered
+    if (newProgress === 1 && state.categories.length > 0) {
+      router.push(routes.results);
+    }
+  }, [state.answers, state.categories, state.progress, setState, router]);
 
   // Fetch categories and questions from Airtable
   useEffect(() => {
@@ -153,10 +174,32 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   }, [setState]);
 
   const setAnswer = useCallback((questionId: string, value: number) => {
-    setState(prev => ({
-      ...prev,
-      answers: { ...prev.answers, [questionId]: value }
-    }));
+    setState(prev => {
+      const newAnswers = { ...prev.answers, [questionId]: value };
+      
+      // Find next category if current category is completed
+      const currentCategory = prev.currentCategory;
+      if (currentCategory) {
+        const allCategoryQuestionsAnswered = currentCategory.questions.every(
+          q => newAnswers[q.id]
+        );
+        
+        if (allCategoryQuestionsAnswered) {
+          const currentIndex = prev.categories.findIndex(c => c.id === currentCategory.id);
+          const nextCategory = prev.categories[currentIndex + 1];
+          
+          return {
+            ...prev,
+            answers: newAnswers,
+            completedCategories: [...prev.completedCategories, currentCategory.id],
+            currentCategory: nextCategory || null,
+            currentQuestion: nextCategory ? nextCategory.questions[0] : null
+          };
+        }
+      }
+      
+      return { ...prev, answers: newAnswers };
+    });
   }, [setState]);
 
   const getAnswerForQuestion = useCallback((questionId: string) => {

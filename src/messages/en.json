@@ -109,6 +109,9 @@
     "yourAnswers": "Your Answers",
     "loadingQuestions": "Loading assessment questions...",
     "noQuestionSelected": "Please select a category to start the assessment",
+    "selectCategory": "Select a category to begin the assessment",
+    "allQuestionsCompleted": "You've completed all questions! View your results.",
+    "questionProgress": "Question {current}/{total}",
     "categories": {
       "title": "Assessment Categories"
     },
