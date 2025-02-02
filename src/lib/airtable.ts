@@ -123,22 +123,17 @@ export interface SchemaValidation {
   isValid: boolean;
   errors: string[];
   suggestions: string[];
-  commoditiesTable: {
+  methodCategoriesTable: {
     exists: boolean;
     name: string | null;
     requiredFields: Record<string, boolean>;
   };
-  countriesTable: {
+  methodQuestionsTable: {
     exists: boolean;
     name: string | null;
     requiredFields: Record<string, boolean>;
   };
-  analysesTable: {
-    exists: boolean;
-    name: string | null;
-    requiredFields: Record<string, boolean>;
-  };
-  usersTable: {
+  methodAnswersTable: {
     exists: boolean;
     name: string | null;
     requiredFields: Record<string, boolean>;
@@ -147,10 +142,31 @@ export interface SchemaValidation {
 
 // Required fields for each table
 const REQUIRED_FIELDS = {
-  commodities: ['name', 'description', 'category'],
-  countries: ['name', 'code', 'region'],
-  analyses: ['title', 'date', 'status'],
-  users: ['email', 'name', 'role']
+  methodCategories: [
+    'categoryId',
+    'categoryText_et',
+    'categoryText_en',
+    'categoryDescription_et',
+    'categoryDescription_en',
+    'isActive',
+    'MethodQuestions'
+  ],
+  methodQuestions: [
+    'questionId',
+    'questionText_et',
+    'questionText_en',
+    'isActive',
+    'MethodCategories',
+    'MethodAnswers'
+  ],
+  methodAnswers: [
+    'answerId',
+    'answerText_et',
+    'answerText_en',
+    'answerScore',
+    'isActive',
+    'MethodQuestions'
+  ]
 } as const;
 
 // Function to fetch all data from Airtable
@@ -962,88 +978,68 @@ export async function validateAirtableSchema(): Promise<SchemaValidation> {
       isValid: true,
       errors: [],
       suggestions: [],
-      commoditiesTable: {
+      methodCategoriesTable: {
         exists: false,
         name: null,
         requiredFields: Object.fromEntries(
-          REQUIRED_FIELDS.commodities.map(field => [field, false])
+          REQUIRED_FIELDS.methodCategories.map(field => [field, false])
         )
       },
-      countriesTable: {
+      methodQuestionsTable: {
         exists: false,
         name: null,
         requiredFields: Object.fromEntries(
-          REQUIRED_FIELDS.countries.map(field => [field, false])
+          REQUIRED_FIELDS.methodQuestions.map(field => [field, false])
         )
       },
-      analysesTable: {
+      methodAnswersTable: {
         exists: false,
         name: null,
         requiredFields: Object.fromEntries(
-          REQUIRED_FIELDS.analyses.map(field => [field, false])
-        )
-      },
-      usersTable: {
-        exists: false,
-        name: null,
-        requiredFields: Object.fromEntries(
-          REQUIRED_FIELDS.users.map(field => [field, false])
+          REQUIRED_FIELDS.methodAnswers.map(field => [field, false])
         )
       }
     };
 
     // Check each required table
     for (const table of schema.tables) {
-      const tableName = table.name.toLowerCase();
-      const fieldNames = table.fields.map(f => f.name.toLowerCase());
+      const tableName = table.name.toLowerCase().replace(/\s+/g, '');
+      const fieldNames = table.fields.map(f => f.name);
 
-      // Check Commodities table
-      if (tableName.includes('commodit')) {
-        validation.commoditiesTable.exists = true;
-        validation.commoditiesTable.name = table.name;
+      // Check MethodCategories table
+      if (tableName === 'methodcategories') {
+        validation.methodCategoriesTable.exists = true;
+        validation.methodCategoriesTable.name = table.name;
         checkRequiredFields(
-          'commodities',
+          'methodCategories',
           fieldNames,
-          validation.commoditiesTable.requiredFields,
+          validation.methodCategoriesTable.requiredFields,
           errors,
           suggestions
         );
       }
 
-      // Check Countries table
-      if (tableName.includes('countr')) {
-        validation.countriesTable.exists = true;
-        validation.countriesTable.name = table.name;
+      // Check MethodQuestions table
+      if (tableName === 'methodquestions') {
+        validation.methodQuestionsTable.exists = true;
+        validation.methodQuestionsTable.name = table.name;
         checkRequiredFields(
-          'countries',
+          'methodQuestions',
           fieldNames,
-          validation.countriesTable.requiredFields,
+          validation.methodQuestionsTable.requiredFields,
           errors,
           suggestions
         );
       }
 
-      // Check Analyses table
-      if (tableName.includes('analys')) {
-        validation.analysesTable.exists = true;
-        validation.analysesTable.name = table.name;
+      // Check MethodAnswers table
+      if (tableName === 'methodanswers') {
+        validation.methodAnswersTable.exists = true;
+        validation.methodAnswersTable.name = table.name;
         checkRequiredFields(
-          'analyses',
+          'methodAnswers',
           fieldNames,
-          validation.analysesTable.requiredFields,
-          errors,
-          suggestions
-        );
-      }
-
-      // Check Users table
-      if (tableName.includes('user')) {
-        validation.usersTable.exists = true;
-        validation.usersTable.name = table.name;
-        checkRequiredFields(
-          'users',
-          fieldNames,
-          validation.usersTable.requiredFields,
+          validation.methodAnswersTable.requiredFields,
           errors,
           suggestions
         );
@@ -1051,21 +1047,17 @@ export async function validateAirtableSchema(): Promise<SchemaValidation> {
     }
 
     // Check if any required tables are missing
-    if (!validation.commoditiesTable.exists) {
-      errors.push('Commodities table is missing');
-      suggestions.push('Create a table named "Commodities" with the required fields');
+    if (!validation.methodCategoriesTable.exists) {
+      errors.push('MethodCategories table is missing');
+      suggestions.push('Create a table named "MethodCategories" with the required fields');
     }
-    if (!validation.countriesTable.exists) {
-      errors.push('Countries table is missing');
-      suggestions.push('Create a table named "Countries" with the required fields');
+    if (!validation.methodQuestionsTable.exists) {
+      errors.push('MethodQuestions table is missing');
+      suggestions.push('Create a table named "MethodQuestions" with the required fields');
     }
-    if (!validation.analysesTable.exists) {
-      errors.push('Analyses table is missing');
-      suggestions.push('Create a table named "Analyses" with the required fields');
-    }
-    if (!validation.usersTable.exists) {
-      errors.push('Users table is missing');
-      suggestions.push('Create a table named "Users" with the required fields');
+    if (!validation.methodAnswersTable.exists) {
+      errors.push('MethodAnswers table is missing');
+      suggestions.push('Create a table named "MethodAnswers" with the required fields');
     }
 
     validation.isValid = errors.length === 0;
@@ -1092,7 +1084,7 @@ function checkRequiredFields(
   const requiredFields = REQUIRED_FIELDS[tableType];
   
   for (const field of requiredFields) {
-    const hasField = fieldNames.some(name => name.includes(field.toLowerCase()));
+    const hasField = fieldNames.some(name => name.toLowerCase() === field.toLowerCase());
     requiredFieldsStatus[field] = hasField;
     
     if (!hasField) {

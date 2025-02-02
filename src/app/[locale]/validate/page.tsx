@@ -9,22 +9,17 @@ export type SchemaValidation = {
   isValid: boolean;
   errors: string[];
   suggestions: string[];
-  commoditiesTable: {
+  methodCategoriesTable: {
     exists: boolean;
     name: string | null;
     requiredFields: Record<string, boolean>;
   };
-  countriesTable: {
+  methodQuestionsTable: {
     exists: boolean;
     name: string | null;
     requiredFields: Record<string, boolean>;
   };
-  analysesTable: {
-    exists: boolean;
-    name: string | null;
-    requiredFields: Record<string, boolean>;
-  };
-  usersTable: {
+  methodAnswersTable: {
     exists: boolean;
     name: string | null;
     requiredFields: Record<string, boolean>;
@@ -223,24 +218,19 @@ export default function AppValidationPage() {
 
           <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <TableValidation
-              title="Commodities Table"
-              table={validation.commoditiesTable}
-              schemaTable={findTableByName(validation.commoditiesTable.name)}
+              title="Method Categories"
+              table={validation.methodCategoriesTable}
+              schemaTable={findTableByName(validation.methodCategoriesTable.name)}
             />
             <TableValidation
-              title="Countries Table"
-              table={validation.countriesTable}
-              schemaTable={findTableByName(validation.countriesTable.name)}
+              title="Method Questions"
+              table={validation.methodQuestionsTable}
+              schemaTable={findTableByName(validation.methodQuestionsTable.name)}
             />
             <TableValidation
-              title="Analyses Table"
-              table={validation.analysesTable}
-              schemaTable={findTableByName(validation.analysesTable.name)}
-            />
-            <TableValidation
-              title="Users Table"
-              table={validation.usersTable}
-              schemaTable={findTableByName(validation.usersTable.name)}
+              title="Method Answers"
+              table={validation.methodAnswersTable}
+              schemaTable={findTableByName(validation.methodAnswersTable.name)}
             />
           </div>
 
