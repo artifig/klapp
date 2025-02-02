@@ -23,6 +23,7 @@
     },
     "timeRequired": "Time Required",
     "timeEstimate": "This assessment takes approximately 15-20 minutes to complete",
+    "stepsTitle": "Assessment Steps",
     "contextCard": {
       "title": "AI Readiness Assessment",
       "description": "Welcome to the AI Readiness Assessment tool! This will help you understand your organization's readiness for implementing AI.",

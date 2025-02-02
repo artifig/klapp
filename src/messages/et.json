@@ -23,6 +23,7 @@
     },
     "timeRequired": "Ajakulu",
     "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit",
+    "stepsTitle": "Hindamise sammud",
     "contextCard": {
       "title": "Tehisaru valmisoleku hindamine",
       "description": "Tere tulemast tehisaru valmisoleku hindamise tööriista! See aitab teil mõista oma organisatsiooni valmisolekut tehisaru juurutamiseks.",
