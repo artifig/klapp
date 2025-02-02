@@ -8,5 +8,5 @@ export interface PageProps {
 export default async function Page({ params }: PageProps) {
     const resolvedParams = await params;
     const { locale } = resolvedParams;
-    redirect(`/${locale}/assessment`);
+    redirect(`/${locale}/home`);
 } 
