@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { AirtableMethodAnswer, AirtableMethodCompanyType } from '@/lib/airtable';
@@ -61,6 +61,25 @@ const defaultState: AssessmentState = {
   error: null,
   progress: 0
 };
+
+const AssessmentContext = createContext<ReturnType<typeof useAssessmentState> | null>(null);
+
+export function AssessmentProvider({ children }: { children: React.ReactNode }) {
+  const assessmentState = useAssessmentState();
+  return (
+    <AssessmentContext.Provider value={assessmentState}>
+      {children}
+    </AssessmentContext.Provider>
+  );
+}
+
+export function useAssessment() {
+  const context = useContext(AssessmentContext);
+  if (!context) {
+    throw new Error('useAssessment must be used within an AssessmentProvider');
+  }
+  return context;
+}
 
 export function useAssessmentState() {
   const locale = useLocale();

@@ -1,15 +1,6 @@
 import Airtable from 'airtable';
-import * as dotenv from 'dotenv';
 
-// Load environment variables from .env.local
-dotenv.config({ path: '.env.local' });
-
-const token = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN || '';
-const baseId = process.env.AIRTABLE_BASE_ID || '';
-
-type FieldSet = Record<string, any>;
-
-// Initialize Airtable
+// Remove dotenv as Next.js handles env vars
 const base = new Airtable({ 
   apiKey: process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN 
 }).base(process.env.AIRTABLE_BASE_ID!);
@@ -552,9 +543,9 @@ function generateKey(name: string): string {
 export async function inspectBase() {
   try {
     // First, get all tables from the base using the metadata API
-    const response = await fetch(`https://api.airtable.com/v0/meta/bases/${baseId}/tables`, {
+    const response = await fetch(`https://api.airtable.com/v0/meta/bases/${process.env.AIRTABLE_BASE_ID}/tables`, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN}`
       }
     });
 
@@ -570,10 +561,10 @@ export async function inspectBase() {
     for (const table of tables) {
       // Get a sample record from each table
       const recordsResponse = await fetch(
-        `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(table.name)}?maxRecords=1`,
+        `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/${encodeURIComponent(table.name)}?maxRecords=1`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN}`
           }
         }
       );
@@ -609,5 +600,39 @@ export async function inspectBase() {
   } catch (error) {
     console.error('Error inspecting base:', error);
     throw error;
+  }
+}
+
+// Rename functions to match imports
+export const getAirtableCategories = getMethodCategories;
+export const getAirtableCompanyTypes = getMethodCompanyTypes;
+export const getAirtableAnswers = getMethodAnswers;
+
+// Add schema validation function
+export async function validateAirtableSchema(): Promise<{ isValid: boolean; issues: string[] }> {
+  try {
+    const schema = await getAirtableSchema();
+    const issues: string[] = [];
+
+    // Validate required tables
+    const requiredTables = ['MethodCategories', 'MethodQuestions', 'MethodAnswers', 'MethodCompanyTypes'];
+    const tableNames = schema.tables.map(t => t.name);
+    
+    requiredTables.forEach(table => {
+      if (!tableNames.includes(table)) {
+        issues.push(`Missing required table: ${table}`);
+      }
+    });
+
+    return {
+      isValid: issues.length === 0,
+      issues
+    };
+  } catch (error) {
+    console.error('Error validating schema:', error);
+    return {
+      isValid: false,
+      issues: ['Failed to validate Airtable schema']
+    };
   }
 } 

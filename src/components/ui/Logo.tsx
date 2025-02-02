@@ -6,12 +6,16 @@ interface LogoProps {
   className?: string;
 }
 
-export const Logo = ({ className = '' }: LogoProps) => {
+export function Logo({ className }: LogoProps) {
   return (
-    <img
-      src="/tehnopol-logo.svg"
-      alt="Tehnopol Logo"
-      className={className}
-    />
+    <div className={className}>
+      <Image
+        src="/logo.svg"
+        alt="Logo"
+        width={32}
+        height={32}
+        priority
+      />
+    </div>
   );
-}; 
+} 

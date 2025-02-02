@@ -1,4 +1,4 @@
-import { useAssessmentState } from '@/state/AssessmentState';
+import { AssessmentProvider } from '@/state/AssessmentState';
 
 export default function AssessmentLayout({
   children,
@@ -6,8 +6,10 @@ export default function AssessmentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="container mx-auto px-4 py-8">
-      {children}
-    </main>
+    <AssessmentProvider>
+      <main className="container mx-auto px-4 py-8">
+        {children}
+      </main>
+    </AssessmentProvider>
   );
 } 

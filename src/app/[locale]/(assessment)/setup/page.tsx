@@ -1,19 +1,16 @@
-import { Suspense } from 'react';
-import { PageLayout } from '@/components/layout/PageLayout';
-import { SetupContextCard } from '@/components/context/SetupContextCard';
+import { useTranslations } from 'next-intl';
 import { SetupInteractiveCard } from '@/components/interactive/SetupInteractiveCard';
-import ClientOnly from '@/components/ClientOnly';
-import { fetchCompanyTypes } from '@/lib/actions';
+import { SetupContextCard } from '@/components/context/SetupContextCard';
+import { getMethodCompanyTypes } from '@/lib/airtable';
 
 export default async function SetupPage() {
-  const { companyTypes } = await fetchCompanyTypes();
+  const t = useTranslations('Setup');
+  const companyTypes = await getMethodCompanyTypes();
 
   return (
-    <ClientOnly>
-      <PageLayout
-        contextCard={<SetupContextCard />}
-        interactiveCard={<SetupInteractiveCard initialCompanyTypes={companyTypes} />}
-      />
-    </ClientOnly>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <SetupInteractiveCard initialCompanyTypes={companyTypes} />
+      <SetupContextCard />
+    </div>
   );
 } 
