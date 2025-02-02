@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
 
-interface AssessmentRootProps {
+type Props = {
   params: {
     locale: string;
   };
-}
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
-export default function AssessmentRoot({ params: { locale } }: AssessmentRootProps) {
+export default async function AssessmentRoot({ params: { locale } }: Props) {
   redirect(`/${locale}/home`);
 } 
