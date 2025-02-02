@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Card } from '@/components/ui/Card';
+import Card from '@/components/ui/Card';
 import ClientOnly from '@/components/ClientOnly';
 
 export const HomeContextCard = () => {
