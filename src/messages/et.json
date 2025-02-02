@@ -102,7 +102,17 @@
         "step3": "Määrake oma eesmärk",
         "step4": "Jätkake hindamisega"
       }
-    }
+    },
+    "loading": {
+      "fetchingData": "Hindamisandmete laadimine...",
+      "preparingAssessment": "Hindamise ettevalmistamine..."
+    },
+    "errors": {
+      "fetchingCompanyTypes": "Ettevõtte tüüpide laadimine ebaõnnestus. Palun proovige uuesti.",
+      "fetchingData": "Hindamisandmete laadimine ebaõnnestus. Palun proovige uuesti."
+    },
+    "categories": "kategooriat",
+    "questions": "küsimust"
   },
   "assessment": {
     "title": "Tehisaru valmisoleku hindamine",

@@ -47,6 +47,16 @@
       "selectCompanyType": "Select company type",
       "submit": "Continue to Assessment"
     },
+    "loading": {
+      "fetchingData": "Loading assessment data...",
+      "preparingAssessment": "Preparing assessment..."
+    },
+    "errors": {
+      "fetchingCompanyTypes": "Failed to load company types. Please try again.",
+      "fetchingData": "Failed to load assessment data. Please try again."
+    },
+    "categories": "categories",
+    "questions": "questions",
     "companyTypes": {
       "startup": "Startup",
       "scaleup": "Scaleup",
