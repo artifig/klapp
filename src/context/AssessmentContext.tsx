@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
-import { saveResult, getDataForCompanyType, AirtableMethodCategory, AirtableMethodQuestion, AirtableMethodAnswer } from '@/lib/airtable';
+import { saveResult, getDataForCompanyType, AirtableMethodCategory, AirtableMethodQuestion, AirtableMethodAnswer, normalizeCompanyType } from '@/lib/airtable';
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
@@ -122,21 +122,20 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     }
   }, [pathname, locale]);
 
-  // Modified data fetching effect to only run when needed
+  // Modified data fetching effect to run whenever we have a company type
   useEffect(() => {
     const fetchData = async () => {
-      // Check if we're on the assessment page
-      const isAssessmentPage = window.location.pathname.includes('/assessment');
-      
+      // Check if we have a company type
       console.log('🔍 Checking data fetch conditions:', {
         companyType: state.formData.companyType,
-        isAssessmentPage,
-        currentCategories: state.categories.length,
-        pathname: window.location.pathname
+        pathname,
+        hasRequiredData: Boolean(state.formData.companyType),
+        currentCategories: state.categories.length
       });
 
-      // Only fetch if we have a company type and we're on the assessment page
-      if (!state.formData.companyType || !isAssessmentPage) {
+      // Only fetch if we have a company type
+      if (!state.formData.companyType) {
+        console.log('⏭️ Skipping data fetch: No company type');
         return;
       }
 
@@ -144,20 +143,39 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         setIsLoading(true);
         setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-        console.log('📥 Fetching data for company type:', state.formData.companyType);
+        console.log('📥 Fetching data for company type:', {
+          type: state.formData.companyType,
+          normalized: normalizeCompanyType(state.formData.companyType)
+        });
+        
         const data = await getDataForCompanyType(state.formData.companyType);
+
+        console.log('🔍 Raw category company types:', data.categories.slice(0, 2).map(cat => ({
+          categoryId: cat.categoryId,
+          companyTypes: cat.companyType
+        })));
 
         // Transform categories and questions into the format we need
         const transformedCategories = data.categories
+          .filter(category => {
+            // Check if the category's companyType array includes either:
+            // 1. The normalized company type (T1, T2, etc.)
+            // 2. The Airtable record ID that maps to this company type
+            const normalizedRequestedType = normalizeCompanyType(state.formData.companyType);
+            return Array.isArray(category.companyType) && category.companyType.some(type => {
+              const normalizedCategoryType = normalizeCompanyType(type);
+              return normalizedCategoryType === normalizedRequestedType || type === state.formData.companyType;
+            });
+          })
           .map((category, index) => {
             const categoryQuestions = data.questions
-              .filter(q => category.questionId.includes(q.id))
+              .filter(q => category.MethodQuestions.includes(q.id))
               .map(question => ({
                 id: question.questionId,
                 airtableId: question.id,
                 text: locale === 'et' ? question.questionText_et : question.questionText_en,
                 categoryId: [category.categoryId],
-                answerId: question.answerId || [], // Ensure we have an array even if empty
+                answerId: question.MethodAnswers || [],
                 order: parseInt(question.questionId.replace('Q', ''), 10) || 0
               }))
               .sort((a, b) => a.order - b.order);
