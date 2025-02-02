@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import Card from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { useAssessmentContext } from '@/context/AssessmentContext';
 import ClientOnly from '@/components/ClientOnly';
 
@@ -32,30 +32,35 @@ export const SetupContextCard = () => {
 
   return (
     <ClientOnly>
-      <Card title={t('contextCard.title')}>
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-medium text-gray-900 mb-2">
-              {t('contextCard.requirements')}
-            </h3>
-            <div className="divide-y">
-              {requirements.map(({ key, value }) => (
-                <RequirementItem
-                  key={key}
-                  label={t(`${key}Label`)}
-                  isComplete={!!value}
-                />
-              ))}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-2xl">{t('contextCard.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div>
+              <CardDescription className="font-medium mb-2">
+                {t('contextCard.requirements')}
+              </CardDescription>
+              <div className="divide-y">
+                {requirements.map(({ key, value }) => (
+                  <RequirementItem
+                    key={key}
+                    label={t(`${key}Label`)}
+                    isComplete={!!value}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <CardDescription className="font-medium mb-2">
+                {t('contextCard.yourGoal')}
+              </CardDescription>
+              <p className="text-sm text-muted-foreground">{goal || t('goal.empty')}</p>
             </div>
           </div>
-
-          <div>
-            <h3 className="font-medium text-gray-900 mb-2">
-              {t('contextCard.yourGoal')}
-            </h3>
-            <p className="text-gray-600">{goal || t('goal.empty')}</p>
-          </div>
-        </div>
+        </CardContent>
       </Card>
     </ClientOnly>
   );

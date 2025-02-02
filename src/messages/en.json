@@ -14,9 +14,6 @@
     "next": "Next"
   },
   "home": {
-    "goalLabel": "Your Goal",
-    "goalDescription": "What are your main objectives for implementing AI in your organization?",
-    "goalPlaceholder": "E.g., We want to automate our customer service processes and implement predictive analytics for sales forecasting...",
     "whatToExpect": "What to Expect",
     "expectationsList": {
       "evaluation": "Comprehensive evaluation of your AI readiness",
@@ -26,7 +23,6 @@
     },
     "timeRequired": "Time Required",
     "timeEstimate": "This assessment takes approximately 15-20 minutes to complete",
-    "startButton": "Start Your AI Readiness Journey",
     "contextCard": {
       "title": "AI Readiness Assessment",
       "description": "Welcome to the AI Readiness Assessment tool! This will help you understand your organization's readiness for implementing AI.",
@@ -36,6 +32,12 @@
         "step3": "Identify opportunities and challenges",
         "step4": "Receive personalized recommendations for next steps"
       }
+    },
+    "form": {
+      "goal": "Your Goal",
+      "goalDescription": "What are your main objectives for implementing AI in your organization?",
+      "goalPlaceholder": "E.g., We want to automate our customer service processes and implement predictive analytics for sales forecasting...",
+      "submit": "Start Your AI Readiness Journey"
     }
   },
   "setup": {
@@ -86,17 +88,12 @@
       "saved": "Saved",
       "error": "Failed to save"
     },
-    "continue": "Continue to Assessment",
-    "yourGoal": "Your Goal",
-    "nextSteps": "Next Steps",
     "nextStepsList": {
       "details": "Fill in your company details",
       "required": "All fields are required",
       "confidential": "Your data will be treated confidentially",
       "proceed": "After entering your data, you can proceed with the assessment"
     },
-    "organizationDetails": "Organization Details",
-    "organizationInfo": "Please enter your organization details",
     "contextCard": {
       "title": "Setup",
       "description": "Before starting the assessment, we need some information about your organization.",

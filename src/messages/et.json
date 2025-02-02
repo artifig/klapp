@@ -14,9 +14,6 @@
     "next": "Edasi"
   },
   "home": {
-    "goalLabel": "Teie eesmärk",
-    "goalDescription": "Millised on teie peamised eesmärgid tehisaru juurutamisel oma organisatsioonis?",
-    "goalPlaceholder": "Näiteks: Soovime automatiseerida klienditeeninduse protsesse ja rakendada müügiprognoosimiseks ennustavat analüütikat...",
     "whatToExpect": "Mida oodata",
     "expectationsList": {
       "evaluation": "Põhjalik hinnang teie tehisaru valmisolekule",
@@ -26,7 +23,6 @@
     },
     "timeRequired": "Ajakulu",
     "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit",
-    "startButton": "Alusta tehisaru valmisoleku teekonda",
     "contextCard": {
       "title": "Tehisaru valmisoleku hindamine",
       "description": "Tere tulemast tehisaru valmisoleku hindamise tööriista! See aitab teil mõista oma organisatsiooni valmisolekut tehisaru juurutamiseks.",
@@ -36,14 +32,16 @@
         "step3": "Tuvastage võimalused ja väljakutsed",
         "step4": "Saage personaalsed soovitused järgmisteks sammudeks"
       }
+    },
+    "form": {
+      "goal": "Teie eesmärk",
+      "goalDescription": "Millised on teie peamised eesmärgid tehisaru juurutamisel oma organisatsioonis?",
+      "goalPlaceholder": "Näiteks: Soovime automatiseerida klienditeeninduse protsesse ja rakendada müügiprognoosimiseks ennustavat analüütikat...",
+      "submit": "Alusta tehisaru valmisoleku teekonda"
     }
   },
   "setup": {
     "title": "Alustame",
-    "nameLabel": "Teie nimi",
-    "emailLabel": "E-posti aadress",
-    "companyNameLabel": "Ettevõtte nimi",
-    "companyTypeLabel": "Ettevõtte tüüp",
     "form": {
       "name": "Teie nimi",
       "email": "E-posti aadress",
@@ -52,6 +50,16 @@
       "selectCompanyType": "Valige ettevõtte tüüp",
       "submit": "Jätka hindamisega"
     },
+    "loading": {
+      "fetchingData": "Hindamisandmete laadimine...",
+      "preparingAssessment": "Hindamise ettevalmistamine..."
+    },
+    "errors": {
+      "fetchingCompanyTypes": "Ettevõtte tüüpide laadimine ebaõnnestus. Palun proovige uuesti.",
+      "fetchingData": "Hindamisandmete laadimine ebaõnnestus. Palun proovige uuesti."
+    },
+    "categories": "kategooriat",
+    "questions": "küsimust",
     "companyTypes": {
       "startup": "Iduettevõte",
       "scaleup": "Kasvuettevõte",
@@ -80,17 +88,12 @@
       "saved": "Salvestatud",
       "error": "Salvestamine ebaõnnestus"
     },
-    "continue": "Jätka hindamisega",
-    "yourGoal": "Teie eesmärk",
-    "nextSteps": "Järgmised sammud",
     "nextStepsList": {
       "details": "Täitke oma ettevõtte andmed",
       "required": "Kõik väljad on kohustuslikud",
       "confidential": "Teie andmeid käsitletakse konfidentsiaalselt",
       "proceed": "Pärast andmete sisestamist saate jätkata hindamisega"
     },
-    "organizationDetails": "Organisatsiooni andmed",
-    "organizationInfo": "Palun sisestage oma organisatsiooni andmed",
     "contextCard": {
       "title": "Seadistus",
       "description": "Enne hindamise alustamist vajame mõningat teavet teie organisatsiooni kohta.",
@@ -103,16 +106,6 @@
         "step4": "Jätkake hindamisega"
       }
     },
-    "loading": {
-      "fetchingData": "Hindamisandmete laadimine...",
-      "preparingAssessment": "Hindamise ettevalmistamine..."
-    },
-    "errors": {
-      "fetchingCompanyTypes": "Ettevõtte tüüpide laadimine ebaõnnestus. Palun proovige uuesti.",
-      "fetchingData": "Hindamisandmete laadimine ebaõnnestus. Palun proovige uuesti."
-    },
-    "categories": "kategooriat",
-    "questions": "küsimust",
     "goal": {
       "empty": "Eesmärk pole veel määratud"
     }

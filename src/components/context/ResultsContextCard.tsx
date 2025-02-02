@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import Card from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useAssessmentContext } from '@/context/AssessmentContext';
 import ClientOnly from '@/components/ClientOnly';
 
@@ -50,50 +50,39 @@ export const ResultsContextCard = () => {
 
   return (
     <ClientOnly>
-      <Card>
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-medium text-gray-900 mb-3">
-              {t('completion.title')}
-            </h3>
-            <div className="flex items-center space-x-2">
-              <div className="flex-grow bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${completionPercentage}%` }}
-                />
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>{t('contextCard.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Overall Score */}
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">
+                {t('contextCard.overallScore')}
+              </h3>
+              <div className="text-4xl font-bold text-primary">
+                {Math.round(completionPercentage)}%
               </div>
-              <span className="text-sm text-gray-600">
-                {completionPercentage}%
-              </span>
             </div>
-          </div>
 
-          <div>
-            <h3 className="font-medium text-gray-900 mb-3">
-              {t('categories.title')}
-            </h3>
-            <div className="space-y-2">
-              {categories.map((category) => (
-                <div
-                  key={category.id}
-                  className={`px-4 py-2 rounded-md ${
-                    completedCategories.includes(category.id)
-                      ? 'bg-green-50 text-green-700'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>{category.name}</span>
-                    {completedCategories.includes(category.id) && (
-                      <span className="text-green-500">✓</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+            {/* Category Scores */}
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">
+                {t('contextCard.categoryScores')}
+              </h3>
+              <div>
+                {categories.map((category) => (
+                  <CategoryResult
+                    key={category.id}
+                    category={category.name}
+                    score={completionPercentage}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </CardContent>
       </Card>
     </ClientOnly>
   );

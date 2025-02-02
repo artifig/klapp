@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
-import Card from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useAssessmentContext } from '@/context/AssessmentContext';
 import ClientOnly from '@/components/ClientOnly';
 import { AirtableMethodAnswer } from '@/lib/airtable';
@@ -81,17 +81,22 @@ export const AssessmentInteractiveCard = () => {
   if (!currentCategory || !currentQuestion) {
     return (
       <ClientOnly>
-        <Card>
-          <div className="text-center p-8">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              {t('noQuestionSelected')}
-            </h3>
-            <p className="text-gray-600">
-              {progress === 1 
-                ? t('allQuestionsCompleted')
-                : t('selectCategory')}
-            </p>
-          </div>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="sr-only">Assessment Questions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center p-8">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {t('noQuestionSelected')}
+              </h3>
+              <p className="text-gray-600">
+                {progress === 1 
+                  ? t('allQuestionsCompleted')
+                  : t('selectCategory')}
+              </p>
+            </div>
+          </CardContent>
         </Card>
       </ClientOnly>
     );
@@ -166,33 +171,38 @@ export const AssessmentInteractiveCard = () => {
 
   return (
     <ClientOnly>
-      <Card>
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-medium text-gray-900">
-              {currentCategory.name}
-            </h3>
-            <p className="mt-2 text-gray-600">{currentQuestion.text}</p>
-          </div>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="sr-only">Assessment Questions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">
+                {currentCategory.name}
+              </h3>
+              <p className="mt-2 text-gray-600">{currentQuestion.text}</p>
+            </div>
 
-          <div className="space-y-3">
-            {randomizedAnswers.map((answer: AirtableMethodAnswer) => (
-              <AnswerOption
-                key={answer.id}
-                answer={answer}
-                isSelected={currentAnswer === answer.answerScore}
-                onClick={() => handleAnswer(answer.answerScore)}
-              />
-            ))}
-          </div>
+            <div className="space-y-3">
+              {randomizedAnswers.map((answer: AirtableMethodAnswer) => (
+                <AnswerOption
+                  key={answer.id}
+                  answer={answer}
+                  isSelected={currentAnswer === answer.answerScore}
+                  onClick={() => handleAnswer(answer.answerScore)}
+                />
+              ))}
+            </div>
 
-          <div className="text-sm text-gray-500">
-            {t('questionProgress', {
-              current: currentCategory.questions.findIndex(q => q.id === currentQuestion.id) + 1,
-              total: currentCategory.questions.length
-            })}
+            <div className="text-sm text-gray-500">
+              {t('questionProgress', {
+                current: currentCategory.questions.findIndex(q => q.id === currentQuestion.id) + 1,
+                total: currentCategory.questions.length
+              })}
+            </div>
           </div>
-        </div>
+        </CardContent>
       </Card>
     </ClientOnly>
   );
