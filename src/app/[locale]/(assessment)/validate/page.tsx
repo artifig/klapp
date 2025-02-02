@@ -1,5 +1,7 @@
 "use client"
 
+import { type NextPage } from 'next';
+import { type PageProps } from '../../page';
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { RefreshCw, XCircle, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
@@ -266,7 +268,7 @@ function SchemaReferenceSection({ schema }: { schema: AirtableSchema }) {
   );
 }
 
-export default function ValidatePage() {
+const ValidatePage: NextPage<PageProps> = () => {
   const t = useTranslations('validate');
   const [results, setResults] = useState<ValidationResult[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -288,7 +290,7 @@ export default function ValidatePage() {
         // Validate each expected table
         for (const expectedTable of expectedTables) {
           const table = fetchedSchema.tables.find(t => t.name === expectedTable.name);
-          
+
           if (!table) {
             validationResults.push({
               tableName: expectedTable.name,
@@ -317,7 +319,7 @@ export default function ValidatePage() {
           });
 
           // Validate field types
-          const hasInvalidTypes = expectedTable.fieldTypes ? 
+          const hasInvalidTypes = expectedTable.fieldTypes ?
             Object.entries(expectedTable.fieldTypes).some(([fieldName, expectedType]) => {
               const actualType = fieldTypes[fieldName];
               return actualType && actualType !== expectedType;
@@ -402,4 +404,6 @@ export default function ValidatePage() {
       </div>
     </div>
   );
-} 
+}
+
+export default ValidatePage; 

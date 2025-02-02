@@ -1,12 +1,9 @@
 import { redirect } from 'next/navigation';
+import { type NextPage } from 'next';
+import { type PageProps } from '../page';
 
-type Props = {
-  params: {
-    locale: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+const AssessmentRoot: NextPage<PageProps> = async ({ params: { locale } }) => {
+  redirect(`/${locale}/home`);
 };
 
-export default async function AssessmentRoot({ params: { locale } }: Props) {
-  redirect(`/${locale}/home`);
-} 
+export default AssessmentRoot; 

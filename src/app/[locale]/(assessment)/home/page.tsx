@@ -1,5 +1,9 @@
+import { type NextPage } from 'next';
+import { type PageProps } from '../../page';
 import { HomeClient } from './client';
 
-export default function HomePage() {
+const HomePage: NextPage<PageProps> = () => {
   return <HomeClient />;
-} 
+};
+
+export default HomePage; 
