@@ -149,6 +149,17 @@ export async function getMethodCategories(): Promise<AirtableMethodCategory[]> {
       })
       .all();
     
+    console.log('📚 Raw Categories from Airtable:', records.map(record => ({
+      id: record.id,
+      categoryId: record.get('categoryId'),
+      name_en: record.get('categoryText_en'),
+      name_et: record.get('categoryText_et'),
+      description_en: record.get('categoryDescription_en'),
+      companyTypes: record.get('MethodCompanyTypes'),
+      questions: record.get('MethodQuestions'),
+      isActive: record.get('isActive')
+    })));
+    
     return records.map((record) => ({
       id: record.id,
       categoryId: record.get('categoryId') as string,
