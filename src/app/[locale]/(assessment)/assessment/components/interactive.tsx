@@ -55,8 +55,40 @@ const AnswerOption = ({ answer, isSelected, onClick }: AnswerOptionProps) => {
   );
 };
 
+// Helper function to transform Airtable data to Category type
+function transformCategories(
+  categories: AirtableMethodCategory[],
+  questions: AirtableMethodQuestion[],
+  locale: string
+): Category[] {
+  return categories.map((cat, index) => {
+    // Get questions for this category
+    const categoryQuestions = questions
+      .filter(q => q.MethodCategories.includes(cat.id))
+      .map((q, qIndex) => ({
+        id: q.id,
+        airtableId: q.questionId,
+        text: locale === 'et' ? q.questionText_et : q.questionText_en,
+        categoryId: q.MethodCategories,
+        answerId: q.MethodAnswers,
+        order: qIndex
+      }));
+
+    return {
+      id: cat.id,
+      key: cat.categoryId,
+      name: locale === 'et' ? cat.categoryText_et : cat.categoryText_en,
+      order: index,
+      questions: categoryQuestions,
+      companyType: cat.companyType,
+      description: locale === 'et' ? cat.categoryDescription_et : cat.categoryDescription_en
+    };
+  });
+}
+
 export const Interactive = ({ initialData }: InteractiveProps) => {
   const t = useTranslations('assessment');
+  const locale = useLocale();
   const {
     currentCategory,
     currentQuestion,
@@ -70,8 +102,9 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
 
   // Initialize assessment data
   useEffect(() => {
-    setAssessmentData(initialData.categories as Category[], initialData.answers);
-  }, [initialData, setAssessmentData]);
+    const transformedCategories = transformCategories(initialData.categories, initialData.questions, locale);
+    setAssessmentData(transformedCategories, initialData.answers);
+  }, [initialData, setAssessmentData, locale]);
 
   // Add state for randomized answers
   const [randomizedAnswers, setRandomizedAnswers] = useState<AirtableMethodAnswer[]>([]);
