@@ -1,5 +1,11 @@
 import { redirect } from 'next/navigation';
 
-export default function AssessmentRoot() {
-  redirect('/home');
+interface AssessmentRootProps {
+  params: {
+    locale: string;
+  };
+}
+
+export default function AssessmentRoot({ params: { locale } }: AssessmentRootProps) {
+  redirect(`/${locale}/home`);
 } 
