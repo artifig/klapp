@@ -189,5 +189,16 @@
     "continue": "Jätka",
     "languageSwitch": "Vaheta keelt",
     "switchTo": "Lülitu"
+  },
+  "validate": {
+    "title": "Airtable struktuuri valideerimine",
+    "loading": "Laadimine...",
+    "validating": "Airtable struktuuri valideerimine...",
+    "error": "Viga",
+    "valid": "Kehtiv",
+    "invalid": "Vigane",
+    "missingFields": "Puuduvad väljad",
+    "extraFields": "Lisaväljad",
+    "fieldTypes": "Välja tüübid"
   }
 } 

@@ -184,5 +184,16 @@
     "continue": "Continue",
     "languageSwitch": "Switch language",
     "switchTo": "Switch to"
+  },
+  "validate": {
+    "title": "Airtable Structure Validation",
+    "loading": "Loading...",
+    "validating": "Validating Airtable structure...",
+    "error": "Error",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "missingFields": "Missing Fields",
+    "extraFields": "Extra Fields",
+    "fieldTypes": "Field Types"
   }
 } 
