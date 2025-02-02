@@ -368,10 +368,10 @@ function filterDataByCompanyType(
 // Types for company metadata
 export interface CompanyTypeMetadata {
   id: string;
-  type: string;
-  type_et: string;
-  description: string;
-  description_et: string;
+  companyTypeText_en: string;
+  companyTypeText_et: string;
+  companyTypeDescription_en: string;
+  companyTypeDescription_et: string;
   categoryCount: number;
   questionCount: number;
 }
@@ -422,15 +422,15 @@ export async function getCompanyTypesMetadata(): Promise<CompanyTypeMetadata[]> 
   try {
     const companyTypes = await getMethodCompanyTypes();
 
-    // Map company types directly to metadata
+    // Map company types directly to metadata using exact field names from Airtable
     const metadata: CompanyTypeMetadata[] = companyTypes
       .filter(type => type.isActive)
       .map(type => ({
         id: type.id,
-        type: type.companyTypeText_en,
-        type_et: type.companyTypeText_et,
-        description: type.companyTypeDescription_en,
-        description_et: type.companyTypeDescription_et,
+        companyTypeText_en: type.companyTypeText_en,
+        companyTypeText_et: type.companyTypeText_et,
+        companyTypeDescription_en: type.companyTypeDescription_en,
+        companyTypeDescription_et: type.companyTypeDescription_et,
         categoryCount: 0,
         questionCount: 0
       }));

@@ -45,7 +45,7 @@ export const SetupInteractiveCard = () => {
         setIsLoading(true);
         const metadata = await getCompanyTypesMetadata();
         console.log('📊 Company types:', metadata.map(m => ({
-          name: `${m.type_et} / ${m.type}`,
+          name: `${m.companyTypeText_et} / ${m.companyTypeText_en}`,
           categories: m.categoryCount,
           questions: m.questionCount
         })));
@@ -227,7 +227,7 @@ export const SetupInteractiveCard = () => {
               <option value="">{t('form.selectCompanyType')}</option>
               {companyTypes.map((type) => (
                 <option key={type.id} value={type.id}>
-                  {type.type_et} / {type.type} ({type.categoryCount} {t('categories')}, {type.questionCount} {t('questions')})
+                  {type.companyTypeText_et} / {type.companyTypeText_en} ({type.categoryCount} {t('categories')}, {type.questionCount} {t('questions')})
                 </option>
               ))}
             </select>
