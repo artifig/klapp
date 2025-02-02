@@ -6,18 +6,20 @@ import ClientOnly from '@/components/ClientOnly';
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }
 
 export default async function LocaleLayout({
   children,
   params
 }: LocaleLayoutProps) {
-  const { locale } = params;
+  // Await the params object before destructuring
+  const { locale } = await params;
   
   // Enable static rendering
-  unstable_setRequestLocale(locale);
+  await unstable_setRequestLocale(locale);
   
+  // Get messages for the current locale
   const messages = await getMessages();
 
   return (
