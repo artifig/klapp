@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useAssessmentContext } from '@/context/AssessmentContext';
 import ClientOnly from '@/components/ClientOnly';
-import { getCompanyTypesMetadata, CompanyTypeMetadata, getDataForCompanyType } from '@/lib/airtable';
 import { Loading } from '@/components/ui/Loading';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
+import { AirtableMethodCompanyType } from '@/lib/airtable';
 
 interface FormData {
   name: string;
@@ -20,46 +20,15 @@ interface FormData {
 export const SetupInteractiveCard = () => {
   const t = useTranslations('setup');
   const router = useRouter();
-  const { setFormData } = useAssessmentContext();
-  const fetchingRef = useRef(false);
-  const initializedRef = useRef(false);
+  const { setFormData, companyTypes } = useAssessmentContext();
   const [localFormData, setLocalFormData] = useState<FormData>({
     name: '',
     email: '',
     companyName: '',
     companyType: '',
   });
-  const [companyTypes, setCompanyTypes] = useState<CompanyTypeMetadata[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Fetch company types metadata on component mount
-  useEffect(() => {
-    const fetchCompanyTypes = async () => {
-      if (initializedRef.current || fetchingRef.current) return;
-      initializedRef.current = true;
-      fetchingRef.current = true;
-
-      try {
-        setIsLoading(true);
-        const metadata = await getCompanyTypesMetadata();
-        console.log('📊 Company types:', metadata.map(m => ({
-          name: `${m.companyTypeText_et} / ${m.companyTypeText_en}`
-        })));
-        setCompanyTypes(metadata);
-        setError(null);
-      } catch (err) {
-        console.error('❌ Error fetching company types:', err);
-        setError(t('errors.fetchingCompanyTypes'));
-      } finally {
-        setIsLoading(false);
-        fetchingRef.current = false;
-      }
-    };
-
-    fetchCompanyTypes();
-  }, [t]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -86,21 +55,6 @@ export const SetupInteractiveCard = () => {
       setIsSubmitting(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <ClientOnly>
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="sr-only">Setup Form</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Loading type="card" />
-          </CardContent>
-        </Card>
-      </ClientOnly>
-    );
-  }
 
   if (error) {
     return (
@@ -199,7 +153,7 @@ export const SetupInteractiveCard = () => {
                 onChange={handleChange}
               >
                 <option value="">{t('form.selectCompanyType')}</option>
-                {companyTypes.map((type) => (
+                {companyTypes.map((type: AirtableMethodCompanyType) => (
                   <option key={type.id} value={type.id}>
                     {type.companyTypeText_et} / {type.companyTypeText_en}
                   </option>

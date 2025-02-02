@@ -31,7 +31,7 @@ const CategoryItem = ({ name, isActive, isCompleted, onClick }: CategoryItemProp
   </button>
 );
 
-export const AssessmentContextCard = () => {
+export const AssessmentProgress = () => {
   const t = useTranslations('assessment');
   const { 
     categories,
@@ -49,7 +49,7 @@ export const AssessmentContextCard = () => {
     <ClientOnly>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>{t('contextCard.title')}</CardTitle>
+          <CardTitle>{t('progress.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -67,6 +67,4 @@ export const AssessmentContextCard = () => {
       </Card>
     </ClientOnly>
   );
-};
-
-export default AssessmentContextCard; 
+}; 

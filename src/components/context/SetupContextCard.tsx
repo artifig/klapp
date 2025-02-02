@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import { useAssessmentContext } from '@/context/AssessmentContext';
+import { useAssessmentState } from '@/state/useAssessmentState';
 import ClientOnly from '@/components/ClientOnly';
 
 interface RequirementItemProps {
@@ -21,13 +21,13 @@ const RequirementItem = ({ label, isComplete }: RequirementItemProps) => (
 
 export const SetupContextCard = () => {
   const t = useTranslations('setup');
-  const { goal, formData } = useAssessmentContext();
+  const { goal, formData } = useAssessmentState();
 
   const requirements = [
-    { key: 'name', value: formData?.name },
-    { key: 'email', value: formData?.email },
-    { key: 'companyName', value: formData?.companyName },
-    { key: 'companyType', value: formData?.companyType },
+    { key: 'name', value: formData.name },
+    { key: 'email', value: formData.email },
+    { key: 'companyName', value: formData.companyName },
+    { key: 'companyType', value: formData.companyType },
   ];
 
   return (

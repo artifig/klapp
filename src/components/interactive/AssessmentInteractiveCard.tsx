@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { useAssessmentContext } from '@/context/AssessmentContext';
+import { useAssessment } from '@/context/AssessmentContext';
 import ClientOnly from '@/components/ClientOnly';
 import { AirtableMethodAnswer } from '@/lib/airtable';
 import { useState, useEffect } from 'react';
@@ -52,13 +52,13 @@ export const AssessmentInteractiveCard = () => {
   const {
     currentCategory,
     currentQuestion,
-    setAnswer,
     getAnswerForQuestion,
     moveToNextQuestion,
+    moveToNextCategory,
+    setAnswer,
     progress,
-    methodAnswers,
-    setState
-  } = useAssessmentContext();
+    methodAnswers
+  } = useAssessment();
 
   // Add state for randomized answers
   const [randomizedAnswers, setRandomizedAnswers] = useState<AirtableMethodAnswer[]>([]);
@@ -134,61 +134,23 @@ export const AssessmentInteractiveCard = () => {
   }
 
   const handleAnswer = (score: number) => {
-    // Set the answer and move to next question in one update
-    setState((prev: AssessmentState) => {
-      const currentCategory = prev.currentCategory;
-      const currentQuestion = prev.currentQuestion;
-      
-      if (!currentCategory || !currentQuestion) return prev;
+    if (!currentQuestion) return;
+    
+    // Set the answer
+    setAnswer(currentQuestion.id, score);
 
-      // Update answers
-      const newAnswers = { ...prev.answers, [currentQuestion.id]: score };
-      
-      // Move to next question immediately
-      const currentQuestionIndex = currentCategory.questions.findIndex(q => q.id === currentQuestion.id);
-      const nextQuestion = currentCategory.questions[currentQuestionIndex + 1];
-      
-      // Check if all questions in current category are now answered
-      const allCategoryQuestionsAnswered = currentCategory.questions.every((q: Question) => 
-        q.id === currentQuestion.id ? true : !!newAnswers[q.id]
-      );
+    // Check if all questions in current category are now answered
+    const allCategoryQuestionsAnswered = currentCategory?.questions.every(
+      q => q.id === currentQuestion.id ? true : !!getAnswerForQuestion(q.id)
+    );
 
-      // If there's a next question and not all questions are answered, move to it
-      if (nextQuestion && !allCategoryQuestionsAnswered) {
-        return { ...prev, answers: newAnswers, currentQuestion: nextQuestion };
-      }
-
-      // If all questions are answered or this is the last question, try to move to next category
-      if (allCategoryQuestionsAnswered || !nextQuestion) {
-        const currentCategoryIndex = prev.categories.findIndex((c: Category) => c.id === currentCategory.id);
-        const nextCategory = prev.categories[currentCategoryIndex + 1];
-
-        // Only add to completed categories if not already there
-        const newCompletedCategories = prev.completedCategories.includes(currentCategory.id)
-          ? prev.completedCategories
-          : [...prev.completedCategories, currentCategory.id];
-
-        if (nextCategory) {
-          return {
-            ...prev,
-            answers: newAnswers,
-            completedCategories: newCompletedCategories,
-            currentCategory: nextCategory,
-            currentQuestion: nextCategory.questions[0]
-          };
-        } else {
-          return {
-            ...prev,
-            answers: newAnswers,
-            completedCategories: newCompletedCategories,
-            currentCategory: null,
-            currentQuestion: null
-          };
-        }
-      }
-
-      return { ...prev, answers: newAnswers };
-    });
+    if (allCategoryQuestionsAnswered) {
+      // If all questions are answered, move to next category
+      moveToNextCategory();
+    } else {
+      // Otherwise, move to next question
+      moveToNextQuestion();
+    }
   };
 
   const currentAnswer = getAnswerForQuestion(currentQuestion.id);
