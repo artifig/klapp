@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "check-all": "npm run type-check && npm run lint",
+    "validate": "npm run check-all && npm run build"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",
