@@ -4,7 +4,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useAssessmentState } from '@/state/AssessmentState';
 import { AirtableMethodAnswer, AirtableMethodCategory, AirtableMethodQuestion } from '@/lib/airtable';
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Category } from '@/state/AssessmentState';
 
 interface InteractiveProps {
@@ -94,13 +94,16 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
   const {
     currentCategory,
     currentQuestion,
-    getAnswerForQuestion,
+    getAnswer,
+    setAnswer,
     moveToNextQuestion,
     moveToNextCategory,
-    setAnswer,
     progress,
     setAssessmentData
   } = useAssessmentState();
+
+  // Track initialization
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Memoize transformed categories
   const transformedCategories = useMemo(() =>
@@ -108,47 +111,57 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
     [initialData.categories, initialData.questions, locale]
   );
 
-  // Track initialization
-  const [isInitialized, setIsInitialized] = useState(false);
-
   // Initialize assessment data only once
   useEffect(() => {
     if (!isInitialized) {
+      console.log('🚀 Initializing assessment data');
       setAssessmentData(transformedCategories, initialData.answers);
       setIsInitialized(true);
     }
   }, [isInitialized, transformedCategories, initialData.answers, setAssessmentData]);
 
-  // Add state for randomized answers
-  const [randomizedAnswers, setRandomizedAnswers] = useState<AirtableMethodAnswer[]>([]);
-
   // Memoize filtered answers for current question
   const currentQuestionAnswers = useMemo(() => {
     if (!currentQuestion) return [];
-
-    console.log('🔍 Question-Answer Relationship:', {
-      currentQuestion,
-      answerIds: currentQuestion.answerId,
-      availableAnswers: initialData.answers.map(a => ({
-        id: a.id,
-        answerId: a.answerId,
-        methodQuestions: a.MethodQuestions
-      }))
-    });
-
-    // Filter answers based on the question's MethodAnswers array
     return initialData.answers.filter((answer: AirtableMethodAnswer) =>
       currentQuestion.answerId.includes(answer.id) && answer.isActive === true
     );
   }, [currentQuestion, initialData.answers]);
 
-  // Update randomized answers when the question changes
-  useEffect(() => {
-    if (currentQuestionAnswers.length > 0) {
-      const shuffled = [...currentQuestionAnswers].sort(() => Math.random() - 0.5);
-      setRandomizedAnswers(shuffled);
-    }
+  // Memoize randomized answers
+  const randomizedAnswers = useMemo(() => {
+    if (currentQuestionAnswers.length === 0) return [];
+    return [...currentQuestionAnswers].sort(() => Math.random() - 0.5);
   }, [currentQuestionAnswers]);
+
+  // Memoize the current answer
+  const currentAnswer = useMemo(() =>
+    currentQuestion ? getAnswer(currentQuestion.id, 'current-question-display') : undefined,
+    [currentQuestion, getAnswer]
+  );
+
+  // Memoize the category completion check
+  const allCategoryQuestionsAnswered = useMemo(() => {
+    if (!currentCategory || !currentQuestion) return false;
+    return currentCategory.questions.every(
+      q => q.id === currentQuestion.id || getAnswer(q.id, 'checking-category-completion')
+    );
+  }, [currentCategory, currentQuestion, getAnswer]);
+
+  const handleAnswer = (answerId: string, score: number) => {
+    if (!currentQuestion || !currentCategory) return;
+
+    // Set or update the answer
+    setAnswer(currentQuestion.id, answerId, score);
+
+    if (allCategoryQuestionsAnswered) {
+      // If all questions are answered, move to next category
+      moveToNextCategory();
+    } else {
+      // Otherwise, move to next question
+      moveToNextQuestion();
+    }
+  };
 
   if (!currentCategory || !currentQuestion) {
     return (
@@ -172,28 +185,6 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
     );
   }
 
-  const handleAnswer = (score: number) => {
-    if (!currentQuestion) return;
-
-    // Set the answer
-    setAnswer(currentQuestion.id, score);
-
-    // Check if all questions in current category are now answered
-    const allCategoryQuestionsAnswered = currentCategory?.questions.every(
-      q => q.id === currentQuestion.id ? true : !!getAnswerForQuestion(q.id)
-    );
-
-    if (allCategoryQuestionsAnswered) {
-      // If all questions are answered, move to next category
-      moveToNextCategory();
-    } else {
-      // Otherwise, move to next question
-      moveToNextQuestion();
-    }
-  };
-
-  const currentAnswer = getAnswerForQuestion(currentQuestion.id);
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -213,8 +204,8 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
               <AnswerOption
                 key={answer.id}
                 answer={answer}
-                isSelected={currentAnswer === answer.answerScore}
-                onClick={() => handleAnswer(answer.answerScore)}
+                isSelected={currentAnswer?.answerId === answer.id}
+                onClick={() => handleAnswer(answer.id, answer.answerScore)}
               />
             ))}
           </div>

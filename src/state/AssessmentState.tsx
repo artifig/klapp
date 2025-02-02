@@ -49,6 +49,14 @@ export interface FormData {
   companyType: string;
 }
 
+export interface Answer {
+  questionId: string;
+  answerId: string;
+  score: number;
+  categoryId: string;
+  timestamp: string;
+}
+
 export interface AssessmentState {
   currentStep: 'home' | 'setup' | 'assessment' | 'results';
   goal: string | null;
@@ -58,7 +66,7 @@ export interface AssessmentState {
   currentCategory: Category | null;
   currentQuestion: Question | null;
   completedCategories: string[];
-  answers: Record<string, number>;
+  answers: Record<string, Answer>;
   methodAnswers: AirtableMethodAnswer[];
   error: string | null;
   progress: number;
@@ -192,6 +200,94 @@ export function useAssessmentState() {
     }
   }, [filteredCategories, state.currentCategory]);
 
+  // Memoize answer-related functions
+  const answerFunctions = useMemo(() => ({
+    getAnswer: (questionId: string, context?: string): Answer | undefined => {
+      const answer = state.answers[questionId];
+      if (context) {
+        console.log('🔍 Getting answer:', {
+          context,
+          questionId,
+          found: !!answer,
+          answer: answer || 'Not found'
+        });
+      }
+      return answer;
+    },
+
+    setAnswer: (questionId: string, answerId: string, score: number) => {
+      setState(prev => {
+        if (!prev.currentCategory) return prev;
+
+        const answer: Answer = {
+          questionId,
+          answerId,
+          score,
+          categoryId: prev.currentCategory.id,
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('💾 Saving answer:', {
+          categoryName: prev.currentCategory.name,
+          questionId,
+          answerId,
+          score,
+          existingAnswers: Object.keys(prev.answers).length,
+        });
+
+        return {
+          ...prev,
+          answers: {
+            ...prev.answers,
+            [questionId]: answer
+          }
+        };
+      });
+    },
+
+    updateAnswer: (questionId: string, answerId: string, score: number) => {
+      setState(prev => {
+        const existingAnswer = prev.answers[questionId];
+        if (!existingAnswer || !prev.currentCategory) return prev;
+
+        const updatedAnswer: Answer = {
+          ...existingAnswer,
+          answerId,
+          score,
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('✏️ Updating answer:', {
+          questionId,
+          oldAnswer: existingAnswer,
+          newAnswer: updatedAnswer
+        });
+
+        return {
+          ...prev,
+          answers: {
+            ...prev.answers,
+            [questionId]: updatedAnswer
+          }
+        };
+      });
+    },
+
+    getCategoryAnswers: (categoryId: string): Answer[] => {
+      const answers = Object.values(state.answers).filter(answer => answer.categoryId === categoryId);
+      console.log('📊 Category answers:', {
+        categoryId,
+        totalAnswers: answers.length,
+        answers: answers.map(a => ({
+          questionId: a.questionId,
+          score: a.score,
+          timestamp: a.timestamp
+        }))
+      });
+      return answers;
+    }
+  }), [state.answers, state.currentCategory]);
+
   return {
     // State
     currentStep: state.currentStep,
@@ -277,11 +373,14 @@ export function useAssessmentState() {
       const currentIndex = state.categories.findIndex(c => c.id === state.currentCategory?.id);
       const nextCategory = state.categories[currentIndex + 1];
 
+      // Find first unanswered question in next category without logging
+      const firstUnansweredQuestion = nextCategory?.questions.find(q => !state.answers[q.id]);
+
       setState(prev => ({
         ...prev,
         currentCategory: nextCategory || null,
         currentQuestion: nextCategory
-          ? nextCategory.questions.find(q => !state.answers[q.id]) || nextCategory.questions[0]
+          ? firstUnansweredQuestion || nextCategory.questions[0]
           : null,
         completedCategories: !prev.completedCategories.includes(state.currentCategory!.id)
           ? [...prev.completedCategories, state.currentCategory!.id]
@@ -290,9 +389,7 @@ export function useAssessmentState() {
     },
 
     // Assessment
-    setAnswer: (questionId: string, value: number) =>
-      setState(prev => ({ ...prev, answers: { ...prev.answers, [questionId]: value } })),
-    getAnswerForQuestion: (questionId: string) => state.answers[questionId],
+    ...answerFunctions,
 
     // Reset
     reset: () => setState(defaultState),
