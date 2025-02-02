@@ -21,7 +21,6 @@ export const Context = () => {
   const t = useTranslations('results');
   const { 
     categories,
-    completedCategories = [],
     answers
   } = useAssessmentState();
 

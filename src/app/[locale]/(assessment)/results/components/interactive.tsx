@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useEmailUpdateForm } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';

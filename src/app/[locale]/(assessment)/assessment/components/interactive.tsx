@@ -6,7 +6,7 @@ import { useAssessmentState } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
 import { AirtableMethodAnswer, AirtableMethodCategory, AirtableMethodQuestion } from '@/lib/airtable';
 import { useState, useEffect } from 'react';
-import type { Category, Question } from '@/state/AssessmentState';
+import type { Category } from '@/state/AssessmentState';
 
 interface InteractiveProps {
   initialData: {

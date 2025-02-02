@@ -37,8 +37,7 @@ export const Context = () => {
     categories,
     currentCategory,
     completedCategories,
-    setCurrentCategory,
-    progress 
+    setCurrentCategory
   } = useAssessmentState();
 
   const handleCategoryClick = (category: Category) => {

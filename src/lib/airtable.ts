@@ -94,7 +94,7 @@ interface TableInfo {
 
 interface TableData {
   tableInfo: TableInfo;
-  sampleRecord?: Record<string, any>;
+  sampleRecord?: Record<string, unknown>;
 }
 
 export interface AirtableSchema {
@@ -456,9 +456,21 @@ export async function saveResult(result: {
 }
 
 function calculateCategoryResults(
-  categories: { id: string; key: string; name: string; questions: { id: string; text: string }[] }[],
+  categories: { 
+    id: string; 
+    key: string; 
+    name: string; 
+    questions: { 
+      id: string; 
+      airtableId: string;
+      text: string 
+    }[] 
+  }[],
   answers: Record<string, number>
-) {
+): Array<{
+  categoryId: string;
+  score: number;
+}> {
   const categoryResults: Record<string, { average: number; answers: Record<string, number> }> = {};
   
   categories.forEach(category => {
@@ -481,15 +493,27 @@ function calculateCategoryResults(
     };
   });
 
-  return categoryResults;
+  return Object.entries(categoryResults).map(([categoryId, result]) => ({
+    categoryId,
+    score: result.average
+  }));
 }
 
 function calculateOverallAverage(
-  categories: { id: string; key: string; name: string; questions: { id: string; text: string }[] }[],
+  categories: { 
+    id: string; 
+    key: string; 
+    name: string; 
+    questions: { 
+      id: string; 
+      airtableId: string;
+      text: string 
+    }[] 
+  }[],
   answers: Record<string, number>
-) {
+): number {
   const categoryResults = calculateCategoryResults(categories, answers);
-  const totalAverage = Object.values(categoryResults).reduce((sum, cat) => sum + cat.average, 0);
+  const totalAverage = categoryResults.reduce((sum, result) => sum + result.score, 0);
   return categories.length > 0 ? totalAverage / categories.length : 0;
 }
 

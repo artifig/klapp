@@ -44,6 +44,14 @@ interface TableValidation {
   fieldTypes?: Record<string, string>;
 }
 
+interface TableSchema {
+  name: string;
+  fields: Array<{
+    type: string;
+    name: string;
+  }>;
+}
+
 const expectedTables: TableValidation[] = [
   {
     name: 'MethodCategories',
@@ -212,7 +220,7 @@ function ValidationCard({ result }: { result: ValidationResult }) {
   );
 }
 
-function SchemaTable({ table }: { table: any }) {
+function SchemaTable({ table }: { table: TableSchema }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
   return (
