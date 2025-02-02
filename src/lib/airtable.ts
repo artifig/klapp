@@ -7,8 +7,6 @@ dotenv.config({ path: '.env.local' });
 // Debug: Log environment variables (without exposing full token)
 const token = process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN || '';
 const baseId = process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID || '';
-console.log('Token available:', !!token, 'Token prefix:', token.slice(0, 10) + '...');
-console.log('Base ID:', baseId);
 
 type FieldSet = Record<string, any>;
 
@@ -406,9 +404,6 @@ export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType
       companyTypeDescription_en: record.get('companyTypeDescription_en') as string,
       isActive: record.get('isActive') as boolean,
     }));
-
-    console.log(`📥 Retrieved ${records.length} company types:`, 
-      companyTypes.map(type => `${type.companyTypeText_et} / ${type.companyTypeText_en}`));
     
     return companyTypes;
   } catch (error) {
@@ -417,13 +412,12 @@ export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType
   }
 }
 
-// Modify the getCompanyTypesMetadata function
+// Modify the getCompanyTypesMetadata function to be more concise
 export async function getCompanyTypesMetadata(): Promise<CompanyTypeMetadata[]> {
   try {
     const companyTypes = await getMethodCompanyTypes();
 
-    // Map company types directly to metadata using exact field names from Airtable
-    const metadata: CompanyTypeMetadata[] = companyTypes
+    return companyTypes
       .filter(type => type.isActive)
       .map(type => ({
         id: type.id,
@@ -434,8 +428,6 @@ export async function getCompanyTypesMetadata(): Promise<CompanyTypeMetadata[]> 
         categoryCount: 0,
         questionCount: 0
       }));
-
-    return metadata;
   } catch (error) {
     console.error('❌ Error fetching company types metadata:', error);
     throw error;
@@ -444,8 +436,6 @@ export async function getCompanyTypesMetadata(): Promise<CompanyTypeMetadata[]> 
 
 // Function to get data for a specific company type
 export async function getDataForCompanyType(companyType: string) {
-  console.log('🔄 Fetching data for company type:', companyType);
-  
   try {
     // Fetch all data in parallel
     const [categories, questions, answers] = await Promise.all([
@@ -456,7 +446,6 @@ export async function getDataForCompanyType(companyType: string) {
 
     // Normalize company type for comparison
     const normalizedCompanyType = normalizeCompanyType(companyType);
-    console.log('🔄 Normalized company type:', normalizedCompanyType);
 
     // Filter categories for this company type
     const filteredCategories = categories.filter(category =>
@@ -494,14 +483,6 @@ export async function getDataForCompanyType(companyType: string) {
     const filteredAnswers = answers.filter(a => 
       answerIds.has(a.id) && a.isActive
     );
-
-    console.log('📊 Data filtered:', {
-      categoriesCount: filteredCategories.length,
-      questionsCount: filteredQuestions.length,
-      answersCount: filteredAnswers.length,
-      sampleCategory: filteredCategories[0]?.categoryId,
-      sampleQuestionCount: filteredCategories[0]?.questionId.length
-    });
 
     return {
       categories: filteredCategories,

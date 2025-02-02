@@ -114,20 +114,124 @@ const defaultState: AssessmentState = {
 const AssessmentContext = createContext<AssessmentContextType | undefined>(undefined);
 
 export function AssessmentProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = usePersistentState<AssessmentState>('assessment_state', defaultState);
+  const locale = useLocale();
+  const router = useRouter();
+  const [state, setState] = usePersistentState<AssessmentState>('assessment_state', {
+    ...defaultState,
+    formData: {
+      name: '',
+      email: '',
+      companyName: '',
+      companyType: '' // Ensure this is empty by default
+    }
+  });
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
-  const locale = useLocale();
-  const router = useRouter();
 
-  // Reset state on initial load
+  // Clear any cached data on initial load
   useEffect(() => {
     if (isInitialLoad) {
-      setState(defaultState);
+      setState(prev => ({
+        ...defaultState,
+        formData: {
+          name: '',
+          email: '',
+          companyName: '',
+          companyType: ''
+        }
+      }));
       setIsInitialLoad(false);
     }
   }, [isInitialLoad, setState]);
+
+  // Modified data fetching effect to only run when needed
+  useEffect(() => {
+    const fetchData = async () => {
+      // Only fetch if we have a company type and we're on the assessment page
+      if (!state.formData.companyType || !window.location.pathname.includes('/assessment')) {
+        return;
+      }
+
+      try {
+        setState(prev => ({ ...prev, isLoading: true, error: null }));
+        console.log('🔄 Fetching assessment data for company type:', state.formData.companyType);
+
+        const data = await getDataForCompanyType(state.formData.companyType);
+
+        // Create a mapping of questions by their Airtable ID for faster lookup
+        const questionsById = new Map(
+          data.questions.map(q => [q.id, q])
+        );
+
+        // Transform categories and questions into the format we need
+        const transformedCategories = data.categories
+          .map((category, index) => {
+            // Find questions for this category using the Airtable record IDs
+            const categoryQuestions = category.questionId
+              .map(qId => {
+                const question = questionsById.get(qId);
+                if (!question) {
+                  console.warn(`Question ${qId} not found for category ${category.categoryId}`);
+                  return null;
+                }
+                return {
+                  id: question.questionId, // Use logical ID (Q1, Q2, etc.)
+                  airtableId: question.id, // Keep Airtable record ID
+                  text: locale === 'et' ? question.questionText_et : question.questionText_en,
+                  categoryId: [category.categoryId], // Ensure it's an array
+                  answerId: question.answerId,
+                  order: parseInt(question.questionId.replace('Q', ''), 10) || 0
+                };
+              })
+              .filter((q): q is NonNullable<typeof q> => q !== null)
+              .sort((a, b) => a.order - b.order);
+
+            console.log(`Category ${category.categoryId} has ${categoryQuestions.length} questions`);
+
+            return {
+              id: category.categoryId,
+              key: category.categoryId,
+              name: locale === 'et' ? category.categoryText_et : category.categoryText_en,
+              description: locale === 'et' ? category.categoryDescription_et : category.categoryDescription_en,
+              order: parseInt(category.categoryId.replace('C', ''), 10) || index + 1,
+              questions: categoryQuestions,
+              companyType: category.companyType
+            };
+          })
+          .sort((a, b) => a.order - b.order);
+
+        // Auto-select first category only on assessment page
+        const hasRequiredFormData = state.formData.name && 
+          state.formData.email && 
+          state.formData.companyName && 
+          state.formData.companyType;
+
+        const firstCategory = hasRequiredFormData && transformedCategories[0];
+
+        setState(prev => ({
+          ...prev,
+          categories: transformedCategories,
+          methodAnswers: data.answers,
+          isLoading: false,
+          ...(firstCategory && {
+            currentCategory: firstCategory,
+            currentQuestion: firstCategory.questions[0] || null
+          })
+        }));
+
+      } catch (error) {
+        console.error('Error fetching assessment data:', error);
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: 'Failed to load assessment data. Please try again.'
+        }));
+      }
+    };
+
+    fetchData();
+  }, [state.formData.companyType, locale, setState]);
 
   // Calculate progress and handle completion
   useEffect(() => {
@@ -232,93 +336,6 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     router,
     setState
   ]);
-
-  // Fetch categories and questions from Airtable
-  useEffect(() => {
-    // Skip if we're saving or don't have a company type
-    if (isSaving || !state.formData.companyType) {
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        setState(prev => ({ ...prev, isLoading: true, error: null }));
-
-        const data = await getDataForCompanyType(state.formData.companyType);
-
-        // Create a mapping of questions by their Airtable ID for faster lookup
-        const questionsById = new Map(
-          data.questions.map(q => [q.id, q])
-        );
-
-        // Transform categories and questions into the format we need
-        const transformedCategories = data.categories
-          .map((category, index) => {
-            // Find questions for this category using the Airtable record IDs
-            const categoryQuestions = category.questionId
-              .map(qId => {
-                const question = questionsById.get(qId);
-                if (!question) {
-                  console.warn(`Question ${qId} not found for category ${category.categoryId}`);
-                  return null;
-                }
-                return {
-                  id: question.questionId, // Use logical ID (Q1, Q2, etc.)
-                  airtableId: question.id, // Keep Airtable record ID
-                  text: locale === 'et' ? question.questionText_et : question.questionText_en,
-                  categoryId: [category.categoryId], // Ensure it's an array
-                  answerId: question.answerId,
-                  order: parseInt(question.questionId.replace('Q', ''), 10) || 0
-                };
-              })
-              .filter((q): q is NonNullable<typeof q> => q !== null)
-              .sort((a, b) => a.order - b.order);
-
-            console.log(`Category ${category.categoryId} has ${categoryQuestions.length} questions`);
-
-            return {
-              id: category.categoryId,
-              key: category.categoryId,
-              name: locale === 'et' ? category.categoryText_et : category.categoryText_en,
-              description: locale === 'et' ? category.categoryDescription_et : category.categoryDescription_en,
-              order: parseInt(category.categoryId.replace('C', ''), 10) || index + 1,
-              questions: categoryQuestions,
-              companyType: category.companyType
-            };
-          })
-          .sort((a, b) => a.order - b.order);
-
-        // Auto-select first category only on assessment page
-        const hasRequiredFormData = state.formData.name && 
-          state.formData.email && 
-          state.formData.companyName && 
-          state.formData.companyType;
-
-        const firstCategory = hasRequiredFormData && transformedCategories[0];
-
-        setState(prev => ({
-          ...prev,
-          categories: transformedCategories,
-          methodAnswers: data.answers,
-          isLoading: false,
-          ...(firstCategory && {
-            currentCategory: firstCategory,
-            currentQuestion: firstCategory.questions[0] || null
-          })
-        }));
-
-      } catch (error) {
-        console.error('Error fetching assessment data:', error);
-        setState(prev => ({
-          ...prev,
-          isLoading: false,
-          error: 'Failed to load assessment data. Please try again.'
-        }));
-      }
-    };
-
-    fetchData();
-  }, [state.formData.companyType, locale, setState, isSaving]);
 
   const setGoal = useCallback((goal: string) => {
     setState(prev => ({ ...prev, goal }));

@@ -32,7 +32,7 @@ export const SetupInteractiveCard = () => {
   const [companyTypes, setCompanyTypes] = useState<CompanyTypeMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFetchingData, setIsFetchingData] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch company types metadata on component mount
   useEffect(() => {
@@ -45,9 +45,7 @@ export const SetupInteractiveCard = () => {
         setIsLoading(true);
         const metadata = await getCompanyTypesMetadata();
         console.log('📊 Company types:', metadata.map(m => ({
-          name: `${m.companyTypeText_et} / ${m.companyTypeText_en}`,
-          categories: m.categoryCount,
-          questions: m.questionCount
+          name: `${m.companyTypeText_et} / ${m.companyTypeText_en}`
         })));
         setCompanyTypes(metadata);
         setError(null);
@@ -63,66 +61,29 @@ export const SetupInteractiveCard = () => {
     fetchCompanyTypes();
   }, [t]);
 
-  const handleChange = async (
+  const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setLocalFormData((prev) => ({ ...prev, [name]: value }));
-
-    // If company type changes, fetch the data and update counts
-    if (name === 'companyType' && value) {
-      setIsFetchingData(true);
-      try {
-        const data = await getDataForCompanyType(value);
-        console.log('📊 Fetched data for company type:', {
-          categoriesCount: data.categories.length,
-          questionsCount: data.questions.length
-        });
-
-        // Update the company type metadata with actual counts
-        setCompanyTypes(prevTypes => 
-          prevTypes.map(type => {
-            if (type.id === value) {
-              return {
-                ...type,
-                categoryCount: data.categories.length,
-                questionCount: data.questions.reduce((sum, q) => sum + (q.answerId?.length || 0), 0)
-              };
-            }
-            return type;
-          })
-        );
-        
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(t('errors.fetchingData'));
-      } finally {
-        setIsFetchingData(false);
-      }
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isFetchingData) {
-      return; // Don't proceed if still fetching data
+    if (isSubmitting) {
+      return;
     }
 
     try {
-      setIsFetchingData(true);
-      // Ensure we have the data for the selected company type
-      if (localFormData.companyType) {
-        await getDataForCompanyType(localFormData.companyType);
-      }
+      setIsSubmitting(true);
       setFormData(localFormData);
       router.push('/assessment');
     } catch (err) {
-      console.error('Error preparing assessment:', err);
-      setError(t('errors.fetchingData'));
+      console.error('Error submitting form:', err);
+      setError(t('errors.submission'));
     } finally {
-      setIsFetchingData(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -219,7 +180,6 @@ export const SetupInteractiveCard = () => {
               id="companyType"
               name="companyType"
               required
-              disabled={isFetchingData}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm disabled:opacity-50"
               value={localFormData.companyType}
               onChange={handleChange}
@@ -227,21 +187,18 @@ export const SetupInteractiveCard = () => {
               <option value="">{t('form.selectCompanyType')}</option>
               {companyTypes.map((type) => (
                 <option key={type.id} value={type.id}>
-                  {type.companyTypeText_et} / {type.companyTypeText_en} ({type.categoryCount} {t('categories')}, {type.questionCount} {t('questions')})
+                  {type.companyTypeText_et} / {type.companyTypeText_en}
                 </option>
               ))}
             </select>
-            {isFetchingData && (
-              <p className="mt-1 text-sm text-gray-500">{t('loading.fetchingData')}</p>
-            )}
           </div>
 
           <button
             type="submit"
-            disabled={isFetchingData}
+            disabled={isSubmitting}
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
           >
-            {isFetchingData ? t('loading.preparingAssessment') : t('form.submit')}
+            {isSubmitting ? t('loading.submitting') : t('form.submit')}
           </button>
         </form>
       </Card>
