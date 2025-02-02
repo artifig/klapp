@@ -566,15 +566,18 @@ export async function getMethodQuestions(): Promise<AirtableMethodQuestion[]> {
 
     console.log(`📥 Retrieved ${records.length} questions from Airtable`);
     
-    const questions = records.map((record) => ({
-      id: record.id,
-      questionId: record.get('questionId') as string,
-      questionText_et: record.get('questionText_et') as string,
-      questionText_en: record.get('questionText_en') as string,
-      isActive: record.get('isActive') as boolean,
-      answerId: record.get('answerId') as string[],
-      categoryId: record.get('categoryId') as string[],
-    }));
+    const questions = records.map((record) => {
+      const answerId = record.get('answerId');
+      return {
+        id: record.id,
+        questionId: record.get('questionId') as string,
+        questionText_et: record.get('questionText_et') as string,
+        questionText_en: record.get('questionText_en') as string,
+        isActive: record.get('isActive') as boolean,
+        answerId: Array.isArray(answerId) ? answerId : [],
+        categoryId: record.get('categoryId') as string[],
+      };
+    });
 
     console.log('📊 Sample question data:', questions[0] || 'No questions found');
     
@@ -588,7 +591,6 @@ export async function getMethodQuestions(): Promise<AirtableMethodQuestion[]> {
         stack: error.stack
       });
     }
-    console.error('Error fetching method questions:', error);
     throw error;
   }
 }

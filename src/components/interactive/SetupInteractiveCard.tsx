@@ -86,7 +86,7 @@ export const SetupInteractiveCard = () => {
               return {
                 ...type,
                 categoryCount: data.categories.length,
-                questionCount: data.questions.reduce((sum, q) => sum + q.answerId.length, 0)
+                questionCount: data.questions.reduce((sum, q) => sum + (q.answerId?.length || 0), 0)
               };
             }
             return type;
