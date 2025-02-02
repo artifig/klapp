@@ -2,8 +2,7 @@
 
 import * as React from "react"
 import { useState, useEffect } from "react"
-import { Card } from "@/components/ui/Card"
-import { RefreshCw, CheckCircle2, XCircle, AlertCircle, ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
+import { RefreshCw, XCircle, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
 import { getAirtableSchema, type AirtableSchema } from "@/lib/airtable"
 import { useTranslations } from 'next-intl'
 
@@ -42,21 +41,6 @@ interface TableValidation {
   required: string[];
   optional?: string[];
   fieldTypes?: Record<string, string>;
-}
-
-interface TableSchema {
-  name: string;
-  fields: Array<{
-    type: string;
-    name: string;
-  }>;
-}
-
-interface TableField {
-  id: string;
-  name: string;
-  type: string;
-  description?: string;
 }
 
 const expectedTables: TableValidation[] = [
@@ -125,23 +109,6 @@ const expectedTables: TableValidation[] = [
   }
 ];
 
-const getFieldType = (field: { type: string; name: string }): string => {
-  switch (field.type) {
-    case 'singleLineText':
-      return 'singleLineText';
-    case 'multilineText':
-      return 'multilineText';
-    case 'checkbox':
-      return 'checkbox';
-    case 'number':
-      return 'number';
-    case 'multipleRecordLinks':
-      return 'multipleRecordLinks';
-    default:
-      return field.type;
-  }
-};
-
 function ValidationCard({ result }: { result: ValidationResult }) {
   const t = useTranslations('validate');
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -171,7 +138,11 @@ function ValidationCard({ result }: { result: ValidationResult }) {
               onClick={() => setIsExpanded(!isExpanded)}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <ChevronDown className={`h-5 w-5 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+              {isExpanded ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
+              )}
             </button>
           </div>
         </div>
@@ -221,60 +192,6 @@ function ValidationCard({ result }: { result: ValidationResult }) {
               </div>
             </div>
           )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SchemaTable({ table }: { table: TableSchema }) {
-  const [isExpanded, setIsExpanded] = React.useState(false);
-
-  return (
-    <div className="border rounded-lg">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-      >
-        <h2 className="text-xl font-semibold">{table.name}</h2>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500">{table.fields.length} fields</span>
-          <ChevronDown className={`h-5 w-5 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-        </div>
-      </button>
-
-      {isExpanded && (
-        <div className="border-t overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Field Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Description
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {table.fields.map((field: any) => (
-                <tr key={field.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {field.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {field.type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {field.description || '-'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       )}
     </div>
@@ -359,7 +276,6 @@ export default function ValidatePage() {
   // Calculate overall validation status
   const totalTables = results.length;
   const validTables = results.filter(r => r.isValid).length;
-  const hasIssues = results.some(r => !r.isValid || r.missingFields.length > 0 || r.extraFields.length > 0);
 
   useEffect(() => {
     const validateSchema = async () => {
@@ -397,7 +313,7 @@ export default function ValidatePage() {
           // Check field types
           const fieldTypes: Record<string, string> = {};
           table.fields.forEach(field => {
-            fieldTypes[field.name] = getFieldType(field);
+            fieldTypes[field.name] = field.type;
           });
 
           // Validate field types
