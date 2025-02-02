@@ -38,7 +38,7 @@ export const Interactive = ({ initialCompanyTypes }: SetupInteractiveCardProps) 
     <ClientOnly>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>{t('form.title')}</CardTitle>
+          <CardTitle>{t('title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
