@@ -119,45 +119,6 @@ export interface AirtableSchema {
   }[];
 }
 
-// Add mapping for company type record IDs
-const companyTypeRecordMap: Record<string, string> = {
-  'recjkYOjy5DnyKmdO': 'T1',  // Startup
-  'rec1WlsACJRx7syFB': 'T2',  // Scaleup
-  'recs0uaN09zUNhQMB': 'T3',  // SME
-  'reckwiul9zCGZmIt7': 'T4'   // Enterprise
-};
-
-// Function to normalize company type
-export function normalizeCompanyType(companyType: string): string {
-  // First check if it's already a companyTypeId (e.g., "T1", "T2")
-  if (companyType.match(/^T\d+$/)) {
-    return companyType;
-  }
-
-  // Check if it's a record ID we know about
-  if (companyTypeRecordMap[companyType]) {
-    return companyTypeRecordMap[companyType];
-  }
-
-  // If it's a record ID we don't know about, log a warning
-  if (companyType.startsWith('rec')) {
-    console.warn('⚠️ Unknown company type record ID:', companyType);
-    return companyType;
-  }
-
-  // Otherwise try the text-based mapping
-  const companyTypeMap: Record<string, string> = {
-    'startup': 'T1',
-    'scale-up': 'T2',
-    'scaleup': 'T2',
-    'sme': 'T3',
-    'enterprise': 'T4'
-  };
-  
-  const cleanType = companyType.toLowerCase().trim();
-  return companyTypeMap[cleanType] || companyType;
-}
-
 // Data fetching functions
 export async function getMethodCategories(): Promise<AirtableMethodCategory[]> {
   try {
@@ -288,7 +249,7 @@ export async function getCompanyTypesMetadata(): Promise<CompanyTypeMetadata[]> 
     return companyTypes
       .filter(type => type.isActive)
       .map(type => ({
-        id: type.id,
+        id: type.id,  // Use the actual record ID for relationships
         companyTypeText_en: type.companyTypeText_en,
         companyTypeText_et: type.companyTypeText_et,
         companyTypeDescription_en: type.companyTypeDescription_en,
@@ -302,67 +263,114 @@ export async function getCompanyTypesMetadata(): Promise<CompanyTypeMetadata[]> 
   }
 }
 
-export async function getDataForCompanyType(companyType: string) {
+export async function getDataForCompanyType(companyTypeId: string) {
   try {
-    const [categories, questions, answers, companyTypes] = await Promise.all([
-      getMethodCategories(),
-      getMethodQuestions(),
-      getMethodAnswers(),
-      getMethodCompanyTypes()
-    ]);
+    // First get the company type record to access its linked categories
+    const companyType = await base('MethodCompanyTypes')
+      .find(companyTypeId);
 
-    const normalizedTargetType = normalizeCompanyType(companyType);
-    
-    // Find the company type record that matches our target
-    const targetCompanyType = companyTypes.find(ct => ct.companyTypeId === normalizedTargetType);
-    if (!targetCompanyType) {
-      console.warn('⚠️ No matching company type found for:', normalizedTargetType);
+    console.log('🎯 Selected company type:', {
+      id: companyType.id,
+      name: companyType.get('companyTypeText_en'),
+      categories: companyType.get('MethodCategories')
+    });
+
+    // Get categories linked to this company type
+    const linkedCategories = companyType.get('MethodCategories') as string[];
+    if (!linkedCategories?.length) {
+      console.log('⚠️ No categories linked to company type:', companyTypeId);
       return { categories: [], questions: [], answers: [] };
     }
 
-    console.log('🎯 Found target company type:', {
-      companyTypeId: targetCompanyType.companyTypeId,
-      recordId: targetCompanyType.id,
-      name_en: targetCompanyType.companyTypeText_en
-    });
+    // Fetch all linked categories in one batch
+    const categoriesRecords = await base('MethodCategories')
+      .select({
+        filterByFormula: `AND(
+          {isActive} = 1,
+          OR(${linkedCategories.map(id => `RECORD_ID() = '${id}'`).join(',')})
+        )`
+      })
+      .all();
 
-    // Filter categories that are linked to this company type
-    const filteredCategories = categories.filter(category => {
-      return Array.isArray(category.companyType) && 
-             category.companyType.includes(targetCompanyType.id);
-    });
+    const filteredCategories = categoriesRecords.map(record => ({
+      id: record.id,
+      categoryId: record.get('categoryId') as string,
+      categoryText_et: record.get('categoryText_et') as string,
+      categoryText_en: record.get('categoryText_en') as string,
+      categoryDescription_et: record.get('categoryDescription_et') as string,
+      categoryDescription_en: record.get('categoryDescription_en') as string,
+      companyType: record.get('MethodCompanyTypes') as string[],
+      isActive: record.get('isActive') as boolean,
+      MethodQuestions: record.get('MethodQuestions') as string[]
+    }));
 
-    console.log('📊 Filtered Categories:', {
+    console.log('📊 Fetched categories:', {
       count: filteredCategories.length,
-      categoryIds: filteredCategories.map(c => c.categoryId),
-      targetType: normalizedTargetType
+      sample: filteredCategories[0]?.categoryText_en
     });
 
-    // Get questions for filtered categories
-    const categoryQuestions = new Set<string>();
-    filteredCategories.forEach(category => {
-      if (Array.isArray(category.MethodQuestions)) {
-        category.MethodQuestions.forEach(qId => {
-          const question = questions.find(q => q.id === qId);
-          if (question && question.isActive) {
-            categoryQuestions.add(question.id);
-          }
-        });
-      }
+    // Get all question IDs from the categories
+    const questionIds = Array.from(new Set(
+      filteredCategories.flatMap(cat => cat.MethodQuestions || [])
+    ));
+
+    // Fetch all questions in one batch
+    const questionsRecords = await base('MethodQuestions')
+      .select({
+        filterByFormula: `AND(
+          {isActive} = 1,
+          OR(${questionIds.map(id => `RECORD_ID() = '${id}'`).join(',')})
+        )`
+      })
+      .all();
+
+    const filteredQuestions = questionsRecords.map(record => ({
+      id: record.id,
+      questionId: record.get('questionId') as string,
+      questionText_et: record.get('questionText_et') as string,
+      questionText_en: record.get('questionText_en') as string,
+      isActive: record.get('isActive') as boolean,
+      MethodAnswers: record.get('MethodAnswers') as string[],
+      MethodCategories: record.get('MethodCategories') as string[]
+    }));
+
+    console.log('❓ Fetched questions:', {
+      count: filteredQuestions.length,
+      sample: filteredQuestions[0]?.questionText_en
     });
 
-    const filteredQuestions = questions.filter(q => 
-      categoryQuestions.has(q.id) && q.isActive
-    );
-
-    // Get answers for filtered questions
-    const answerIds = new Set(
+    // Get all answer IDs from the questions
+    const answerIds = Array.from(new Set(
       filteredQuestions.flatMap(q => q.MethodAnswers || [])
-    );
+    ));
 
-    const filteredAnswers = answers.filter(a => 
-      a.isActive && answerIds.has(a.id)
-    );
+    // Fetch all answers in one batch
+    const answersRecords = await base('MethodAnswers')
+      .select({
+        filterByFormula: `AND(
+          {isActive} = 1,
+          OR(${answerIds.map(id => `RECORD_ID() = '${id}'`).join(',')})
+        )`
+      })
+      .all();
+
+    const filteredAnswers = answersRecords.map(record => ({
+      id: record.id,
+      answerId: record.get('answerId') as string,
+      answerText_et: record.get('answerText_et') as string,
+      answerText_en: record.get('answerText_en') as string,
+      answerDescription_et: record.get('answerDescription_et') as string,
+      answerDescription_en: record.get('answerDescription_en') as string,
+      answerScore: record.get('answerScore') as number,
+      isActive: record.get('isActive') as boolean,
+      questionId: record.get('MethodQuestions') as string[]
+    }));
+
+    console.log('✨ Data transformation complete:', {
+      categoriesCount: filteredCategories.length,
+      questionsCount: filteredQuestions.length,
+      answersCount: filteredAnswers.length
+    });
 
     return {
       categories: filteredCategories,
@@ -395,7 +403,7 @@ export async function saveResult(result: {
 }): Promise<void> {
   try {
     const cleanCompanyType = result.companyType.replace(/['"]+/g, '').trim().toLowerCase();
-    const properCompanyType = normalizeCompanyType(cleanCompanyType);
+    const properCompanyType = cleanCompanyType;
 
     const idMapping = new Map<string, string>();
     result.categories.forEach(cat => {

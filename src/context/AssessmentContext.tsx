@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
-import { saveResult, getDataForCompanyType, AirtableMethodCategory, AirtableMethodQuestion, AirtableMethodAnswer, normalizeCompanyType } from '@/lib/airtable';
+import { saveResult, getDataForCompanyType, getMethodCompanyTypes, AirtableMethodCategory, AirtableMethodQuestion, AirtableMethodAnswer } from '@/lib/airtable';
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
@@ -122,18 +122,36 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     }
   }, [pathname, locale]);
 
-  // Modified data fetching effect to run whenever we have a company type
+  // Modified data fetching effect to run only when entering assessment page
   useEffect(() => {
     const fetchData = async () => {
-      // Check if we have a company type
+      const isHomePage = pathname === `/${locale}` || pathname === `/${locale}/`;
+      const isSetupPage = pathname.endsWith(routes.setup);
+      const isAssessmentPage = pathname.endsWith(routes.assessment);
+      
       console.log('🔍 Checking data fetch conditions:', {
         companyType: state.formData.companyType,
         pathname,
+        isHomePage,
+        isSetupPage,
+        isAssessmentPage,
         hasRequiredData: Boolean(state.formData.companyType),
         currentCategories: state.categories.length
       });
 
-      // Only fetch if we have a company type
+      // Skip fetching if we're on the home page
+      if (isHomePage) {
+        console.log('⏭️ Skipping data fetch: On home page');
+        return;
+      }
+
+      // Skip assessment data fetch if we're not on the assessment page
+      if (!isAssessmentPage) {
+        console.log('⏭️ Skipping assessment data fetch: Not on assessment page');
+        return;
+      }
+
+      // Skip fetching if we don't have a company type
       if (!state.formData.companyType) {
         console.log('⏭️ Skipping data fetch: No company type');
         return;
@@ -143,10 +161,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         setIsLoading(true);
         setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-        console.log('📥 Fetching data for company type:', {
-          type: state.formData.companyType,
-          normalized: normalizeCompanyType(state.formData.companyType)
-        });
+        console.log('📥 Fetching data for company type:', state.formData.companyType);
         
         const data = await getDataForCompanyType(state.formData.companyType);
 
@@ -157,16 +172,6 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
 
         // Transform categories and questions into the format we need
         const transformedCategories = data.categories
-          .filter(category => {
-            // Check if the category's companyType array includes either:
-            // 1. The normalized company type (T1, T2, etc.)
-            // 2. The Airtable record ID that maps to this company type
-            const normalizedRequestedType = normalizeCompanyType(state.formData.companyType);
-            return Array.isArray(category.companyType) && category.companyType.some(type => {
-              const normalizedCategoryType = normalizeCompanyType(type);
-              return normalizedCategoryType === normalizedRequestedType || type === state.formData.companyType;
-            });
-          })
           .map((category, index) => {
             const categoryQuestions = data.questions
               .filter(q => category.MethodQuestions.includes(q.id))
@@ -228,7 +233,42 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     };
 
     fetchData();
-  }, [state.formData.companyType, locale, setState]);
+  }, [state.formData.companyType, pathname, locale, setState]);
+
+  // New effect to fetch company types on setup page
+  useEffect(() => {
+    const fetchCompanyTypes = async () => {
+      const isSetupPage = pathname.endsWith(routes.setup);
+      
+      if (!isSetupPage) {
+        console.log('⏭️ Skipping company types fetch: Not on setup page');
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        console.log('📥 Fetching company types for setup page');
+        
+        const companyTypes = await getMethodCompanyTypes();
+        
+        console.log('✨ Fetched company types:', {
+          count: companyTypes.length,
+          sample: companyTypes[0]?.companyTypeText_en
+        });
+
+      } catch (error) {
+        console.error('Error fetching company types:', error);
+        setState(prev => ({
+          ...prev,
+          error: 'Failed to load company types. Please try again.'
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCompanyTypes();
+  }, [pathname, locale, setState]);
 
   // Calculate progress and handle completion
   useEffect(() => {
