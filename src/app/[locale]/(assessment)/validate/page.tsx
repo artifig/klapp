@@ -1,12 +1,10 @@
 "use client"
 
-import { type NextPage } from 'next';
-import { type PageProps } from '../../page';
-import * as React from "react"
-import { useState, useEffect } from "react"
-import { RefreshCw, XCircle, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
-import { getAirtableSchema, type AirtableSchema } from "@/lib/airtable"
-import { useTranslations } from 'next-intl'
+import * as React from 'react';
+import { useState, useEffect } from 'react';
+import { RefreshCw, XCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { getAirtableSchema, type AirtableSchema } from '@/lib/airtable';
+import { useTranslations } from 'next-intl';
 
 // Define local types since the current project does not export these from airtable
 export type SchemaValidation = {
@@ -268,7 +266,7 @@ function SchemaReferenceSection({ schema }: { schema: AirtableSchema }) {
   );
 }
 
-const ValidatePage: NextPage<PageProps> = () => {
+export default function Page() {
   const t = useTranslations('validate');
   const [results, setResults] = useState<ValidationResult[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -404,6 +402,4 @@ const ValidatePage: NextPage<PageProps> = () => {
       </div>
     </div>
   );
-}
-
-export default ValidatePage; 
+} 

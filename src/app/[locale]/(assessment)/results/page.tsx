@@ -1,9 +1,5 @@
-import { type NextPage } from 'next';
-import { type PageProps } from '../../page';
 import { ResultsClient } from './client';
 
-const ResultsPage: NextPage<PageProps> = () => {
+export default async function Page() {
   return <ResultsClient />;
-};
-
-export default ResultsPage; 
+} 

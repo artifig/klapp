@@ -1,15 +1,10 @@
 import { redirect } from 'next/navigation';
-import { type NextPage } from 'next';
 
-export interface PageProps {
-    params: {
-        locale: string;
-    };
-    searchParams: Record<string, string | string[] | undefined>;
-}
-
-const LocalePage: NextPage<PageProps> = async ({ params: { locale } }) => {
+export default async function Page({
+    params: { locale }
+}: {
+    params: { locale: string };
+    searchParams: { [key: string]: string | string[] | undefined };
+}) {
     redirect(`/${locale}/assessment`);
-};
-
-export default LocalePage; 
+} 
