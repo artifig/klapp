@@ -4,15 +4,15 @@ import * as dotenv from 'dotenv';
 // Load environment variables from .env.local
 dotenv.config({ path: '.env.local' });
 
-const token = process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN || '';
-const baseId = process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID || '';
+const token = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN || '';
+const baseId = process.env.AIRTABLE_BASE_ID || '';
 
 type FieldSet = Record<string, any>;
 
 // Initialize Airtable
 const base = new Airtable({ 
-  apiKey: process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN 
-}).base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID!);
+  apiKey: process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN 
+}).base(process.env.AIRTABLE_BASE_ID!);
 
 // Types for application data
 export interface AirtableMethodCategory {
@@ -508,9 +508,9 @@ function calculateOverallAverage(
 export async function getAirtableSchema(): Promise<AirtableSchema> {
   try {
     // Use the Airtable Meta API to get table information
-    const response = await fetch(`https://api.airtable.com/v0/meta/bases/${process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID}/tables`, {
+    const response = await fetch(`https://api.airtable.com/v0/meta/bases/${process.env.AIRTABLE_BASE_ID}/tables`, {
       headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN}`
+        'Authorization': `Bearer ${process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN}`
       }
     });
 
