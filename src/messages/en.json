@@ -1,4 +1,5 @@
 {
+  "Navigation": "Navigation",
   "app": {
     "title": "AI Readiness Assessment",
     "description": "Assess your company's AI readiness level and get personalized recommendations"
@@ -195,5 +196,15 @@
     "missingFields": "Missing Fields",
     "extraFields": "Extra Fields",
     "fieldTypes": "Field Types"
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "message": "An error occurred while processing your request.",
+    "tryAgain": "Try Again"
+  },
+  "NotFound": {
+    "title": "Page Not Found",
+    "message": "The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Go back home"
   }
 } 

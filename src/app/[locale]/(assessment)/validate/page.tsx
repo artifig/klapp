@@ -1,9 +1,10 @@
 "use client"
 
+import * as React from "react"
 import { useState, useEffect } from "react"
-import Card from "@/components/ui/Card"
+import { Card } from "@/components/ui/Card"
 import { RefreshCw, CheckCircle2, XCircle, AlertCircle, ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
-import { getAirtableSchema, AirtableSchema } from "@/lib/airtable"
+import { getAirtableSchema, type AirtableSchema } from "@/lib/airtable"
 import { useTranslations } from 'next-intl'
 
 // Define local types since the current project does not export these from airtable
@@ -128,7 +129,7 @@ const getFieldType = (field: { type: string; name: string }): string => {
 
 function ValidationCard({ result }: { result: ValidationResult }) {
   const t = useTranslations('validate');
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
   // Calculate status counts
   const totalFields = Object.keys(result.fieldTypes).length;
@@ -212,7 +213,7 @@ function ValidationCard({ result }: { result: ValidationResult }) {
 }
 
 function SchemaTable({ table }: { table: any }) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
   return (
     <div className="border rounded-lg">

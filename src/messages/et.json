@@ -200,5 +200,15 @@
     "missingFields": "Puuduvad väljad",
     "extraFields": "Lisaväljad",
     "fieldTypes": "Välja tüübid"
+  },
+  "Error": {
+    "title": "Midagi läks valesti",
+    "message": "Teie päringu töötlemisel tekkis viga.",
+    "tryAgain": "Proovi uuesti"
+  },
+  "NotFound": {
+    "title": "Lehte ei leitud",
+    "message": "Otsitavat lehte ei eksisteeri või see on teisaldatud.",
+    "backHome": "Tagasi avalehele"
   }
 } 
