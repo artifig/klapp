@@ -918,36 +918,29 @@ export async function getAssessmentResponses(): Promise<AirtableAssessmentRespon
  */
 export async function getAirtableSchema(): Promise<AirtableSchema> {
   try {
-    // Get all tables in the base using list method
-    const tables = await new Promise<AirtableTable[]>((resolve, reject) => {
-      const tableList: AirtableTable[] = [];
-      
-      // Use base._tables to access the tables (internal API)
-      const baseTables = (base as any)._tables;
-      
-      if (!baseTables) {
-        reject(new Error('Could not access Airtable tables'));
-        return;
+    // Use the Airtable Meta API to get table information
+    const response = await fetch(`https://api.airtable.com/v0/meta/bases/${process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID}/tables`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN}`
       }
-
-      // Convert tables to our schema format
-      for (const [tableName, table] of Object.entries(baseTables)) {
-        const tableFields = (table as any).fields || [];
-        tableList.push({
-          id: (table as any).id || tableName,
-          name: tableName,
-          fields: tableFields.map((field: any) => ({
-            id: field.id || field.name,
-            name: field.name,
-            type: field.type || 'text',
-            description: field.description
-          }))
-        });
-      }
-
-      resolve(tableList);
     });
-    
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tables: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const tables: AirtableTable[] = data.tables.map((table: any) => ({
+      id: table.id,
+      name: table.name,
+      fields: table.fields.map((field: any) => ({
+        id: field.id,
+        name: field.name,
+        type: field.type,
+        description: field.description
+      }))
+    }));
+
     return { tables };
   } catch (error) {
     console.error('Error fetching Airtable schema:', error);
