@@ -3,7 +3,7 @@ import { Logo } from '@/components/ui/Logo';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { unstable_setRequestLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
-import ClientOnly from '@/components/ClientOnly';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
@@ -28,27 +28,26 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <ClientOnly type="full">
-            <div className="min-h-screen bg-gray-50">
-              <nav className="bg-white border-b">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="flex justify-between h-16">
-                    <div className="flex">
-                      <div className="flex-shrink-0 flex items-center">
-                        <Logo />
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <LanguageSwitcher />
+          <div className="min-h-screen bg-gray-50">
+            <LoadingScreen />
+            <nav className="bg-white border-b">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between h-16">
+                  <div className="flex">
+                    <div className="flex-shrink-0 flex items-center">
+                      <Logo />
                     </div>
                   </div>
+                  <div className="flex items-center">
+                    <LanguageSwitcher />
+                  </div>
                 </div>
-              </nav>
-              <main className="py-8">
-                {children}
-              </main>
-            </div>
-          </ClientOnly>
+              </div>
+            </nav>
+            <main className="py-8">
+              {children}
+            </main>
+          </div>
         </NextIntlClientProvider>
       </body>
     </html>

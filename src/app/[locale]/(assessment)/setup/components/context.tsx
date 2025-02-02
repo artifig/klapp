@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { useAssessmentState } from '@/state/AssessmentState';
-import ClientOnly from '@/components/ClientOnly';
 
 interface RequirementItemProps {
   label: string;
@@ -31,37 +30,35 @@ export const Context = () => {
   ];
 
   return (
-    <ClientOnly>
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl">{t('contextCard.title')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <CardDescription className="font-medium mb-2">
-                {t('contextCard.requirements')}
-              </CardDescription>
-              <div className="divide-y">
-                {requirements.map(({ key, value }) => (
-                  <RequirementItem
-                    key={key}
-                    label={t(`${key}Label`)}
-                    isComplete={!!value}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <CardDescription className="font-medium mb-2">
-                {t('contextCard.yourGoal')}
-              </CardDescription>
-              <p className="text-sm text-muted-foreground">{goal || t('goal.empty')}</p>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="text-2xl">{t('contextCard.title')}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          <div>
+            <CardDescription className="font-medium mb-2">
+              {t('contextCard.requirements')}
+            </CardDescription>
+            <div className="divide-y">
+              {requirements.map(({ key, value }) => (
+                <RequirementItem
+                  key={key}
+                  label={t(`${key}Label`)}
+                  isComplete={!!value}
+                />
+              ))}
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </ClientOnly>
+
+          <div>
+            <CardDescription className="font-medium mb-2">
+              {t('contextCard.yourGoal')}
+            </CardDescription>
+            <p className="text-sm text-muted-foreground">{goal || t('goal.empty')}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }; 

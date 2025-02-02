@@ -3,7 +3,6 @@
 import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useAssessmentState } from '@/state/AssessmentState';
-import ClientOnly from '@/components/ClientOnly';
 import { AirtableMethodAnswer, AirtableMethodCategory, AirtableMethodQuestion } from '@/lib/airtable';
 import { useState, useEffect } from 'react';
 import type { Category } from '@/state/AssessmentState';
@@ -30,17 +29,15 @@ const AnswerOption = ({ answer, isSelected, onClick }: AnswerOptionProps) => {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-4 rounded-lg border transition-colors ${
-        isSelected
-          ? 'border-primary bg-primary-50 text-primary'
-          : 'border-gray-200 hover:border-gray-300'
-      }`}
+      className={`w-full text-left p-4 rounded-lg border transition-colors ${isSelected
+        ? 'border-primary bg-primary-50 text-primary'
+        : 'border-gray-200 hover:border-gray-300'
+        }`}
     >
       <div className="flex items-center space-x-3">
         <div
-          className={`w-6 h-6 flex items-center justify-center rounded-full border ${
-            isSelected ? 'border-primary' : 'border-gray-300'
-          }`}
+          className={`w-6 h-6 flex items-center justify-center rounded-full border ${isSelected ? 'border-primary' : 'border-gray-300'
+            }`}
         >
           {answer.answerScore}
         </div>
@@ -113,10 +110,10 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
   useEffect(() => {
     if (currentQuestion) {
       // Get all answers for this question
-      const answers = initialData.answers.filter((answer: AirtableMethodAnswer) => 
+      const answers = initialData.answers.filter((answer: AirtableMethodAnswer) =>
         answer.questionId?.includes(currentQuestion.airtableId) && answer.isActive === true
       );
-      
+
       // Randomize the answers
       const shuffled = [...answers].sort(() => Math.random() - 0.5);
       setRandomizedAnswers(shuffled);
@@ -125,31 +122,29 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
 
   if (!currentCategory || !currentQuestion) {
     return (
-      <ClientOnly>
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="sr-only">Assessment Questions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center p-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {t('noQuestionSelected')}
-              </h3>
-              <p className="text-gray-600">
-                {progress === 1 
-                  ? t('allQuestionsCompleted')
-                  : t('selectCategory')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </ClientOnly>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="sr-only">Assessment Questions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center p-8">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              {t('noQuestionSelected')}
+            </h3>
+            <p className="text-gray-600">
+              {progress === 1
+                ? t('allQuestionsCompleted')
+                : t('selectCategory')}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   const handleAnswer = (score: number) => {
     if (!currentQuestion) return;
-    
+
     // Set the answer
     setAnswer(currentQuestion.id, score);
 
@@ -170,41 +165,39 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
   const currentAnswer = getAnswerForQuestion(currentQuestion.id);
 
   return (
-    <ClientOnly>
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="sr-only">Assessment Questions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-medium text-gray-900">
-                {currentCategory.name}
-              </h3>
-              <p className="mt-2 text-gray-600">{currentQuestion.text}</p>
-            </div>
-
-            <div className="space-y-3">
-              {randomizedAnswers.map((answer: AirtableMethodAnswer) => (
-                <AnswerOption
-                  key={answer.id}
-                  answer={answer}
-                  isSelected={currentAnswer === answer.answerScore}
-                  onClick={() => handleAnswer(answer.answerScore)}
-                />
-              ))}
-            </div>
-
-            <div className="text-sm text-gray-500">
-              {t('questionProgress', {
-                current: currentCategory.questions.findIndex(q => q.id === currentQuestion.id) + 1,
-                total: currentCategory.questions.length
-              })}
-            </div>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="sr-only">Assessment Questions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">
+              {currentCategory.name}
+            </h3>
+            <p className="mt-2 text-gray-600">{currentQuestion.text}</p>
           </div>
-        </CardContent>
-      </Card>
-    </ClientOnly>
+
+          <div className="space-y-3">
+            {randomizedAnswers.map((answer: AirtableMethodAnswer) => (
+              <AnswerOption
+                key={answer.id}
+                answer={answer}
+                isSelected={currentAnswer === answer.answerScore}
+                onClick={() => handleAnswer(answer.answerScore)}
+              />
+            ))}
+          </div>
+
+          <div className="text-sm text-gray-500">
+            {t('questionProgress', {
+              current: currentCategory.questions.findIndex(q => q.id === currentQuestion.id) + 1,
+              total: currentCategory.questions.length
+            })}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

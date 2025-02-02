@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useAssessmentState } from '@/state/AssessmentState';
 import type { Category } from '@/state/AssessmentState';
-import ClientOnly from '@/components/ClientOnly';
 
 interface CategoryItemProps {
   name: string;
@@ -16,13 +15,12 @@ interface CategoryItemProps {
 const CategoryItem = ({ name, isActive, isCompleted, onClick }: CategoryItemProps) => (
   <button
     onClick={onClick}
-    className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-      isActive
-        ? 'bg-primary text-white'
-        : isCompleted
+    className={`w-full text-left px-4 py-2 rounded-md transition-colors ${isActive
+      ? 'bg-primary text-white'
+      : isCompleted
         ? 'bg-green-50 text-green-700'
         : 'hover:bg-gray-50'
-    }`}
+      }`}
   >
     <div className="flex items-center justify-between">
       <span>{name}</span>
@@ -33,7 +31,7 @@ const CategoryItem = ({ name, isActive, isCompleted, onClick }: CategoryItemProp
 
 export const Context = () => {
   const t = useTranslations('assessment');
-  const { 
+  const {
     categories,
     currentCategory,
     completedCategories,
@@ -45,26 +43,24 @@ export const Context = () => {
   };
 
   return (
-    <ClientOnly>
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{t('contextCard.title')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {categories.map((category) => (
-              <CategoryItem
-                key={category.id}
-                name={category.name}
-                isActive={category.id === currentCategory?.id}
-                isCompleted={completedCategories.includes(category.id)}
-                onClick={() => handleCategoryClick(category)}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </ClientOnly>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>{t('contextCard.title')}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {categories.map((category) => (
+            <CategoryItem
+              key={category.id}
+              name={category.name}
+              isActive={category.id === currentCategory?.id}
+              isCompleted={completedCategories.includes(category.id)}
+              onClick={() => handleCategoryClick(category)}
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

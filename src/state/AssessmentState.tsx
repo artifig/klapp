@@ -2,9 +2,8 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AirtableMethodAnswer, AirtableMethodCompanyType } from '@/lib/airtable';
-import ClientOnly from '@/components/ClientOnly';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 
 // Form Types
@@ -68,6 +67,7 @@ export interface AssessmentState {
     setup: SetupFormData;
     emailUpdate: EmailUpdateFormData;
   };
+  isLoading: boolean;
 }
 
 const defaultState: AssessmentState = {
@@ -87,7 +87,8 @@ const defaultState: AssessmentState = {
     goal: { goal: '' },
     setup: { name: '', email: '', companyName: '', companyType: '' },
     emailUpdate: { email: '' }
-  }
+  },
+  isLoading: false
 };
 
 const AssessmentContext = createContext<ReturnType<typeof useAssessmentState> | null>(null);
@@ -111,7 +112,8 @@ export function useAssessment() {
 
 export function useAssessmentState() {
   const pathname = usePathname();
-  
+  const searchParams = useSearchParams();
+
   const [state, setState] = useState<AssessmentState>(() => {
     if (typeof window === 'undefined') return defaultState;
     try {
@@ -131,10 +133,10 @@ export function useAssessmentState() {
 
   // Sync step with pathname
   useEffect(() => {
-    const step = pathname.endsWith('/setup') ? 'setup' 
+    const step = pathname.endsWith('/setup') ? 'setup'
       : pathname.endsWith('/assessment') ? 'assessment'
-      : pathname.endsWith('/results') ? 'results'
-      : 'home';
+        : pathname.endsWith('/results') ? 'results'
+          : 'home';
 
     if (step !== state.currentStep) {
       setState(prev => ({ ...prev, currentStep: step }));
@@ -142,24 +144,35 @@ export function useAssessmentState() {
     }
   }, [pathname, state.currentStep]);
 
+  // Add loading state management
+  useEffect(() => {
+    setState(prev => ({ ...prev, isLoading: true }));
+
+    const timer = setTimeout(() => {
+      setState(prev => ({ ...prev, isLoading: false }));
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [pathname, searchParams]);
+
   return {
     // State
     ...state,
 
     // Basic setters
-    setGoal: (goal: string) => setState(prev => ({ 
-      ...prev, 
+    setGoal: (goal: string) => setState(prev => ({
+      ...prev,
       goal,
       forms: { ...prev.forms, goal: { goal } }
     })),
-    setFormData: (formData: FormData) => setState(prev => ({ 
-      ...prev, 
+    setFormData: (formData: FormData) => setState(prev => ({
+      ...prev,
       formData,
       forms: { ...prev.forms, setup: formData }
     })),
-    setCompanyTypes: (types: AirtableMethodCompanyType[]) => 
+    setCompanyTypes: (types: AirtableMethodCompanyType[]) =>
       setState(prev => ({ ...prev, companyTypes: types })),
-    setAssessmentData: (categories: Category[], answers: AirtableMethodAnswer[]) => 
+    setAssessmentData: (categories: Category[], answers: AirtableMethodAnswer[]) =>
       setState(prev => ({
         ...prev,
         categories,
@@ -170,18 +183,18 @@ export function useAssessmentState() {
     setError: (error: string | null) => setState(prev => ({ ...prev, error })),
 
     // Form Actions
-    setGoalForm: (data: GoalFormData) => setState(prev => ({ 
-      ...prev, 
+    setGoalForm: (data: GoalFormData) => setState(prev => ({
+      ...prev,
       goal: data.goal,
       forms: { ...prev.forms, goal: data }
     })),
-    
+
     setSetupForm: (data: SetupFormData) => setState(prev => ({
       ...prev,
       formData: data,
       forms: { ...prev.forms, setup: data }
     })),
-    
+
     setEmailUpdateForm: (data: EmailUpdateFormData) => setState(prev => ({
       ...prev,
       formData: { ...prev.formData, email: data.email },
@@ -207,11 +220,11 @@ export function useAssessmentState() {
       if (!state.currentCategory) return;
       const currentIndex = state.categories.findIndex(c => c.id === state.currentCategory?.id);
       const nextCategory = state.categories[currentIndex + 1];
-      
+
       setState(prev => ({
         ...prev,
         currentCategory: nextCategory || null,
-        currentQuestion: nextCategory 
+        currentQuestion: nextCategory
           ? nextCategory.questions.find(q => !state.answers[q.id]) || nextCategory.questions[0]
           : null,
         completedCategories: !prev.completedCategories.includes(state.currentCategory!.id)
@@ -221,12 +234,15 @@ export function useAssessmentState() {
     },
 
     // Assessment
-    setAnswer: (questionId: string, value: number) => 
+    setAnswer: (questionId: string, value: number) =>
       setState(prev => ({ ...prev, answers: { ...prev.answers, [questionId]: value } })),
     getAnswerForQuestion: (questionId: string) => state.answers[questionId],
 
     // Reset
-    reset: () => setState(defaultState)
+    reset: () => setState(defaultState),
+
+    // Add loading setter
+    setLoading: (isLoading: boolean) => setState(prev => ({ ...prev, isLoading })),
   };
 }
 
@@ -242,13 +258,12 @@ interface CategoryItemProps {
 const CategoryItem = ({ name, isActive, isCompleted, onClick }: CategoryItemProps) => (
   <button
     onClick={onClick}
-    className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-      isActive
-        ? 'bg-primary text-white'
-        : isCompleted
+    className={`w-full text-left px-4 py-2 rounded-md transition-colors ${isActive
+      ? 'bg-primary text-white'
+      : isCompleted
         ? 'bg-green-50 text-green-700'
         : 'hover:bg-gray-50'
-    }`}
+      }`}
   >
     <div className="flex items-center justify-between">
       <span>{name}</span>
@@ -258,7 +273,7 @@ const CategoryItem = ({ name, isActive, isCompleted, onClick }: CategoryItemProp
 );
 
 export const AssessmentProgress = () => {
-  const { 
+  const {
     categories,
     currentCategory,
     completedCategories,
@@ -267,26 +282,24 @@ export const AssessmentProgress = () => {
   const t = useTranslations('assessment');
 
   return (
-    <ClientOnly>
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{t('progress.title')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {categories.map((category) => (
-              <CategoryItem
-                key={category.id}
-                name={category.name}
-                isActive={category.id === currentCategory?.id}
-                isCompleted={completedCategories.includes(category.id)}
-                onClick={() => setCurrentCategory(category)}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </ClientOnly>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>{t('progress.title')}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {categories.map((category) => (
+            <CategoryItem
+              key={category.id}
+              name={category.name}
+              isActive={category.id === currentCategory?.id}
+              isCompleted={completedCategories.includes(category.id)}
+              onClick={() => setCurrentCategory(category)}
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -299,7 +312,7 @@ export function useGoalForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!goal) return;
-    
+
     setGoalForm({ goal });
     router.push(`/${locale}/setup`);
   };
@@ -321,13 +334,13 @@ export function useSetupForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-    
+
     const { setup } = forms;
     if (!setup.name || !setup.email || !setup.companyName || !setup.companyType) {
       setError('Please fill in all required fields');
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
       setError(null);
@@ -359,9 +372,9 @@ export function useEmailUpdateForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const { emailUpdate } = forms;
-    
+
     if (!emailUpdate.email) return;
-    
+
     try {
       setIsSubmitting(true);
       setEmailUpdateForm(emailUpdate);
@@ -381,4 +394,12 @@ export function useEmailUpdateForm() {
     handleSubmit,
     setEmailUpdateForm
   };
+}
+
+export function AssessmentStateProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <AssessmentProvider>
+      {children}
+    </AssessmentProvider>
+  );
 } 
