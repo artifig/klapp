@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
-import { useAssessment } from '@/context/AssessmentContext';
+import { useAssessmentState } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
 
 export const HomeInteractiveCard = () => {
   const t = useTranslations('home');
   const locale = useLocale();
   const router = useRouter();
-  const { setGoal } = useAssessment();
+  const { setGoal } = useAssessmentState();
   const [goalText, setGoalText] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -43,7 +43,6 @@ export interface AssessmentState {
   completedCategories: string[];
   answers: Record<string, number>;
   methodAnswers: AirtableMethodAnswer[];
-  isLoading: boolean;
   error: string | null;
   progress: number;
 }
@@ -59,7 +58,6 @@ const defaultState: AssessmentState = {
   completedCategories: [],
   answers: {},
   methodAnswers: [],
-  isLoading: false,
   error: null,
   progress: 0
 };
@@ -115,7 +113,6 @@ export function useAssessmentState() {
         currentCategory: categories[0] || null,
         currentQuestion: categories[0]?.questions[0] || null
       })),
-    setLoading: (isLoading: boolean) => setState(prev => ({ ...prev, isLoading })),
     setError: (error: string | null) => setState(prev => ({ ...prev, error })),
 
     // Navigation

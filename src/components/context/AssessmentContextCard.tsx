@@ -2,9 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { useAssessmentState } from '@/state/useAssessmentState';
+import { useAssessmentState } from '@/state/AssessmentState';
+import type { Category } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
-import type { Category } from '@/state/types';
 
 interface CategoryItemProps {
   name: string;

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import Card from '@/components/ui/Card';
-import { useAssessmentContext } from '@/context/AssessmentContext';
+import { Card } from '@/components/ui/Card';
+import { useAssessmentState } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
 
 interface Provider {
@@ -41,8 +41,9 @@ const ProviderCard = ({ provider, onContact }: ProviderCardProps) => (
 
 export const ResultsInteractiveCard = () => {
   const t = useTranslations('results');
-  const { formData, matchedProviders } = useAssessmentContext();
+  const { formData } = useAssessmentState();
   const [isExporting, setIsExporting] = useState(false);
+  const [matchedProviders] = useState<Provider[]>([]); // TODO: Get from API
 
   const handleExportPDF = async () => {
     setIsExporting(true);

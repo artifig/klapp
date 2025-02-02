@@ -2,33 +2,18 @@
 
 import { useTranslations } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { useAssessmentContext } from '@/context/AssessmentContext';
+import { useAssessmentState } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
 
-interface CategoryResultProps {
+interface CategoryResult {
   category: string;
   score: number;
 }
 
-interface CategoryScore {
-  category: string;
-  score: number;
-}
-
-const CategoryResult = ({ category, score }: CategoryResultProps) => (
-  <div className="flex items-center justify-between py-3 border-b last:border-b-0">
+const CategoryResult = ({ category, score }: CategoryResult) => (
+  <div className="flex items-center justify-between py-2">
     <span className="text-gray-700">{category}</span>
-    <div className="flex items-center space-x-4">
-      <div className="w-32 bg-gray-200 rounded-full h-2">
-        <div
-          className="bg-primary h-2 rounded-full transition-all"
-          style={{ width: `${score}%` }}
-        />
-      </div>
-      <span className="text-sm font-medium text-gray-900 w-12 text-right">
-        {Math.round(score)}%
-      </span>
-    </div>
+    <span className="text-primary font-medium">{score}%</span>
   </div>
 );
 
@@ -38,7 +23,7 @@ export const ResultsContextCard = () => {
     categories,
     completedCategories = [],
     answers
-  } = useAssessmentContext();
+  } = useAssessmentState();
 
   const totalQuestions = categories.reduce(
     (acc, category) => acc + category.questions.length,

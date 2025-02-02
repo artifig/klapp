@@ -2,11 +2,16 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { useAssessment } from '@/context/AssessmentContext';
+import { useAssessmentState } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
 import { AirtableMethodAnswer } from '@/lib/airtable';
 import { useState, useEffect } from 'react';
-import type { AssessmentState, Category, Question } from '@/context/AssessmentContext';
+import type { Category, Question } from '@/state/AssessmentState';
+
+interface AssessmentInteractiveCardProps {
+  initialCategories: Category[];
+  initialAnswers: AirtableMethodAnswer[];
+}
 
 interface AnswerOptionProps {
   answer: AirtableMethodAnswer;
@@ -47,7 +52,7 @@ const AnswerOption = ({ answer, isSelected, onClick }: AnswerOptionProps) => {
   );
 };
 
-export const AssessmentInteractiveCard = () => {
+export const AssessmentInteractiveCard = ({ initialCategories, initialAnswers }: AssessmentInteractiveCardProps) => {
   const t = useTranslations('assessment');
   const {
     currentCategory,
@@ -57,8 +62,13 @@ export const AssessmentInteractiveCard = () => {
     moveToNextCategory,
     setAnswer,
     progress,
-    methodAnswers
-  } = useAssessment();
+    setAssessmentData
+  } = useAssessmentState();
+
+  // Initialize assessment data
+  useEffect(() => {
+    setAssessmentData(initialCategories, initialAnswers);
+  }, [initialCategories, initialAnswers, setAssessmentData]);
 
   // Add state for randomized answers
   const [randomizedAnswers, setRandomizedAnswers] = useState<AirtableMethodAnswer[]>([]);
@@ -66,48 +76,16 @@ export const AssessmentInteractiveCard = () => {
   // Update randomized answers when the question changes
   useEffect(() => {
     if (currentQuestion) {
-      console.log('🔍 Current Question Data:', {
-        id: currentQuestion.id,
-        text: currentQuestion.text,
-        answerIds: currentQuestion.answerId
-      });
-
-      console.log('📚 Available Method Answers:', {
-        total: methodAnswers.length,
-        sample: methodAnswers.slice(0, 2).map(a => ({
-          id: a.id,
-          answerId: a.answerId,
-          text: a.answerText_en
-        }))
-      });
-
       // Get all answers for this question
-      const answers = methodAnswers.filter((answer: AirtableMethodAnswer) => {
-        console.log('🔄 Checking answer match:', {
-          currentQuestionId: currentQuestion.id,
-          currentQuestionAirtableId: currentQuestion.airtableId,
-          answerQuestionIds: answer.questionId,
-          answerText: answer.answerText_en,
-          isActive: answer.isActive
-        });
-        return answer.questionId?.includes(currentQuestion.airtableId) && answer.isActive === true;
-      });
+      const answers = initialAnswers.filter((answer: AirtableMethodAnswer) => 
+        answer.questionId?.includes(currentQuestion.airtableId) && answer.isActive === true
+      );
       
-      console.log('✅ Filtered Answers:', {
-        total: answers.length,
-        answers: answers.map(a => ({
-          id: a.id,
-          answerId: a.answerId,
-          text: a.answerText_en,
-          score: a.answerScore
-        }))
-      });
-
       // Randomize the answers
       const shuffled = [...answers].sort(() => Math.random() - 0.5);
       setRandomizedAnswers(shuffled);
     }
-  }, [currentQuestion, methodAnswers]);
+  }, [currentQuestion, initialAnswers]);
 
   if (!currentCategory || !currentQuestion) {
     return (
@@ -154,13 +132,6 @@ export const AssessmentInteractiveCard = () => {
   };
 
   const currentAnswer = getAnswerForQuestion(currentQuestion.id);
-
-  // Filter answers based on the question's answerId array
-  const questionAnswers = !currentQuestion.answerId?.length 
-    ? methodAnswers // Show all answers if no specific answers are linked
-    : methodAnswers.filter((answer: AirtableMethodAnswer) => 
-        currentQuestion.answerId?.includes(answer.answerId)
-      );
 
   return (
     <ClientOnly>

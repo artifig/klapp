@@ -4,31 +4,28 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { useAssessmentContext } from '@/context/AssessmentContext';
+import { useAssessmentState } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
-import { Loading } from '@/components/ui/Loading';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { AirtableMethodCompanyType } from '@/lib/airtable';
 
-interface FormData {
-  name: string;
-  email: string;
-  companyName: string;
-  companyType: string;
+interface SetupInteractiveCardProps {
+  initialCompanyTypes: AirtableMethodCompanyType[];
 }
 
-export const SetupInteractiveCard = () => {
+export const SetupInteractiveCard = ({ initialCompanyTypes }: SetupInteractiveCardProps) => {
   const t = useTranslations('setup');
   const router = useRouter();
-  const { setFormData, companyTypes } = useAssessmentContext();
-  const [localFormData, setLocalFormData] = useState<FormData>({
+  const { setFormData } = useAssessmentState();
+  
+  const [localFormData, setLocalFormData] = useState({
     name: '',
     email: '',
     companyName: '',
     companyType: '',
   });
-  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -39,10 +36,7 @@ export const SetupInteractiveCard = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isSubmitting) {
-      return;
-    }
+    if (isSubmitting) return;
 
     try {
       setIsSubmitting(true);
@@ -60,9 +54,6 @@ export const SetupInteractiveCard = () => {
     return (
       <ClientOnly>
         <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="sr-only">Error</CardTitle>
-          </CardHeader>
           <CardContent>
             <ErrorMessage message={error} />
           </CardContent>
@@ -75,7 +66,7 @@ export const SetupInteractiveCard = () => {
     <ClientOnly>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="sr-only">Setup Form</CardTitle>
+          <CardTitle>{t('form.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -95,6 +86,7 @@ export const SetupInteractiveCard = () => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                 value={localFormData.name}
                 onChange={handleChange}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -114,6 +106,7 @@ export const SetupInteractiveCard = () => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                 value={localFormData.email}
                 onChange={handleChange}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -133,6 +126,7 @@ export const SetupInteractiveCard = () => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                 value={localFormData.companyName}
                 onChange={handleChange}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -151,9 +145,10 @@ export const SetupInteractiveCard = () => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm disabled:opacity-50"
                 value={localFormData.companyType}
                 onChange={handleChange}
+                disabled={isSubmitting}
               >
                 <option value="">{t('form.selectCompanyType')}</option>
-                {companyTypes.map((type: AirtableMethodCompanyType) => (
+                {initialCompanyTypes.map((type) => (
                   <option key={type.id} value={type.id}>
                     {type.companyTypeText_et} / {type.companyTypeText_en}
                   </option>
@@ -173,6 +168,4 @@ export const SetupInteractiveCard = () => {
       </Card>
     </ClientOnly>
   );
-};
-
-export default SetupInteractiveCard; 
+}; 
