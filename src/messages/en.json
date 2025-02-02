@@ -107,6 +107,9 @@
         "step3": "Set your goal",
         "step4": "Continue to assessment"
       }
+    },
+    "goal": {
+      "empty": "Goal not yet set"
     }
   },
   "assessment": {

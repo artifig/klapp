@@ -112,7 +112,10 @@
       "fetchingData": "Hindamisandmete laadimine ebaõnnestus. Palun proovige uuesti."
     },
     "categories": "kategooriat",
-    "questions": "küsimust"
+    "questions": "küsimust",
+    "goal": {
+      "empty": "Eesmärk pole veel määratud"
+    }
   },
   "assessment": {
     "title": "Tehisaru valmisoleku hindamine",
