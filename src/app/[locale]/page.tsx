@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-interface PageProps {
+export interface PageProps {
     params: Promise<{ locale: string }>;
     searchParams: { [key: string]: string | string[] | undefined };
 }
