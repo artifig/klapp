@@ -4,7 +4,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useAssessmentState } from '@/state/AssessmentState';
 import { AirtableMethodAnswer, AirtableMethodCategory, AirtableMethodQuestion } from '@/lib/airtable';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Category } from '@/state/AssessmentState';
 
 interface InteractiveProps {
@@ -97,28 +97,41 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
     setAssessmentData
   } = useAssessmentState();
 
-  // Initialize assessment data
+  // Memoize transformed categories
+  const transformedCategories = useMemo(() =>
+    transformCategories(initialData.categories, initialData.questions, locale),
+    [initialData.categories, initialData.questions, locale]
+  );
+
+  // Track initialization
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize assessment data only once
   useEffect(() => {
-    const transformedCategories = transformCategories(initialData.categories, initialData.questions, locale);
-    setAssessmentData(transformedCategories, initialData.answers);
-  }, [initialData, setAssessmentData, locale]);
+    if (!isInitialized) {
+      setAssessmentData(transformedCategories, initialData.answers);
+      setIsInitialized(true);
+    }
+  }, [isInitialized, transformedCategories, initialData.answers, setAssessmentData]);
 
   // Add state for randomized answers
   const [randomizedAnswers, setRandomizedAnswers] = useState<AirtableMethodAnswer[]>([]);
 
+  // Memoize filtered answers for current question
+  const currentQuestionAnswers = useMemo(() => {
+    if (!currentQuestion) return [];
+    return initialData.answers.filter((answer: AirtableMethodAnswer) =>
+      answer.questionId?.includes(currentQuestion.airtableId) && answer.isActive === true
+    );
+  }, [currentQuestion, initialData.answers]);
+
   // Update randomized answers when the question changes
   useEffect(() => {
-    if (currentQuestion) {
-      // Get all answers for this question
-      const answers = initialData.answers.filter((answer: AirtableMethodAnswer) =>
-        answer.questionId?.includes(currentQuestion.airtableId) && answer.isActive === true
-      );
-
-      // Randomize the answers
-      const shuffled = [...answers].sort(() => Math.random() - 0.5);
+    if (currentQuestionAnswers.length > 0) {
+      const shuffled = [...currentQuestionAnswers].sort(() => Math.random() - 0.5);
       setRandomizedAnswers(shuffled);
     }
-  }, [currentQuestion, initialData.answers]);
+  }, [currentQuestionAnswers]);
 
   if (!currentCategory || !currentQuestion) {
     return (
