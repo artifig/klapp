@@ -3,7 +3,7 @@ import { AssessmentClient } from './client';
 
 export default async function Page() {
   const [categories, questions, answers] = await Promise.all([
-    getMethodCategories(),
+    getMethodCategories(), // Fetch all categories, we'll filter in the client
     getMethodQuestions(),
     getMethodAnswers()
   ]);

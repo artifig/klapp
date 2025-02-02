@@ -140,25 +140,39 @@ interface CategoryResult {
 }
 
 // Data fetching functions
-export async function getMethodCategories(): Promise<AirtableMethodCategory[]> {
+export async function getMethodCategories(companyTypeId?: string): Promise<AirtableMethodCategory[]> {
   try {
+    // Build the filter formula
+    let filterFormula = '{isActive} = 1';
+    if (companyTypeId) {
+      // Add company type filter if provided
+      filterFormula = `AND(
+        {isActive} = 1,
+        FIND('${companyTypeId}', ARRAYJOIN(MethodCompanyTypes, ',')) > 0
+      )`;
+    }
+
     const records = await base('MethodCategories')
       .select({
-        filterByFormula: '{isActive} = 1',
+        filterByFormula: filterFormula,
         sort: [{ field: 'categoryId', direction: 'asc' }],
       })
       .all();
     
-    console.log('📚 Raw Categories from Airtable:', records.map(record => ({
-      id: record.id,
-      categoryId: record.get('categoryId'),
-      name_en: record.get('categoryText_en'),
-      name_et: record.get('categoryText_et'),
-      description_en: record.get('categoryDescription_en'),
-      companyTypes: record.get('MethodCompanyTypes'),
-      questions: record.get('MethodQuestions'),
-      isActive: record.get('isActive')
-    })));
+    console.log('📚 Raw Categories from Airtable:', {
+      companyTypeFilter: companyTypeId,
+      categoriesFound: records.length,
+      categories: records.map(record => ({
+        id: record.id,
+        categoryId: record.get('categoryId'),
+        name_en: record.get('categoryText_en'),
+        name_et: record.get('categoryText_et'),
+        description_en: record.get('categoryDescription_en'),
+        companyTypes: record.get('MethodCompanyTypes'),
+        questions: record.get('MethodQuestions'),
+        isActive: record.get('isActive')
+      }))
+    });
     
     return records.map((record) => ({
       id: record.id,

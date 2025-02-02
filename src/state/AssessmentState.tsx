@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AirtableMethodAnswer, AirtableMethodCompanyType } from '@/lib/airtable';
@@ -155,9 +155,48 @@ export function useAssessmentState() {
     return () => clearTimeout(timer);
   }, [pathname, searchParams]);
 
+  // Calculate filtered categories based on selected company type
+  const filteredCategories = useMemo(() => {
+    // Only filter and log when we have both categories and a selected company type
+    if (state.categories.length === 0 || !state.formData.companyType) {
+      return state.categories;
+    }
+
+    const filtered = state.categories.filter(category =>
+      category.companyType.includes(state.formData.companyType)
+    );
+
+    console.log('🎯 Filtering categories:', {
+      selectedCompanyType: state.formData.companyType,
+      totalCategories: state.categories.length,
+      filteredCategories: filtered.length,
+      details: filtered.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        companyTypes: cat.companyType,
+        matchedWith: state.formData.companyType
+      }))
+    });
+
+    return filtered;
+  }, [state.categories, state.formData.companyType]);
+
   return {
     // State
-    ...state,
+    currentStep: state.currentStep,
+    goal: state.goal,
+    formData: state.formData,
+    companyTypes: state.companyTypes,
+    categories: filteredCategories, // Use filtered categories instead of all categories
+    currentCategory: state.currentCategory,
+    currentQuestion: state.currentQuestion,
+    completedCategories: state.completedCategories,
+    answers: state.answers,
+    methodAnswers: state.methodAnswers,
+    error: state.error,
+    progress: state.progress,
+    forms: state.forms,
+    isLoading: state.isLoading,
 
     // Basic setters
     setGoal: (goal: string) => setState(prev => ({
@@ -191,7 +230,7 @@ export function useAssessmentState() {
 
     setSetupForm: (data: SetupFormData) => setState(prev => ({
       ...prev,
-      formData: data,
+      formData: { ...data },
       forms: { ...prev.forms, setup: data }
     })),
 
