@@ -4,7 +4,6 @@ import * as dotenv from 'dotenv';
 // Load environment variables from .env.local
 dotenv.config({ path: '.env.local' });
 
-// Debug: Log environment variables (without exposing full token)
 const token = process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN || '';
 const baseId = process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID || '';
 
@@ -14,28 +13,6 @@ type FieldSet = Record<string, any>;
 const base = new Airtable({ 
   apiKey: process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN 
 }).base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID!);
-
-// Types for table inspection
-interface TableField {
-  id: string;
-  key: string;
-  name: string;
-  type: string;
-  description?: string;
-}
-
-interface TableInfo {
-  id: string;
-  key: string;
-  name: string;
-  description?: string;
-  fields: TableField[];
-}
-
-interface TableData {
-  tableInfo: TableInfo;
-  sampleRecord?: Record<string, any>;
-}
 
 // Types for application data
 export interface AirtableMethodCategory {
@@ -86,197 +63,60 @@ export interface AirtableAssessmentResponse {
   updatedAt: string;
 }
 
-// Types for global cache
-interface GlobalCacheData {
-  categories: AirtableMethodCategory[];
-  questions: AirtableMethodQuestion[];
-  answers: AirtableMethodAnswer[];
-  companyTypes: CompanyTypeMetadata[];
-  timestamp: number;
-  version: string;
+// Types for company metadata
+export interface CompanyTypeMetadata {
+  id: string;
+  companyTypeText_en: string;
+  companyTypeText_et: string;
+  companyTypeDescription_en: string;
+  companyTypeDescription_et: string;
+  categoryCount: number;
+  questionCount: number;
 }
 
-const CACHE_KEY = 'assessment_global_cache';
-const CACHE_VERSION = '1.0';
-const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
-
-// Types
-interface AirtableField {
+export interface AirtableMethodCompanyType {
   id: string;
+  companyTypeId: string;
+  companyTypeText_et: string;
+  companyTypeText_en: string;
+  companyTypeDescription_et: string;
+  companyTypeDescription_en: string;
+  isActive: boolean;
+}
+
+// Types for table inspection
+interface TableField {
+  id: string;
+  key: string;
   name: string;
   type: string;
   description?: string;
 }
 
-interface AirtableTable {
+interface TableInfo {
   id: string;
+  key: string;
   name: string;
-  fields: AirtableField[];
+  description?: string;
+  fields: TableField[];
+}
+
+interface TableData {
+  tableInfo: TableInfo;
+  sampleRecord?: Record<string, any>;
 }
 
 export interface AirtableSchema {
-  tables: AirtableTable[];
-}
-
-export interface SchemaValidation {
-  isValid: boolean;
-  errors: string[];
-  suggestions: string[];
-  methodCategoriesTable: {
-    exists: boolean;
-    name: string | null;
-    requiredFields: Record<string, boolean>;
-  };
-  methodQuestionsTable: {
-    exists: boolean;
-    name: string | null;
-    requiredFields: Record<string, boolean>;
-  };
-  methodAnswersTable: {
-    exists: boolean;
-    name: string | null;
-    requiredFields: Record<string, boolean>;
-  };
-}
-
-// Required fields for each table
-const REQUIRED_FIELDS = {
-  methodCategories: [
-    'categoryId',
-    'categoryText_et',
-    'categoryText_en',
-    'categoryDescription_et',
-    'categoryDescription_en',
-    'isActive',
-    'MethodQuestions'
-  ],
-  methodQuestions: [
-    'questionId',
-    'questionText_et',
-    'questionText_en',
-    'isActive',
-    'MethodCategories',
-    'MethodAnswers'
-  ],
-  methodAnswers: [
-    'answerId',
-    'answerText_et',
-    'answerText_en',
-    'answerScore',
-    'isActive',
-    'MethodQuestions'
-  ]
-} as const;
-
-// Function to fetch all data from Airtable
-async function fetchAllData(): Promise<GlobalCacheData> {
-  console.log('🔄 Fetching all data from Airtable...');
-  
-  try {
-    // Get existing cache to preserve company types
-    const existingCache = localStorage.getItem(CACHE_KEY);
-    let existingCompanyTypes: CompanyTypeMetadata[] = [];
-    if (existingCache) {
-      const parsed = JSON.parse(existingCache);
-      existingCompanyTypes = parsed.companyTypes || [];
-    }
-
-    // Fetch all categories, questions, and answers in parallel
-    const [categories, questions, answers] = await Promise.all([
-      getMethodCategories(),
-      getMethodQuestions(),
-      getMethodAnswers()
-    ]);
-
-    // Create a mapping from Airtable record ID to questionId
-    const questionIdMap = new Map(
-      questions.map(q => [q.id, q.questionId])
-    );
-
-    console.log('🔄 ID Mapping check:', {
-      sampleRecordId: Array.from(questionIdMap.keys())[0],
-      sampleQuestionId: Array.from(questionIdMap.values())[0]
-    });
-
-    // Transform category questionIds to use Q1, Q2 format instead of Airtable record IDs
-    const transformedCategories = categories.map(category => {
-      const transformedQuestionIds = category.questionId
-        .map(id => questionIdMap.get(id))
-        .filter((id): id is string => id !== undefined);
-      
-      console.log(`Category ${category.categoryId} transformation:`, {
-        before: category.questionId,
-        after: transformedQuestionIds
-      });
-
-      return {
-        ...category,
-        questionId: transformedQuestionIds
-      };
-    });
-
-    // Debug log the transformation results
-    console.log('🔍 Data transformation check:');
-    if (transformedCategories.length > 0) {
-      const sampleCategory = transformedCategories[0];
-      console.log('Sample category after transformation:', {
-        categoryId: sampleCategory.categoryId,
-        questionIds: sampleCategory.questionId
-      });
-
-      // Verify questions can be found
-      const matchingQuestions = questions.filter(q => 
-        sampleCategory.questionId.includes(q.questionId)
-      );
-      console.log('Matching questions found:', {
-        count: matchingQuestions.length,
-        questionIds: matchingQuestions.map(q => q.questionId)
-      });
-    }
-
-    const cacheData: GlobalCacheData = {
-      categories: transformedCategories,
-      questions,
-      answers,
-      companyTypes: existingCompanyTypes,
-      timestamp: Date.now(),
-      version: CACHE_VERSION
-    };
-
-    // Store in localStorage
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-    console.log('✅ All data fetched and cached successfully');
-    
-    return cacheData;
-  } catch (error) {
-    console.error('❌ Error fetching data:', error);
-    throw error;
-  }
-}
-
-// Function to get cached data or fetch if needed
-async function getGlobalCache(): Promise<GlobalCacheData> {
-  const cachedData = localStorage.getItem(CACHE_KEY);
-
-  if (cachedData) {
-    const parsed: GlobalCacheData = JSON.parse(cachedData);
-    const isExpired = Date.now() - parsed.timestamp > CACHE_DURATION;
-    const isCorrectVersion = parsed.version === CACHE_VERSION;
-
-    if (!isExpired && isCorrectVersion && 
-        parsed.categories?.length > 0 && 
-        parsed.questions?.length > 0 && 
-        parsed.answers?.length > 0) {
-      console.log('📦 Using global cached data', {
-        categoriesCount: parsed.categories.length,
-        questionsCount: parsed.questions.length,
-        answersCount: parsed.answers.length
-      });
-      return parsed;
-    }
-  }
-
-  return fetchAllData();
+  tables: {
+    id: string;
+    name: string;
+    fields: {
+      id: string;
+      name: string;
+      type: string;
+      description?: string;
+    }[];
+  }[];
 }
 
 // Function to normalize company type
@@ -293,99 +133,82 @@ function normalizeCompanyType(companyType: string): string {
   return companyTypeMap[cleanType] || cleanType.toUpperCase();
 }
 
-// Function to filter data based on company type
-function filterDataByCompanyType(
-  data: GlobalCacheData,
-  companyType: string
-): {
-  categories: AirtableMethodCategory[];
-  questions: AirtableMethodQuestion[];
-  answers: AirtableMethodAnswer[];
-} {
-  console.log(`🔄 Fetching data for company type:`, companyType);
-  
-  const normalizedCompanyType = normalizeCompanyType(companyType);
-  console.log(`🔄 Normalized company type: ${normalizedCompanyType}`);
-
-  // Filter categories by company type
-  const filteredCategories = data.categories.filter(category =>
-    category.companyType.some(type => 
-      normalizeCompanyType(type) === normalizedCompanyType
-    ) && category.isActive
-  );
-
-  // Get all question IDs from filtered categories
-  const relevantQuestionIds = new Set(
-    filteredCategories.flatMap(cat => cat.questionId)
-  );
-
-  console.log('Relevant question IDs:', {
-    count: relevantQuestionIds.size,
-    sample: Array.from(relevantQuestionIds).slice(0, 5)
-  });
-
-  // Filter questions that belong to our filtered categories and are active
-  const filteredQuestions = data.questions.filter(q => 
-    relevantQuestionIds.has(q.questionId) && q.isActive
-  );
-
-  // Get all answer IDs from filtered questions
-  const relevantAnswerIds = new Set(
-    filteredQuestions.flatMap(q => q.answerId)
-  );
-
-  // Filter answers that belong to our filtered questions and are active
-  const filteredAnswers = data.answers.filter(a => 
-    relevantAnswerIds.has(a.id) && a.isActive
-  );
-
-  // Log summary of filtered data
-  console.log('Raw data received:', {
-    categoriesCount: filteredCategories.length,
-    questionsCount: filteredQuestions.length,
-    answersCount: filteredAnswers.length,
-    sampleQuestion: filteredQuestions[0] || null
-  });
-
-  // Log category questions for debugging
-  filteredCategories.forEach(category => {
-    const categoryQuestions = filteredQuestions.filter(q => 
-      category.questionId.includes(q.questionId)
-    );
-    console.log(`Category ${category.categoryId} has ${categoryQuestions.length} questions:`, 
-      categoryQuestions.map(q => q.questionId));
-  });
-
-  return {
-    categories: filteredCategories,
-    questions: filteredQuestions,
-    answers: filteredAnswers
-  };
+// Data fetching functions
+export async function getMethodCategories(): Promise<AirtableMethodCategory[]> {
+  try {
+    const records = await base('MethodCategories')
+      .select({
+        filterByFormula: '{isActive} = 1',
+        sort: [{ field: 'categoryId', direction: 'asc' }],
+      })
+      .all();
+    
+    return records.map((record) => ({
+      id: record.id,
+      categoryId: record.get('categoryId') as string,
+      categoryText_et: record.get('categoryText_et') as string,
+      categoryText_en: record.get('categoryText_en') as string,
+      categoryDescription_et: record.get('categoryDescription_et') as string,
+      categoryDescription_en: record.get('categoryDescription_en') as string,
+      companyType: record.get('MethodCompanyTypes') as string[],
+      isActive: record.get('isActive') as boolean,
+      questionId: record.get('MethodQuestions') as string[],
+    }));
+  } catch (error) {
+    console.error('Error fetching method categories:', error);
+    throw error;
+  }
 }
 
-// Types for company metadata
-export interface CompanyTypeMetadata {
-  id: string;
-  companyTypeText_en: string;
-  companyTypeText_et: string;
-  companyTypeDescription_en: string;
-  companyTypeDescription_et: string;
-  categoryCount: number;
-  questionCount: number;
+export async function getMethodQuestions(): Promise<AirtableMethodQuestion[]> {
+  try {
+    const records = await base('MethodQuestions')
+      .select({
+        filterByFormula: '{isActive} = 1',
+        sort: [{ field: 'questionId', direction: 'asc' }],
+      })
+      .all();
+    
+    return records.map((record) => ({
+      id: record.id,
+      questionId: record.get('questionId') as string,
+      questionText_et: record.get('questionText_et') as string,
+      questionText_en: record.get('questionText_en') as string,
+      isActive: record.get('isActive') as boolean,
+      answerId: record.get('answerId') as string[],
+      categoryId: record.get('categoryId') as string[],
+    }));
+  } catch (error) {
+    console.error('Error fetching method questions:', error);
+    throw error;
+  }
 }
 
-// Add new interface for company type data
-export interface AirtableMethodCompanyType {
-  id: string;
-  companyTypeId: string;
-  companyTypeText_et: string;
-  companyTypeText_en: string;
-  companyTypeDescription_et: string;
-  companyTypeDescription_en: string;
-  isActive: boolean;
+export async function getMethodAnswers(): Promise<AirtableMethodAnswer[]> {
+  try {
+    const records = await base('MethodAnswers')
+      .select({
+        sort: [{ field: 'answerId', direction: 'asc' }],
+      })
+      .all();
+
+    return records.map((record) => ({
+      id: record.id,
+      answerId: record.get('answerId') as string,
+      answerText_et: record.get('answerText_et') as string,
+      answerText_en: record.get('answerText_en') as string,
+      answerDescription_et: record.get('answerDescription_et') as string,
+      answerDescription_en: record.get('answerDescription_en') as string,
+      answerScore: record.get('answerScore') as number,
+      isActive: true,
+      questionId: record.get('questionId') as string[],
+    }));
+  } catch (error) {
+    console.error('Error fetching method answers:', error);
+    throw error;
+  }
 }
 
-// Add function to fetch company types
 export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType[]> {
   try {
     const records = await base('MethodCompanyTypes')
@@ -395,7 +218,7 @@ export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType
       })
       .all();
 
-    const companyTypes = records.map((record) => ({
+    return records.map((record) => ({
       id: record.id,
       companyTypeId: record.get('companyTypeId') as string,
       companyTypeText_et: record.get('companyTypeText_et') as string,
@@ -404,19 +227,15 @@ export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType
       companyTypeDescription_en: record.get('companyTypeDescription_en') as string,
       isActive: record.get('isActive') as boolean,
     }));
-    
-    return companyTypes;
   } catch (error) {
-    console.error('❌ Error fetching method company types:', error);
+    console.error('Error fetching method company types:', error);
     throw error;
   }
 }
 
-// Modify the getCompanyTypesMetadata function to be more concise
 export async function getCompanyTypesMetadata(): Promise<CompanyTypeMetadata[]> {
   try {
     const companyTypes = await getMethodCompanyTypes();
-
     return companyTypes
       .filter(type => type.isActive)
       .map(type => ({
@@ -429,25 +248,21 @@ export async function getCompanyTypesMetadata(): Promise<CompanyTypeMetadata[]> 
         questionCount: 0
       }));
   } catch (error) {
-    console.error('❌ Error fetching company types metadata:', error);
+    console.error('Error fetching company types metadata:', error);
     throw error;
   }
 }
 
-// Function to get data for a specific company type
 export async function getDataForCompanyType(companyType: string) {
   try {
-    // Fetch all data in parallel
     const [categories, questions, answers] = await Promise.all([
       getMethodCategories(),
       getMethodQuestions(),
       getMethodAnswers()
     ]);
 
-    // Normalize company type for comparison
     const normalizedCompanyType = normalizeCompanyType(companyType);
 
-    // Filter categories for this company type
     const filteredCategories = categories.filter(category =>
       Array.isArray(category.companyType) &&
       category.companyType.some(type => 
@@ -455,31 +270,24 @@ export async function getDataForCompanyType(companyType: string) {
       ) && category.isActive
     );
 
-    // Create a map of questions by their Airtable ID for faster lookup
-    const questionsById = new Map(questions.map(q => [q.id, q]));
-
-    // For each category, find its questions using the Airtable record IDs
     const categoryQuestions = new Set<string>();
     filteredCategories.forEach(category => {
       category.questionId.forEach(qId => {
-        const question = questionsById.get(qId);
+        const question = questions.find(q => q.id === qId);
         if (question && question.isActive) {
           categoryQuestions.add(question.id);
         }
       });
     });
 
-    // Filter questions that belong to our filtered categories
     const filteredQuestions = questions.filter(q => 
       categoryQuestions.has(q.id) && q.isActive
     );
 
-    // Get answer IDs from filtered questions
     const answerIds = new Set(
       filteredQuestions.flatMap(q => q.answerId)
     );
 
-    // Filter answers
     const filteredAnswers = answers.filter(a => 
       answerIds.has(a.id) && a.isActive
     );
@@ -494,421 +302,6 @@ export async function getDataForCompanyType(companyType: string) {
     throw error;
   }
 }
-
-// Data fetching functions
-export async function getMethodCategories(): Promise<AirtableMethodCategory[]> {
-  try {
-    console.log('🔄 Fetching method categories from Airtable...');
-    
-    const records = await base('MethodCategories')
-      .select({
-        filterByFormula: '{isActive} = 1',
-        sort: [{ field: 'categoryId', direction: 'asc' }],
-      })
-      .all();
-
-    console.log(`📥 Retrieved ${records.length} categories from Airtable`);
-    
-    const categories = records.map((record) => {
-      const companyTypes = record.get('MethodCompanyTypes');
-      return {
-        id: record.id,
-        categoryId: record.get('categoryId') as string,
-        categoryText_et: record.get('categoryText_et') as string,
-        categoryText_en: record.get('categoryText_en') as string,
-        categoryDescription_et: record.get('categoryDescription_et') as string,
-        categoryDescription_en: record.get('categoryDescription_en') as string,
-        companyType: Array.isArray(companyTypes) ? companyTypes : [],
-        isActive: record.get('isActive') as boolean,
-        questionId: record.get('MethodQuestions') as string[],
-      };
-    });
-
-    console.log('📊 Sample category data:', categories[0] || 'No categories found');
-    console.log('🏢 Available company types:', new Set(categories.flatMap(cat => cat.companyType)));
-
-    return categories;
-  } catch (error) {
-    console.error('❌ Error fetching method categories:', error);
-    throw error;
-  }
-}
-
-export async function getMethodQuestions(): Promise<AirtableMethodQuestion[]> {
-  try {
-    console.log('🔄 Fetching method questions from Airtable...');
-    
-    const records = await base('MethodQuestions')
-      .select({
-        filterByFormula: '{isActive} = 1',
-        sort: [{ field: 'questionId', direction: 'asc' }],
-      })
-      .all();
-
-    console.log(`📥 Retrieved ${records.length} questions from Airtable`);
-    
-    const questions = records.map((record) => {
-      const answerId = record.get('answerId');
-      return {
-        id: record.id,
-        questionId: record.get('questionId') as string,
-        questionText_et: record.get('questionText_et') as string,
-        questionText_en: record.get('questionText_en') as string,
-        isActive: record.get('isActive') as boolean,
-        answerId: Array.isArray(answerId) ? answerId : [],
-        categoryId: record.get('categoryId') as string[],
-      };
-    });
-
-    console.log('📊 Sample question data:', questions[0] || 'No questions found');
-    
-    return questions;
-  } catch (error) {
-    console.error('❌ Error fetching method questions:', error);
-    if (error instanceof Error) {
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-    }
-    throw error;
-  }
-}
-
-export async function getMethodAnswers(): Promise<AirtableMethodAnswer[]> {
-  try {
-    console.log('Fetching method answers from Airtable...');
-    
-    const records = await base('MethodAnswers')
-      .select({
-        sort: [{ field: 'answerId', direction: 'asc' }],
-      })
-      .all();
-
-    const mappedAnswers = records.map((record) => ({
-      id: record.id,
-      answerId: record.get('answerId') as string,
-      answerText_et: record.get('answerText_et') as string,
-      answerText_en: record.get('answerText_en') as string,
-      answerDescription_et: record.get('answerDescription_et') as string,
-      answerDescription_en: record.get('answerDescription_en') as string,
-      answerScore: record.get('answerScore') as number,
-      isActive: true, // All answers are considered active
-      questionId: record.get('questionId') as string[],
-    }));
-
-    console.log('Mapped answers:', {
-      count: mappedAnswers.length,
-      sample: mappedAnswers[0] || null
-    });
-
-    return mappedAnswers;
-  } catch (error) {
-    console.error('Error in getMethodAnswers:', error);
-    if (error instanceof Error) {
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-    }
-    throw error;
-  }
-}
-
-export async function getAssessmentResponses(): Promise<AirtableAssessmentResponse[]> {
-  try {
-    const records = await base('AssessmentResponses')
-      .select({
-        sort: [{ field: 'createdAt', direction: 'desc' }],
-      })
-      .all();
-
-    return records.map((record) => ({
-      id: record.id,
-      responseId: record.get('responseId') as string,
-      contactName: record.get('contactName') as string,
-      contactEmail: record.get('contactEmail') as string,
-      companyName: record.get('companyName') as string,
-      companyType: record.get('companyType') as string,
-      initialGoal: record.get('initialGoal') as string,
-      responseStatus: record.get('responseStatus') as 'New' | 'In Progress' | 'Completed',
-      responseContent: record.get('responseContent') as string,
-      createdAt: record.get('createdAt') as string,
-      updatedAt: record.get('updatedAt') as string,
-    }));
-  } catch (error) {
-    console.error('Error fetching assessment responses:', error);
-    throw error;
-  }
-}
-
-/**
- * Fetches the schema of all tables in the Airtable base
- */
-export async function getAirtableSchema(): Promise<AirtableSchema> {
-  try {
-    // Use the Airtable Meta API to get table information
-    const response = await fetch(`https://api.airtable.com/v0/meta/bases/${process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID}/tables`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch tables: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const tables: AirtableTable[] = data.tables.map((table: any) => ({
-      id: table.id,
-      name: table.name,
-      fields: table.fields.map((field: any) => ({
-        id: field.id,
-        name: field.name,
-        type: field.type,
-        description: field.description
-      }))
-    }));
-
-    return { tables };
-  } catch (error) {
-    console.error('Error fetching Airtable schema:', error);
-    throw new Error('Failed to fetch Airtable schema');
-  }
-}
-
-/**
- * Validates the Airtable schema against our required structure
- */
-export async function validateAirtableSchema(): Promise<SchemaValidation> {
-  try {
-    const schema = await getAirtableSchema();
-    const errors: string[] = [];
-    const suggestions: string[] = [];
-
-    // Initialize validation result
-    const validation: SchemaValidation = {
-      isValid: true,
-      errors: [],
-      suggestions: [],
-      methodCategoriesTable: {
-        exists: false,
-        name: null,
-        requiredFields: Object.fromEntries(
-          REQUIRED_FIELDS.methodCategories.map(field => [field, false])
-        )
-      },
-      methodQuestionsTable: {
-        exists: false,
-        name: null,
-        requiredFields: Object.fromEntries(
-          REQUIRED_FIELDS.methodQuestions.map(field => [field, false])
-        )
-      },
-      methodAnswersTable: {
-        exists: false,
-        name: null,
-        requiredFields: Object.fromEntries(
-          REQUIRED_FIELDS.methodAnswers.map(field => [field, false])
-        )
-      }
-    };
-
-    // Check each required table
-    for (const table of schema.tables) {
-      const tableName = table.name.toLowerCase().replace(/\s+/g, '');
-      const fieldNames = table.fields.map(f => f.name);
-
-      // Check MethodCategories table
-      if (tableName === 'methodcategories') {
-        validation.methodCategoriesTable.exists = true;
-        validation.methodCategoriesTable.name = table.name;
-        checkRequiredFields(
-          'methodCategories',
-          fieldNames,
-          validation.methodCategoriesTable.requiredFields,
-          errors,
-          suggestions
-        );
-      }
-
-      // Check MethodQuestions table
-      if (tableName === 'methodquestions') {
-        validation.methodQuestionsTable.exists = true;
-        validation.methodQuestionsTable.name = table.name;
-        checkRequiredFields(
-          'methodQuestions',
-          fieldNames,
-          validation.methodQuestionsTable.requiredFields,
-          errors,
-          suggestions
-        );
-      }
-
-      // Check MethodAnswers table
-      if (tableName === 'methodanswers') {
-        validation.methodAnswersTable.exists = true;
-        validation.methodAnswersTable.name = table.name;
-        checkRequiredFields(
-          'methodAnswers',
-          fieldNames,
-          validation.methodAnswersTable.requiredFields,
-          errors,
-          suggestions
-        );
-      }
-    }
-
-    // Check if any required tables are missing
-    if (!validation.methodCategoriesTable.exists) {
-      errors.push('MethodCategories table is missing');
-      suggestions.push('Create a table named "MethodCategories" with the required fields');
-    }
-    if (!validation.methodQuestionsTable.exists) {
-      errors.push('MethodQuestions table is missing');
-      suggestions.push('Create a table named "MethodQuestions" with the required fields');
-    }
-    if (!validation.methodAnswersTable.exists) {
-      errors.push('MethodAnswers table is missing');
-      suggestions.push('Create a table named "MethodAnswers" with the required fields');
-    }
-
-    validation.isValid = errors.length === 0;
-    validation.errors = errors;
-    validation.suggestions = suggestions;
-
-    return validation;
-  } catch (error) {
-    console.error('Error validating Airtable schema:', error);
-    throw new Error('Failed to validate Airtable schema');
-  }
-}
-
-/**
- * Helper function to check required fields in a table
- */
-function checkRequiredFields(
-  tableType: keyof typeof REQUIRED_FIELDS,
-  fieldNames: string[],
-  requiredFieldsStatus: Record<string, boolean>,
-  errors: string[],
-  suggestions: string[]
-) {
-  const requiredFields = REQUIRED_FIELDS[tableType];
-  
-  for (const field of requiredFields) {
-    const hasField = fieldNames.some(name => name.toLowerCase() === field.toLowerCase());
-    requiredFieldsStatus[field] = hasField;
-    
-    if (!hasField) {
-      errors.push(`${tableType} table is missing the required field: ${field}`);
-      suggestions.push(
-        `Add a field named "${field}" to the ${tableType} table`
-      );
-    }
-  }
-}
-
-export function printTableData(results: TableData | TableData[]) {
-  const printTable = (data: TableData) => {
-    console.log(`\nTable: ${data.tableInfo.name}`);
-    console.log(`Key: ${data.tableInfo.key}`);
-    if (data.tableInfo.description) {
-      console.log(`Description: ${data.tableInfo.description}`);
-    }
-    
-    console.log('\nFields:');
-    data.tableInfo.fields.forEach(field => {
-      console.log(`  - ${field.name} (${field.type})`);
-      console.log(`    Key: ${field.key}`);
-      if (field.description) {
-        console.log(`    Description: ${field.description}`);
-      }
-    });
-
-    if (data.sampleRecord) {
-      console.log('\nSample Record:');
-      console.log(JSON.stringify(data.sampleRecord, null, 2));
-    } else {
-      console.log('\nNo sample records found');
-    }
-  };
-
-  if (Array.isArray(results)) {
-    results.forEach(printTable);
-  } else {
-    printTable(results);
-  }
-}
-
-// CLI functionality
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const command = process.argv[2];
-
-  switch (command) {
-    case 'inspect':
-      inspectBase().then(results => {
-        printTableData(results);
-      }).catch(error => {
-        console.error('Error:', error);
-        process.exit(1);
-      });
-      break;
-
-    case 'categories':
-      getCategories().then(categories => {
-        console.log('\nCategories:');
-        console.log(JSON.stringify(categories, null, 2));
-      }).catch(error => {
-        console.error('Error:', error);
-        process.exit(1);
-      });
-      break;
-
-    case 'questions':
-      getQuestions().then(questions => {
-        console.log('\nQuestions:');
-        console.log(JSON.stringify(questions, null, 2));
-      }).catch(error => {
-        console.error('Error:', error);
-        process.exit(1);
-      });
-      break;
-
-    default:
-      console.log(`
-Usage: ts-node src/lib/airtable.ts <command>
-
-Commands:
-  inspect     Inspect all tables in the Airtable base
-  categories  List all categories
-  questions   List all questions
-`);
-      process.exit(1);
-  }
-}
-
-// Update existing functions to use the new caching system
-export async function getCategories(): Promise<AirtableMethodCategory[]> {
-  const globalData = await getGlobalCache();
-  return globalData.categories;
-}
-
-export async function getQuestions(): Promise<AirtableMethodQuestion[]> {
-  const globalData = await getGlobalCache();
-  return globalData.questions;
-}
-
-export async function getAnswers(): Promise<AirtableMethodAnswer[]> {
-  const globalData = await getGlobalCache();
-  return globalData.answers;
-}
-
-// Add debounce helper
-let saveTimeout: NodeJS.Timeout | null = null;
-let isSaving = false;
 
 export async function saveResult(result: {
   name: string;
@@ -928,40 +321,10 @@ export async function saveResult(result: {
     }[] 
   }[];
 }): Promise<void> {
-  // Clear any pending save
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
-  }
-
-  // If already saving, delay this save
-  if (isSaving) {
-    console.log('🔄 Save already in progress, queueing...');
-    return new Promise((resolve, reject) => {
-      saveTimeout = setTimeout(() => {
-        saveResult(result).then(resolve).catch(reject);
-      }, 1000);
-    });
-  }
-
   try {
-    isSaving = true;
-    console.log('💾 Starting save operation...');
-
-    // Clean up company type and ensure proper capitalization
-    const companyTypeMap: Record<string, string> = {
-      'startup': 'Startup',
-      'scale-up': 'Scaleup', 
-      'scaleup': 'Scaleup',
-      'sme': 'SME',
-      'enterprise': 'Enterprise'
-    };
-    
     const cleanCompanyType = result.companyType.replace(/['"]+/g, '').trim().toLowerCase();
-    const properCompanyType = companyTypeMap[cleanCompanyType] || cleanCompanyType;
-    
-    console.log('📝 Preparing assessment data...');
+    const properCompanyType = normalizeCompanyType(cleanCompanyType);
 
-    // Create a mapping of logical IDs to Airtable record IDs
     const idMapping = new Map<string, string>();
     result.categories.forEach(cat => {
       cat.questions.forEach(q => {
@@ -969,7 +332,6 @@ export async function saveResult(result: {
       });
     });
 
-    // Transform answers to use Airtable record IDs
     const airtableAnswers: Record<string, number> = {};
     Object.entries(result.answers).forEach(([logicalId, score]) => {
       const airtableId = idMapping.get(logicalId);
@@ -978,18 +340,16 @@ export async function saveResult(result: {
       }
     });
 
-    // Calculate category results and overall average
     const categoryResults = calculateCategoryResults(result.categories, result.answers);
     const overallAverage = calculateOverallAverage(result.categories, result.answers);
 
-    // Prepare simplified response content
     const responseContent = {
       metadata: {
         companyType: properCompanyType,
         goal: result.goal,
         overallScore: overallAverage
       },
-      answers: airtableAnswers, // Use Airtable record IDs
+      answers: airtableAnswers,
       categoryScores: categoryResults,
       categories: result.categories.map(cat => ({
         id: cat.id,
@@ -997,20 +357,14 @@ export async function saveResult(result: {
         name: cat.name,
         averageScore: categoryResults[cat.id]?.average || 0,
         questions: cat.questions.map(q => ({
-          id: q.airtableId, // Use Airtable record ID
-          logicalId: q.id, // Keep logical ID for reference
+          id: q.airtableId,
+          logicalId: q.id,
           text: q.text,
           score: result.answers[q.id] || 0
         }))
       }))
     };
-
-    console.log('📤 Saving to Airtable...', {
-      answerCount: Object.keys(airtableAnswers).length,
-      sampleAnswer: Object.entries(airtableAnswers)[0]
-    });
     
-    // Create the record
     await base('AssessmentResponses').create([
       {
         fields: {
@@ -1024,24 +378,12 @@ export async function saveResult(result: {
         },
       },
     ]);
-
-    console.log('✅ Save completed successfully');
   } catch (error) {
-    console.error('❌ Error saving result:', error);
-    if (error instanceof Error) {
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-    }
+    console.error('Error saving result:', error);
     throw error;
-  } finally {
-    isSaving = false;
   }
 }
 
-// Helper function to calculate category results
 function calculateCategoryResults(
   categories: { id: string; key: string; name: string; questions: { id: string; text: string }[] }[],
   answers: Record<string, number>
@@ -1071,7 +413,6 @@ function calculateCategoryResults(
   return categoryResults;
 }
 
-// Helper function to calculate overall average
 function calculateOverallAverage(
   categories: { id: string; key: string; name: string; questions: { id: string; text: string }[] }[],
   answers: Record<string, number>
@@ -1079,6 +420,41 @@ function calculateOverallAverage(
   const categoryResults = calculateCategoryResults(categories, answers);
   const totalAverage = Object.values(categoryResults).reduce((sum, cat) => sum + cat.average, 0);
   return categories.length > 0 ? totalAverage / categories.length : 0;
+}
+
+/**
+ * Fetches the schema of all tables in the Airtable base
+ */
+export async function getAirtableSchema(): Promise<AirtableSchema> {
+  try {
+    // Use the Airtable Meta API to get table information
+    const response = await fetch(`https://api.airtable.com/v0/meta/bases/${process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID}/tables`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tables: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const tables = data.tables.map((table: any) => ({
+      id: table.id,
+      name: table.name,
+      fields: table.fields.map((field: any) => ({
+        id: field.id,
+        name: field.name,
+        type: field.type,
+        description: field.description
+      }))
+    }));
+
+    return { tables };
+  } catch (error) {
+    console.error('Error fetching Airtable schema:', error);
+    throw new Error('Failed to fetch Airtable schema');
+  }
 }
 
 // Helper function to generate consistent keys
@@ -1107,7 +483,6 @@ export async function inspectBase() {
     }
 
     const { tables } = await response.json();
-    console.log('Found tables:', tables.map((t: { name: string }) => t.name));
 
     const results: TableData[] = [];
 

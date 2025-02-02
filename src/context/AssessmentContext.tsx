@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
-import { getCategories, getQuestions, saveResult, getDataForCompanyType, AirtableMethodCategory, AirtableMethodQuestion, getMethodAnswers, AirtableMethodAnswer } from '@/lib/airtable';
+import { saveResult, getDataForCompanyType, AirtableMethodCategory, AirtableMethodQuestion, AirtableMethodAnswer } from '@/lib/airtable';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
@@ -57,15 +57,6 @@ interface AssessmentState {
   error: string | null;
 }
 
-interface CacheData {
-  categories: AirtableMethodCategory[];
-  questions: AirtableMethodQuestion[];
-  answers: AirtableMethodAnswer[];
-  timestamp: number;
-}
-
-const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
-
 // Export types
 export type { Category, Question, FormData, Provider, AssessmentState };
 
@@ -116,34 +107,9 @@ const AssessmentContext = createContext<AssessmentContextType | undefined>(undef
 export function AssessmentProvider({ children }: { children: React.ReactNode }) {
   const locale = useLocale();
   const router = useRouter();
-  const [state, setState] = usePersistentState<AssessmentState>('assessment_state', {
-    ...defaultState,
-    formData: {
-      name: '',
-      email: '',
-      companyName: '',
-      companyType: '' // Ensure this is empty by default
-    }
-  });
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [state, setState] = useState<AssessmentState>(defaultState);
+  const [isLoading, setIsLoading] = useState(false);
   const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
-
-  // Clear any cached data on initial load
-  useEffect(() => {
-    if (isInitialLoad) {
-      setState(prev => ({
-        ...defaultState,
-        formData: {
-          name: '',
-          email: '',
-          companyName: '',
-          companyType: ''
-        }
-      }));
-      setIsInitialLoad(false);
-    }
-  }, [isInitialLoad, setState]);
 
   // Modified data fetching effect to only run when needed
   useEffect(() => {
@@ -154,40 +120,25 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       }
 
       try {
+        setIsLoading(true);
         setState(prev => ({ ...prev, isLoading: true, error: null }));
-        console.log('🔄 Fetching assessment data for company type:', state.formData.companyType);
 
         const data = await getDataForCompanyType(state.formData.companyType);
-
-        // Create a mapping of questions by their Airtable ID for faster lookup
-        const questionsById = new Map(
-          data.questions.map(q => [q.id, q])
-        );
 
         // Transform categories and questions into the format we need
         const transformedCategories = data.categories
           .map((category, index) => {
-            // Find questions for this category using the Airtable record IDs
-            const categoryQuestions = category.questionId
-              .map(qId => {
-                const question = questionsById.get(qId);
-                if (!question) {
-                  console.warn(`Question ${qId} not found for category ${category.categoryId}`);
-                  return null;
-                }
-                return {
-                  id: question.questionId, // Use logical ID (Q1, Q2, etc.)
-                  airtableId: question.id, // Keep Airtable record ID
-                  text: locale === 'et' ? question.questionText_et : question.questionText_en,
-                  categoryId: [category.categoryId], // Ensure it's an array
-                  answerId: question.answerId,
-                  order: parseInt(question.questionId.replace('Q', ''), 10) || 0
-                };
-              })
-              .filter((q): q is NonNullable<typeof q> => q !== null)
+            const categoryQuestions = data.questions
+              .filter(q => category.questionId.includes(q.id))
+              .map(question => ({
+                id: question.questionId,
+                airtableId: question.id,
+                text: locale === 'et' ? question.questionText_et : question.questionText_en,
+                categoryId: [category.categoryId],
+                answerId: question.answerId,
+                order: parseInt(question.questionId.replace('Q', ''), 10) || 0
+              }))
               .sort((a, b) => a.order - b.order);
-
-            console.log(`Category ${category.categoryId} has ${categoryQuestions.length} questions`);
 
             return {
               id: category.categoryId,
@@ -227,11 +178,13 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           isLoading: false,
           error: 'Failed to load assessment data. Please try again.'
         }));
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [state.formData.companyType, locale, setState]);
+  }, [state.formData.companyType, locale]);
 
   // Calculate progress and handle completion
   useEffect(() => {
@@ -255,7 +208,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     }
 
     // Only check completion if we have categories and not in initial load
-    if (state.categories.length === 0 || isInitialLoad || hasCompletedAssessment) return;
+    if (state.categories.length === 0 || isLoading || hasCompletedAssessment) return;
 
     // Check if assessment is complete
     const allQuestionsAnswered = validAnswers.length >= totalQuestions;
@@ -276,7 +229,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       totalQuestions,
       hasCategories: state.categories.length > 0,
       hasRequiredFields,
-      isSaving,
+      isLoading,
       hasCompletedAssessment,
       currentCategory: state.currentCategory?.name
     });
@@ -287,9 +240,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     // 3. We're not already saving
     // 4. We've finished the last category (currentCategory is null)
     // 5. We haven't already completed the assessment
-    if (isComplete && hasRequiredFields && !isSaving && state.currentCategory === null && !hasCompletedAssessment) {
+    if (isComplete && hasRequiredFields && !isLoading && state.currentCategory === null && !hasCompletedAssessment) {
       console.log('Assessment complete, saving results...');
-      setIsSaving(true);
       setHasCompletedAssessment(true);
       
       // Clean up answers before saving
@@ -315,11 +267,9 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         }))
       }).then(() => {
         console.log('Save successful, navigating to results...');
-        setIsSaving(false);
         router.push(`/${locale}${routes.results}`);
       }).catch(error => {
         console.error('Error saving assessment results:', error);
-        setIsSaving(false);
         setHasCompletedAssessment(false);
       });
     }
@@ -329,8 +279,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     state.completedCategories,
     state.currentCategory,
     state.formData,
-    isInitialLoad,
-    isSaving,
+    isLoading,
     hasCompletedAssessment,
     locale,
     router,
@@ -506,7 +455,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   };
 
   // Show loading state only on initial load
-  if (isInitialLoad && state.isLoading) {
+  if (isLoading && state.isLoading) {
     return <Loading type="full" />;
   }
 
