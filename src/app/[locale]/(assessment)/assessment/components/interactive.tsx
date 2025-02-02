@@ -4,13 +4,16 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useAssessmentState } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
-import { AirtableMethodAnswer } from '@/lib/airtable';
+import { AirtableMethodAnswer, AirtableMethodCategory, AirtableMethodQuestion } from '@/lib/airtable';
 import { useState, useEffect } from 'react';
 import type { Category, Question } from '@/state/AssessmentState';
 
-interface AssessmentInteractiveCardProps {
-  initialCategories: Category[];
-  initialAnswers: AirtableMethodAnswer[];
+interface InteractiveProps {
+  initialData: {
+    categories: AirtableMethodCategory[];
+    questions: AirtableMethodQuestion[];
+    answers: AirtableMethodAnswer[];
+  };
 }
 
 interface AnswerOptionProps {
@@ -52,7 +55,7 @@ const AnswerOption = ({ answer, isSelected, onClick }: AnswerOptionProps) => {
   );
 };
 
-export const AssessmentInteractiveCard = ({ initialCategories, initialAnswers }: AssessmentInteractiveCardProps) => {
+export const Interactive = ({ initialData }: InteractiveProps) => {
   const t = useTranslations('assessment');
   const {
     currentCategory,
@@ -67,8 +70,8 @@ export const AssessmentInteractiveCard = ({ initialCategories, initialAnswers }:
 
   // Initialize assessment data
   useEffect(() => {
-    setAssessmentData(initialCategories, initialAnswers);
-  }, [initialCategories, initialAnswers, setAssessmentData]);
+    setAssessmentData(initialData.categories as Category[], initialData.answers);
+  }, [initialData, setAssessmentData]);
 
   // Add state for randomized answers
   const [randomizedAnswers, setRandomizedAnswers] = useState<AirtableMethodAnswer[]>([]);
@@ -77,7 +80,7 @@ export const AssessmentInteractiveCard = ({ initialCategories, initialAnswers }:
   useEffect(() => {
     if (currentQuestion) {
       // Get all answers for this question
-      const answers = initialAnswers.filter((answer: AirtableMethodAnswer) => 
+      const answers = initialData.answers.filter((answer: AirtableMethodAnswer) => 
         answer.questionId?.includes(currentQuestion.airtableId) && answer.isActive === true
       );
       
@@ -85,7 +88,7 @@ export const AssessmentInteractiveCard = ({ initialCategories, initialAnswers }:
       const shuffled = [...answers].sort(() => Math.random() - 0.5);
       setRandomizedAnswers(shuffled);
     }
-  }, [currentQuestion, initialAnswers]);
+  }, [currentQuestion, initialData.answers]);
 
   if (!currentCategory || !currentQuestion) {
     return (
@@ -172,4 +175,4 @@ export const AssessmentInteractiveCard = ({ initialCategories, initialAnswers }:
   );
 };
 
-export default AssessmentInteractiveCard; 
+export default Interactive; 

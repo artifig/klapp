@@ -40,7 +40,7 @@ const ProviderCard = ({ provider, onContact }: ProviderCardProps) => (
   </div>
 );
 
-export const ResultsInteractiveCard = () => {
+export const Interactive = () => {
   const t = useTranslations('results');
   const { email, handleSubmit, setEmailUpdateForm, isSubmitting, error } = useEmailUpdateForm();
   const [isExporting, setIsExporting] = useState(false);
@@ -132,4 +132,4 @@ export const ResultsInteractiveCard = () => {
   );
 };
 
-export default ResultsInteractiveCard; 
+export default Interactive; 

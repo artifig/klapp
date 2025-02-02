@@ -31,7 +31,7 @@ const CategoryItem = ({ name, isActive, isCompleted, onClick }: CategoryItemProp
   </button>
 );
 
-export const AssessmentContextCard = () => {
+export const Context = () => {
   const t = useTranslations('assessment');
   const { 
     categories,
@@ -69,4 +69,4 @@ export const AssessmentContextCard = () => {
   );
 };
 
-export default AssessmentContextCard; 
+export default Context; 

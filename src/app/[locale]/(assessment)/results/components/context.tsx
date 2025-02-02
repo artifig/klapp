@@ -17,7 +17,7 @@ const CategoryResult = ({ category, score }: CategoryResult) => (
   </div>
 );
 
-export const ResultsContextCard = () => {
+export const Context = () => {
   const t = useTranslations('results');
   const { 
     categories,
@@ -73,4 +73,4 @@ export const ResultsContextCard = () => {
   );
 };
 
-export default ResultsContextCard; 
+export default Context; 
