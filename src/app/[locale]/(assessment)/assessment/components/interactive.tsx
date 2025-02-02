@@ -58,13 +58,18 @@ function transformCategories(
   questions: AirtableMethodQuestion[],
   locale: string
 ): Category[] {
+  console.log('🔄 Transforming data:', {
+    sample_question: questions[0],
+    sample_answers: questions[0]?.MethodAnswers,
+  });
+
   return categories.map((cat, index) => {
     // Get questions for this category
     const categoryQuestions = questions
       .filter(q => q.MethodCategories.includes(cat.id))
       .map((q, qIndex) => ({
         id: q.id,
-        airtableId: q.questionId,
+        airtableId: q.id, // Changed from questionId to id since we need the record ID
         text: locale === 'et' ? q.questionText_et : q.questionText_en,
         categoryId: q.MethodCategories,
         answerId: q.MethodAnswers,
@@ -120,8 +125,20 @@ export const Interactive = ({ initialData }: InteractiveProps) => {
   // Memoize filtered answers for current question
   const currentQuestionAnswers = useMemo(() => {
     if (!currentQuestion) return [];
+
+    console.log('🔍 Question-Answer Relationship:', {
+      currentQuestion,
+      answerIds: currentQuestion.answerId,
+      availableAnswers: initialData.answers.map(a => ({
+        id: a.id,
+        answerId: a.answerId,
+        methodQuestions: a.MethodQuestions
+      }))
+    });
+
+    // Filter answers based on the question's MethodAnswers array
     return initialData.answers.filter((answer: AirtableMethodAnswer) =>
-      answer.questionId?.includes(currentQuestion.airtableId) && answer.isActive === true
+      currentQuestion.answerId.includes(answer.id) && answer.isActive === true
     );
   }, [currentQuestion, initialData.answers]);
 

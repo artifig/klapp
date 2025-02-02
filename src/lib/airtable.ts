@@ -37,7 +37,7 @@ export interface AirtableMethodAnswer {
   answerDescription_en?: string;
   answerScore: number;
   isActive: boolean;
-  questionId: string[];
+  MethodQuestions: string[];
 }
 
 export interface AirtableAssessmentResponse {
@@ -249,7 +249,7 @@ export async function getMethodAnswers(): Promise<AirtableMethodAnswer[]> {
       answerDescription_en: record.get('answerDescription_en') as string,
       answerScore: record.get('answerScore') as number,
       isActive: record.get('isActive') as boolean,
-      questionId: record.get('MethodQuestions') as string[],
+      MethodQuestions: record.get('MethodQuestions') as string[],
     }));
   } catch (error) {
     console.error('Error fetching method answers:', error);
@@ -409,7 +409,7 @@ export async function getDataForCompanyType(companyTypeId: string) {
       answerDescription_en: record.get('answerDescription_en') as string,
       answerScore: record.get('answerScore') as number,
       isActive: record.get('isActive') as boolean,
-      questionId: record.get('MethodQuestions') as string[]
+      MethodQuestions: record.get('MethodQuestions') as string[]
     }));
 
     console.log('✨ Data transformation complete:', {
