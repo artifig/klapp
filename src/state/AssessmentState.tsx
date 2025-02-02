@@ -181,6 +181,17 @@ export function useAssessmentState() {
     return filtered;
   }, [state.categories, state.formData.companyType]);
 
+  // Update currentCategory and currentQuestion when filteredCategories changes
+  useEffect(() => {
+    if (filteredCategories.length > 0 && !state.currentCategory) {
+      setState(prev => ({
+        ...prev,
+        currentCategory: filteredCategories[0],
+        currentQuestion: filteredCategories[0]?.questions[0] || null
+      }));
+    }
+  }, [filteredCategories, state.currentCategory]);
+
   return {
     // State
     currentStep: state.currentStep,
@@ -212,13 +223,19 @@ export function useAssessmentState() {
     setCompanyTypes: (types: AirtableMethodCompanyType[]) =>
       setState(prev => ({ ...prev, companyTypes: types })),
     setAssessmentData: (categories: Category[], answers: AirtableMethodAnswer[]) =>
-      setState(prev => ({
-        ...prev,
-        categories,
-        methodAnswers: answers,
-        currentCategory: categories[0] || null,
-        currentQuestion: categories[0]?.questions[0] || null
-      })),
+      setState(prev => {
+        // Get filtered categories based on current company type
+        const filtered = categories.filter(category =>
+          category.companyType.includes(prev.formData.companyType)
+        );
+        return {
+          ...prev,
+          categories,
+          methodAnswers: answers,
+          currentCategory: filtered[0] || null,
+          currentQuestion: filtered[0]?.questions[0] || null
+        };
+      }),
     setError: (error: string | null) => setState(prev => ({ ...prev, error })),
 
     // Form Actions
