@@ -5,7 +5,7 @@ import { usePersistentState } from '@/hooks/usePersistentState';
 import { routes } from '@/navigation';
 import { saveResult, getDataForCompanyType, AirtableMethodCategory, AirtableMethodQuestion, AirtableMethodAnswer } from '@/lib/airtable';
 import { useLocale } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
 
 interface Category {
@@ -80,6 +80,7 @@ interface AssessmentContextType {
   resetAssessment: () => void;
   isStepAccessible: (path: string) => boolean;
   setState: (updater: (prev: AssessmentState) => AssessmentState) => void;
+  moveToNextCategory: () => void;
 }
 
 const defaultState: AssessmentState = {
@@ -107,15 +108,35 @@ const AssessmentContext = createContext<AssessmentContextType | undefined>(undef
 export function AssessmentProvider({ children }: { children: React.ReactNode }) {
   const locale = useLocale();
   const router = useRouter();
+  const pathname = usePathname();
   const [state, setState] = usePersistentState<AssessmentState>('assessment-state', defaultState);
   const [isLoading, setIsLoading] = useState(false);
   const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
 
+  // Clear state when returning to home page
+  useEffect(() => {
+    const isHomePage = pathname === `/${locale}` || pathname === `/${locale}/`;
+    if (isHomePage) {
+      console.log('🏠 Returning to home page - clearing assessment state');
+      resetAssessment();
+    }
+  }, [pathname, locale]);
+
   // Modified data fetching effect to only run when needed
   useEffect(() => {
     const fetchData = async () => {
+      // Check if we're on the assessment page
+      const isAssessmentPage = window.location.pathname.includes('/assessment');
+      
+      console.log('🔍 Checking data fetch conditions:', {
+        companyType: state.formData.companyType,
+        isAssessmentPage,
+        currentCategories: state.categories.length,
+        pathname: window.location.pathname
+      });
+
       // Only fetch if we have a company type and we're on the assessment page
-      if (!state.formData.companyType || !window.location.pathname.includes('/assessment')) {
+      if (!state.formData.companyType || !isAssessmentPage) {
         return;
       }
 
@@ -123,6 +144,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         setIsLoading(true);
         setState(prev => ({ ...prev, isLoading: true, error: null }));
 
+        console.log('📥 Fetching data for company type:', state.formData.companyType);
         const data = await getDataForCompanyType(state.formData.companyType);
 
         // Transform categories and questions into the format we need
@@ -140,15 +162,6 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
               }))
               .sort((a, b) => a.order - b.order);
 
-            console.log('Transformed questions for category:', {
-              categoryId: category.categoryId,
-              questionCount: categoryQuestions.length,
-              sampleQuestion: categoryQuestions[0] ? {
-                id: categoryQuestions[0].id,
-                answerIds: categoryQuestions[0].answerId
-              } : null
-            });
-
             return {
               id: category.categoryId,
               key: category.categoryId,
@@ -161,32 +174,27 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           })
           .sort((a, b) => a.order - b.order);
 
-        console.log('Available answers:', {
-          total: data.answers.length,
-          sample: data.answers[0] ? {
-            id: data.answers[0].id,
-            answerId: data.answers[0].answerId,
-            text: data.answers[0].answerText_en
-          } : null
+        console.log('✨ Data transformation complete:', {
+          categoriesCount: transformedCategories.length,
+          firstCategory: transformedCategories[0]?.name,
+          totalQuestions: transformedCategories.reduce((sum, cat) => sum + cat.questions.length, 0)
         });
 
-        // Auto-select first category only on assessment page
+        // Auto-select first category if we have the required form data
         const hasRequiredFormData = state.formData.name && 
           state.formData.email && 
           state.formData.companyName && 
           state.formData.companyType;
 
-        const firstCategory = hasRequiredFormData && transformedCategories[0];
+        const firstCategory = transformedCategories[0];
 
         setState(prev => ({
           ...prev,
           categories: transformedCategories,
           methodAnswers: data.answers,
           isLoading: false,
-          ...(firstCategory && {
-            currentCategory: firstCategory,
-            currentQuestion: firstCategory.questions[0] || null
-          })
+          currentCategory: hasRequiredFormData && firstCategory ? firstCategory : null,
+          currentQuestion: hasRequiredFormData && firstCategory ? firstCategory.questions[0] : null
         }));
 
       } catch (error) {
@@ -202,7 +210,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     };
 
     fetchData();
-  }, [state.formData.companyType, locale]);
+  }, [state.formData.companyType, locale, setState]);
 
   // Calculate progress and handle completion
   useEffect(() => {
@@ -329,14 +337,22 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     console.log('Selected category:', {
       name: category.name,
       id: category.id,
-      questionCount: category.questions.length
+      questionCount: category.questions.length,
+      existingAnswers: category.questions
+        .filter(q => state.answers[q.id])
+        .map(q => ({ id: q.id, answer: state.answers[q.id] }))
     });
+
+    // When selecting a category, always start with the first unanswered question
+    // If all questions are answered, start with the first question
+    const firstUnansweredQuestion = category.questions.find(q => !state.answers[q.id]);
+    
     setState(prev => ({
       ...prev,
       currentCategory: category,
-      currentQuestion: category.questions[0] || null
+      currentQuestion: firstUnansweredQuestion || category.questions[0] || null
     }));
-  }, [setState]);
+  }, [setState, state.answers]);
 
   const setAnswer = useCallback((questionId: string, value: number) => {
     setState(prev => {
@@ -345,22 +361,18 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       
       if (!currentCategory || !currentQuestion) return prev;
 
-      console.log(`💬 Answer selected: ${value} for question in category "${currentCategory.name}"`);
+      console.log('💬 Answer update:', {
+        category: currentCategory.name,
+        questionId,
+        newValue: value,
+        previousValue: prev.answers[questionId]
+      });
 
-      // Update answers
-      const newAnswers = { ...prev.answers, [questionId]: value };
-      
-      // Check if this was the last question in the category
-      const currentQuestionIndex = currentCategory.questions.findIndex(q => q.id === questionId);
-      const isLastQuestion = currentQuestionIndex === currentCategory.questions.length - 1;
-      
-      // Check if all questions in current category are now answered
-      const allCategoryQuestionsAnswered = currentCategory.questions.every(q => 
-        q.id === questionId ? true : !!newAnswers[q.id]
-      );
-
-      // Just update the answer, navigation will be handled by moveToNextQuestion
-      return { ...prev, answers: newAnswers };
+      // Just update the answer - navigation is handled separately
+      return { 
+        ...prev, 
+        answers: { ...prev.answers, [questionId]: value }
+      };
     });
   }, [setState]);
 
@@ -381,7 +393,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     setState(prev => {
       const nextQuestion = currentCategory.questions[currentQuestionIndex + 1];
       
-      // Check if all questions in current category are answered
+      // Check category completion status
       const categoryAnswers = currentCategory.questions.map(q => ({
         questionId: q.id,
         hasAnswer: !!prev.answers[q.id],
@@ -391,51 +403,74 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       const allCategoryQuestionsAnswered = categoryAnswers.every(q => q.hasAnswer);
       const isLastQuestion = !nextQuestion;
 
-      if (isLastQuestion) {
-        console.log(`✅ Category "${currentCategory.name}" completed`);
-      }
-
-      // If there's a next question and not all questions are answered, move to it
-      if (nextQuestion && !allCategoryQuestionsAnswered) {
-        return { ...prev, currentQuestion: nextQuestion };
-      }
-
-      // If all questions are answered or this is the last question, try to move to next category
-      if (allCategoryQuestionsAnswered || isLastQuestion) {
-        const currentCategoryIndex = prev.categories.findIndex(c => c.id === currentCategory.id);
-        const nextCategory = prev.categories[currentCategoryIndex + 1];
-
-        // Only add to completed categories if not already there
+      // If we're on the last question and all questions are answered,
+      // mark the category as completed if not already
+      if (isLastQuestion && allCategoryQuestionsAnswered) {
         const newCompletedCategories = prev.completedCategories.includes(currentCategory.id)
           ? prev.completedCategories
           : [...prev.completedCategories, currentCategory.id];
 
-        if (nextCategory) {
-          console.log(`➡️ Moving to next category: "${nextCategory.name}"`);
-          return {
-            ...prev,
-            completedCategories: newCompletedCategories,
-            currentCategory: nextCategory,
-            currentQuestion: nextCategory.questions[0]
-          };
-        } else {
-          console.log('🎉 Assessment completed!');
-          return {
-            ...prev,
-            completedCategories: newCompletedCategories,
-            currentCategory: null,
-            currentQuestion: null
-          };
-        }
+        console.log(`✅ Category status:`, {
+          name: currentCategory.name,
+          isComplete: allCategoryQuestionsAnswered,
+          answeredQuestions: categoryAnswers.filter(q => q.hasAnswer).length,
+          totalQuestions: categoryAnswers.length
+        });
+
+        return {
+          ...prev,
+          completedCategories: newCompletedCategories,
+          // Stay on the last question
+          currentQuestion: currentCategory.questions[currentQuestionIndex]
+        };
       }
 
+      // If there's a next question, move to it
+      if (nextQuestion) {
+        return { ...prev, currentQuestion: nextQuestion };
+      }
+
+      // Otherwise stay on current question
       return prev;
     });
   }, [state.currentCategory, state.currentQuestion]);
 
+  // Add a new function for manual category navigation
+  const moveToNextCategory = useCallback(() => {
+    if (!state.currentCategory) return;
+
+    setState(prev => {
+      const currentCategoryIndex = prev.categories.findIndex(c => c.id === prev.currentCategory?.id);
+      const nextCategory = prev.categories[currentCategoryIndex + 1];
+
+      if (nextCategory) {
+        console.log(`➡️ Moving to next category: "${nextCategory.name}"`);
+        // Find first unanswered question in next category
+        const firstUnansweredQuestion = nextCategory.questions.find(q => !prev.answers[q.id]);
+        return {
+          ...prev,
+          currentCategory: nextCategory,
+          currentQuestion: firstUnansweredQuestion || nextCategory.questions[0]
+        };
+      }
+
+      // If no next category, we're done
+      console.log('🎉 Assessment completed!');
+      return {
+        ...prev,
+        currentCategory: null,
+        currentQuestion: null
+      };
+    });
+  }, [state.currentCategory]);
+
   const resetAssessment = useCallback(() => {
+    console.log('🔄 Resetting assessment state to default');
     setHasCompletedAssessment(false);
-    setState(defaultState);
+    setState({
+      ...defaultState,
+      isLoading: false // Ensure we don't show loading state after reset
+    });
   }, [setState]);
 
   const isStepAccessible = useCallback((path: string) => {
@@ -469,7 +504,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     moveToNextQuestion,
     resetAssessment,
     isStepAccessible,
-    setState
+    setState,
+    moveToNextCategory
   };
 
   // Show loading state only on initial load

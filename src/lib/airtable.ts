@@ -121,16 +121,26 @@ export interface AirtableSchema {
 
 // Function to normalize company type
 function normalizeCompanyType(companyType: string): string {
+  // First check if it's a companyTypeId (e.g., "T1", "T2")
+  if (companyType.match(/^T\d+$/)) {
+    return companyType;
+  }
+
+  // If it's a record ID, log a warning as we should be using companyTypeId
+  if (companyType.startsWith('rec')) {
+    console.warn('⚠️ Using Airtable record ID instead of companyTypeId:', companyType);
+  }
+
   const companyTypeMap: Record<string, string> = {
-    'startup': 'Startup',
-    'scale-up': 'Scaleup',
-    'scaleup': 'Scaleup',
-    'sme': 'SME',
-    'enterprise': 'Enterprise'
+    'startup': 'T1',
+    'scale-up': 'T2',
+    'scaleup': 'T2',
+    'sme': 'T3',
+    'enterprise': 'T4'
   };
   
   const cleanType = companyType.toLowerCase().trim();
-  return companyTypeMap[cleanType] || cleanType.toUpperCase();
+  return companyTypeMap[cleanType] || companyType;
 }
 
 // Data fetching functions
@@ -235,8 +245,14 @@ export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType
       })
       .all();
 
+    console.log('📊 Raw company types from Airtable:', records.slice(0, 2).map(record => ({
+      id: record.get('companyTypeId'),
+      name_en: record.get('companyTypeText_en'),
+      name_et: record.get('companyTypeText_et')
+    })));
+
     return records.map((record) => ({
-      id: record.id,
+      id: record.get('companyTypeId') as string, // Use companyTypeId as the primary identifier
       companyTypeId: record.get('companyTypeId') as string,
       companyTypeText_et: record.get('companyTypeText_et') as string,
       companyTypeText_en: record.get('companyTypeText_en') as string,
@@ -281,7 +297,9 @@ export async function getDataForCompanyType(companyType: string) {
     console.log('🔍 Data fetched:', {
       categoriesCount: categories.length,
       questionsCount: questions.length,
-      answersCount: answers.length
+      answersCount: answers.length,
+      requestedCompanyType: companyType,
+      normalizedCompanyType: normalizeCompanyType(companyType)
     });
 
     const normalizedCompanyType = normalizeCompanyType(companyType);
