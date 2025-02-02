@@ -1,11 +1,10 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { SyncStatus } from '@/components/ui/SyncStatus';
 
 interface NavigationItem {
   key: string;
@@ -19,8 +18,8 @@ const navigationItems: NavigationItem[] = [
   { key: 'results', path: '/results' }
 ];
 
-export const Navbar = () => {
-  const t = useTranslations('nav');
+export function Navbar() {
+  const locale = useLocale();
   const pathname = usePathname();
 
   const isActive = (path: string) => {
@@ -28,39 +27,21 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="w-full bg-white shadow-md">
+    <nav className="bg-white border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <Logo />
+            </div>
+          </div>
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0">
-              <Logo className="h-8 w-auto" />
-            </Link>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            {navigationItems.map(({ key, path }) => (
-              <Link
-                key={key}
-                href={path}
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive(path)
-                    ? 'bg-primary text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                {t(key)}
-              </Link>
-            ))}
-          </div>
-
-          <div className="flex items-center space-x-4">
             <LanguageSwitcher />
-            <SyncStatus isOffline={false} status="synced" />
           </div>
         </div>
       </div>
     </nav>
   );
-};
+}
 
 export default Navbar; 
