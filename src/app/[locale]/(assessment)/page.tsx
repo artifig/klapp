@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
-import { type NextPage } from 'next';
-import { type PageProps } from '../page';
 
-const AssessmentRoot: NextPage<PageProps> = async ({ params }) => {
+interface PageProps {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function Page({ params }: PageProps) {
   const resolvedParams = await params;
   const { locale } = resolvedParams;
   redirect(`/${locale}/home`);
-};
-
-export default AssessmentRoot; 
+} 
