@@ -43,6 +43,10 @@
   },
   "setup": {
     "title": "Alustame",
+    "nameLabel": "Teie nimi",
+    "emailLabel": "E-posti aadress",
+    "companyNameLabel": "Ettevõtte nimi",
+    "companyTypeLabel": "Ettevõtte tüüp",
     "form": {
       "name": "Teie nimi",
       "email": "E-posti aadress",

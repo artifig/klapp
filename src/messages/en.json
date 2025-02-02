@@ -43,6 +43,10 @@
   },
   "setup": {
     "title": "Let's Get Started",
+    "nameLabel": "Your Name",
+    "emailLabel": "Email Address",
+    "companyNameLabel": "Company Name",
+    "companyTypeLabel": "Company Type",
     "form": {
       "name": "Your Name",
       "email": "Email Address",
