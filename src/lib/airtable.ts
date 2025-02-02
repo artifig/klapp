@@ -127,6 +127,18 @@ interface AirtableMetaResponse {
   tables: AirtableTable[];
 }
 
+interface AirtableField {
+  id?: string;
+  name: string;
+  type: string;
+  description?: string;
+}
+
+interface CategoryResult {
+  average: number;
+  answers: Record<string, number>;
+}
+
 // Data fetching functions
 export async function getMethodCategories(): Promise<AirtableMethodCategory[]> {
   try {
@@ -438,7 +450,10 @@ export async function saveResult(result: {
         overallScore: overallAverage
       },
       answers: airtableAnswers,
-      categoryScores: categoryResults,
+      categoryScores: Object.entries(categoryResults).map(([id, result]) => ({
+        categoryId: id,
+        score: result.average
+      })),
       categories: result.categories.map(cat => ({
         id: cat.id,
         key: cat.key,
@@ -484,11 +499,8 @@ function calculateCategoryResults(
     }[] 
   }[],
   answers: Record<string, number>
-): Array<{
-  categoryId: string;
-  score: number;
-}> {
-  const categoryResults: Record<string, { average: number; answers: Record<string, number> }> = {};
+): Record<string, CategoryResult> {
+  const categoryResults: Record<string, CategoryResult> = {};
   
   categories.forEach(category => {
     const categoryAnswers: Record<string, number> = {};
@@ -510,10 +522,7 @@ function calculateCategoryResults(
     };
   });
 
-  return Object.entries(categoryResults).map(([categoryId, result]) => ({
-    categoryId,
-    score: result.average
-  }));
+  return categoryResults;
 }
 
 function calculateOverallAverage(
@@ -530,7 +539,7 @@ function calculateOverallAverage(
   answers: Record<string, number>
 ): number {
   const categoryResults = calculateCategoryResults(categories, answers);
-  const totalAverage = categoryResults.reduce((sum, result) => sum + result.score, 0);
+  const totalAverage = Object.values(categoryResults).reduce((sum, result) => sum + result.average, 0);
   return categories.length > 0 ? totalAverage / categories.length : 0;
 }
 
@@ -553,8 +562,8 @@ export async function getAirtableSchema(): Promise<AirtableSchema> {
     const tables = data.tables.map((table: AirtableTable) => ({
       id: table.id,
       name: table.name,
-      fields: table.fields.map((field: AirtableTableField) => ({
-        id: field.id,
+      fields: table.fields.map((field: AirtableField) => ({
+        id: field.id || field.name,
         name: field.name,
         type: field.type,
         description: field.description
@@ -622,7 +631,7 @@ export async function inspectBase() {
           key: generateKey(table.name),
           name: table.name,
           description: table.description || '',
-          fields: table.fields.map((field: any) => ({
+          fields: table.fields.map((field: AirtableField) => ({
             id: field.id || field.name,
             key: generateKey(field.name),
             name: field.name,
