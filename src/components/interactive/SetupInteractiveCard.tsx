@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import Card from '@/components/ui/Card';
@@ -21,7 +21,9 @@ export const SetupInteractiveCard = () => {
   const t = useTranslations('setup');
   const router = useRouter();
   const { setFormData } = useAssessmentContext();
-  const [formData, setLocalFormData] = useState<FormData>({
+  const fetchingRef = useRef(false);
+  const initializedRef = useRef(false);
+  const [localFormData, setLocalFormData] = useState<FormData>({
     name: '',
     email: '',
     companyName: '',
@@ -35,18 +37,18 @@ export const SetupInteractiveCard = () => {
   // Fetch company types metadata on component mount
   useEffect(() => {
     const fetchCompanyTypes = async () => {
+      if (initializedRef.current || fetchingRef.current) return;
+      initializedRef.current = true;
+      fetchingRef.current = true;
+
       try {
-        console.log('🔄 Starting to fetch company types metadata...');
         setIsLoading(true);
         const metadata = await getCompanyTypesMetadata();
-        console.log('📊 Received company types metadata:', {
-          count: metadata.length,
-          types: metadata.map(m => ({
-            type: m.type,
-            categoryCount: m.categoryCount,
-            questionCount: m.questionCount
-          }))
-        });
+        console.log('📊 Company types:', metadata.map(m => ({
+          name: `${m.type_et} / ${m.type}`,
+          categories: m.categoryCount,
+          questions: m.questionCount
+        })));
         setCompanyTypes(metadata);
         setError(null);
       } catch (err) {
@@ -54,6 +56,7 @@ export const SetupInteractiveCard = () => {
         setError(t('errors.fetchingCompanyTypes'));
       } finally {
         setIsLoading(false);
+        fetchingRef.current = false;
       }
     };
 
@@ -66,14 +69,33 @@ export const SetupInteractiveCard = () => {
     const { name, value } = e.target;
     setLocalFormData((prev) => ({ ...prev, [name]: value }));
 
-    // If company type changes, pre-fetch the data
+    // If company type changes, fetch the data and update counts
     if (name === 'companyType' && value) {
       setIsFetchingData(true);
       try {
-        await getDataForCompanyType(value);
+        const data = await getDataForCompanyType(value);
+        console.log('📊 Fetched data for company type:', {
+          categoriesCount: data.categories.length,
+          questionsCount: data.questions.length
+        });
+
+        // Update the company type metadata with actual counts
+        setCompanyTypes(prevTypes => 
+          prevTypes.map(type => {
+            if (type.id === value) {
+              return {
+                ...type,
+                categoryCount: data.categories.length,
+                questionCount: data.questions.reduce((sum, q) => sum + q.answerId.length, 0)
+              };
+            }
+            return type;
+          })
+        );
+        
         setError(null);
       } catch (err) {
-        console.error('Error pre-fetching data:', err);
+        console.error('Error fetching data:', err);
         setError(t('errors.fetchingData'));
       } finally {
         setIsFetchingData(false);
@@ -81,10 +103,27 @@ export const SetupInteractiveCard = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormData(formData);
-    router.push('/assessment');
+    
+    if (isFetchingData) {
+      return; // Don't proceed if still fetching data
+    }
+
+    try {
+      setIsFetchingData(true);
+      // Ensure we have the data for the selected company type
+      if (localFormData.companyType) {
+        await getDataForCompanyType(localFormData.companyType);
+      }
+      setFormData(localFormData);
+      router.push('/assessment');
+    } catch (err) {
+      console.error('Error preparing assessment:', err);
+      setError(t('errors.fetchingData'));
+    } finally {
+      setIsFetchingData(false);
+    }
   };
 
   if (isLoading) {
@@ -125,7 +164,7 @@ export const SetupInteractiveCard = () => {
               id="name"
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-              value={formData.name}
+              value={localFormData.name}
               onChange={handleChange}
             />
           </div>
@@ -144,7 +183,7 @@ export const SetupInteractiveCard = () => {
               id="email"
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-              value={formData.email}
+              value={localFormData.email}
               onChange={handleChange}
             />
           </div>
@@ -163,7 +202,7 @@ export const SetupInteractiveCard = () => {
               id="companyName"
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-              value={formData.companyName}
+              value={localFormData.companyName}
               onChange={handleChange}
             />
           </div>
@@ -182,13 +221,13 @@ export const SetupInteractiveCard = () => {
               required
               disabled={isFetchingData}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm disabled:opacity-50"
-              value={formData.companyType}
+              value={localFormData.companyType}
               onChange={handleChange}
             >
               <option value="">{t('form.selectCompanyType')}</option>
               {companyTypes.map((type) => (
                 <option key={type.id} value={type.id}>
-                  {type.type} ({type.categoryCount} {t('categories')}, {type.questionCount} {t('questions')})
+                  {type.type_et} / {type.type} ({type.categoryCount} {t('categories')}, {type.questionCount} {t('questions')})
                 </option>
               ))}
             </select>

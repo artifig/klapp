@@ -390,8 +390,6 @@ export interface AirtableMethodCompanyType {
 // Add function to fetch company types
 export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType[]> {
   try {
-    console.log('🔄 Fetching method company types from Airtable...');
-    
     const records = await base('MethodCompanyTypes')
       .select({
         filterByFormula: '{isActive} = 1',
@@ -399,8 +397,6 @@ export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType
       })
       .all();
 
-    console.log(`📥 Retrieved ${records.length} company types from Airtable`);
-    
     const companyTypes = records.map((record) => ({
       id: record.id,
       companyTypeId: record.get('companyTypeId') as string,
@@ -411,7 +407,9 @@ export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType
       isActive: record.get('isActive') as boolean,
     }));
 
-    console.log('📊 Sample company type data:', companyTypes[0] || 'No company types found');
+    console.log(`📥 Retrieved ${records.length} company types:`, 
+      companyTypes.map(type => `${type.companyTypeText_et} / ${type.companyTypeText_en}`));
+    
     return companyTypes;
   } catch (error) {
     console.error('❌ Error fetching method company types:', error);
@@ -422,63 +420,21 @@ export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType
 // Modify the getCompanyTypesMetadata function
 export async function getCompanyTypesMetadata(): Promise<CompanyTypeMetadata[]> {
   try {
-    console.log('🔄 Starting company types metadata fetch...');
-    
-    // Fetch categories and company types in parallel
-    const [categories, companyTypes] = await Promise.all([
-      getMethodCategories(),
-      getMethodCompanyTypes()
-    ]);
+    const companyTypes = await getMethodCompanyTypes();
 
-    console.log(`📥 Retrieved ${categories.length} categories and ${companyTypes.length} company types`);
-    
-    // Create a map of company type IDs to their names
-    const companyTypeMap = new Map(
-      companyTypes.map(type => [type.id, type])
-    );
+    // Map company types directly to metadata
+    const metadata: CompanyTypeMetadata[] = companyTypes
+      .filter(type => type.isActive)
+      .map(type => ({
+        id: type.id,
+        type: type.companyTypeText_en,
+        type_et: type.companyTypeText_et,
+        description: type.companyTypeDescription_en,
+        description_et: type.companyTypeDescription_et,
+        categoryCount: 0,
+        questionCount: 0
+      }));
 
-    // Get unique company type IDs from categories
-    const uniqueCompanyTypeIds = new Set<string>();
-    categories.forEach(category => {
-      if (Array.isArray(category.companyType)) {
-        category.companyType.forEach(typeId => {
-          if (typeId) uniqueCompanyTypeIds.add(typeId);
-        });
-      }
-    });
-
-    console.log('🏢 Unique company type IDs found:', Array.from(uniqueCompanyTypeIds));
-
-    // Calculate metadata for each company type
-    const metadata: CompanyTypeMetadata[] = Array.from(uniqueCompanyTypeIds)
-      .map(typeId => {
-        const companyType = companyTypeMap.get(typeId);
-        if (!companyType) {
-          console.warn(`⚠️ Company type with ID ${typeId} not found in MethodCompanyTypes table`);
-          return null;
-        }
-
-        const relevantCategories = categories.filter(category =>
-          Array.isArray(category.companyType) &&
-          category.companyType.includes(typeId)
-        );
-
-        const meta = {
-          id: typeId,
-          type: companyType.companyTypeText_en,
-          type_et: companyType.companyTypeText_et,
-          description: companyType.companyTypeDescription_en,
-          description_et: companyType.companyTypeDescription_et,
-          categoryCount: relevantCategories.length,
-          questionCount: relevantCategories.reduce((sum, cat) => sum + cat.questionId.length, 0)
-        };
-        
-        console.log(`📊 Metadata for ${companyType.companyTypeText_en}:`, meta);
-        return meta;
-      })
-      .filter((meta): meta is NonNullable<typeof meta> => meta !== null);
-
-    console.log('✅ Company types metadata complete:', metadata);
     return metadata;
   } catch (error) {
     console.error('❌ Error fetching company types metadata:', error);
