@@ -14,11 +14,12 @@ export default async function LocaleLayout({
   params
 }: LocaleLayoutProps) {
   // Await the params object before destructuring
-  const { locale } = await params;
-  
+  const resolvedParams = await params;
+  const { locale } = resolvedParams;
+
   // Enable static rendering
   await unstable_setRequestLocale(locale);
-  
+
   // Get messages for the current locale
   const messages = await getMessages();
 
