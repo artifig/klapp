@@ -19,7 +19,7 @@ const RequirementItem = ({ label, isComplete }: RequirementItemProps) => (
   </div>
 );
 
-export const SetupContextCard = () => {
+export const Context = () => {
   const t = useTranslations('setup');
   const { goal, formData } = useAssessmentState();
 
@@ -64,6 +64,4 @@ export const SetupContextCard = () => {
       </Card>
     </ClientOnly>
   );
-};
-
-export default SetupContextCard; 
+}; 

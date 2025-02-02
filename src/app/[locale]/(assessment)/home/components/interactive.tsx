@@ -1,24 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
-import { useAssessmentState } from '@/state/AssessmentState';
+import { useGoalForm } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
 
-export const HomeInteractiveCard = () => {
+export const Interactive = () => {
   const t = useTranslations('home');
-  const locale = useLocale();
-  const router = useRouter();
-  const { setGoal } = useAssessmentState();
-  const [goalText, setGoalText] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setGoal(goalText);
-    router.push(`/${locale}/setup`);
-  };
+  const { goal, handleSubmit, setGoalForm } = useGoalForm();
 
   return (
     <ClientOnly>
@@ -35,8 +24,8 @@ export const HomeInteractiveCard = () => {
               rows={4}
               required
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              value={goalText}
-              onChange={(e) => setGoalText(e.target.value)}
+              value={goal || ''}
+              onChange={(e) => setGoalForm({ goal: e.target.value })}
               placeholder={t('form.goalPlaceholder')}
             />
           </form>
@@ -53,6 +42,4 @@ export const HomeInteractiveCard = () => {
       </Card>
     </ClientOnly>
   );
-};
-
-export default HomeInteractiveCard; 
+}; 

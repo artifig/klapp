@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { useAssessmentState } from '@/state/AssessmentState';
+import { useSetupForm } from '@/state/AssessmentState';
 import ClientOnly from '@/components/ClientOnly';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { AirtableMethodCompanyType } from '@/lib/airtable';
@@ -13,41 +11,15 @@ interface SetupInteractiveCardProps {
   initialCompanyTypes: AirtableMethodCompanyType[];
 }
 
-export const SetupInteractiveCard = ({ initialCompanyTypes }: SetupInteractiveCardProps) => {
+export const Interactive = ({ initialCompanyTypes }: SetupInteractiveCardProps) => {
   const t = useTranslations('setup');
-  const router = useRouter();
-  const { setFormData } = useAssessmentState();
-  
-  const [localFormData, setLocalFormData] = useState({
-    name: '',
-    email: '',
-    companyName: '',
-    companyType: '',
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { formData, handleSubmit, setSetupForm, isSubmitting, error } = useSetupForm();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setLocalFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-
-    try {
-      setIsSubmitting(true);
-      setFormData(localFormData);
-      router.push('/assessment');
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      setError(t('errors.submission'));
-    } finally {
-      setIsSubmitting(false);
-    }
+    setSetupForm({ ...formData, [name]: value });
   };
 
   if (error) {
@@ -84,7 +56,7 @@ export const SetupInteractiveCard = ({ initialCompanyTypes }: SetupInteractiveCa
                 id="name"
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                value={localFormData.name}
+                value={formData.name}
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
@@ -104,7 +76,7 @@ export const SetupInteractiveCard = ({ initialCompanyTypes }: SetupInteractiveCa
                 id="email"
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                value={localFormData.email}
+                value={formData.email}
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
@@ -124,7 +96,7 @@ export const SetupInteractiveCard = ({ initialCompanyTypes }: SetupInteractiveCa
                 id="companyName"
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                value={localFormData.companyName}
+                value={formData.companyName}
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
@@ -143,7 +115,7 @@ export const SetupInteractiveCard = ({ initialCompanyTypes }: SetupInteractiveCa
                 name="companyType"
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm disabled:opacity-50"
-                value={localFormData.companyType}
+                value={formData.companyType}
                 onChange={handleChange}
                 disabled={isSubmitting}
               >

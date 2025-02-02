@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import ClientOnly from '@/components/ClientOnly';
 
-export const HomeContextCard = () => {
+export const Context = () => {
   const t = useTranslations('home');
 
   return (
@@ -39,6 +39,4 @@ export const HomeContextCard = () => {
       </Card>
     </ClientOnly>
   );
-};
-
-export default HomeContextCard; 
+}; 
