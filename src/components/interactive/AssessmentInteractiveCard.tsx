@@ -66,12 +66,43 @@ export const AssessmentInteractiveCard = () => {
   // Update randomized answers when the question changes
   useEffect(() => {
     if (currentQuestion) {
-      const answers = !currentQuestion.answerId?.length 
-        ? methodAnswers
-        : methodAnswers.filter((answer: AirtableMethodAnswer) => 
-            currentQuestion.answerId?.includes(answer.id)
-          );
+      console.log('🔍 Current Question Data:', {
+        id: currentQuestion.id,
+        text: currentQuestion.text,
+        answerIds: currentQuestion.answerId
+      });
+
+      console.log('📚 Available Method Answers:', {
+        total: methodAnswers.length,
+        sample: methodAnswers.slice(0, 2).map(a => ({
+          id: a.id,
+          answerId: a.answerId,
+          text: a.answerText_en
+        }))
+      });
+
+      // Get all answers for this question
+      const answers = methodAnswers.filter((answer: AirtableMethodAnswer) => {
+        console.log('🔄 Checking answer match:', {
+          currentQuestionId: currentQuestion.id,
+          currentQuestionAirtableId: currentQuestion.airtableId,
+          answerQuestionIds: answer.questionId,
+          answerText: answer.answerText_en,
+          isActive: answer.isActive
+        });
+        return answer.questionId?.includes(currentQuestion.airtableId) && answer.isActive === true;
+      });
       
+      console.log('✅ Filtered Answers:', {
+        total: answers.length,
+        answers: answers.map(a => ({
+          id: a.id,
+          answerId: a.answerId,
+          text: a.answerText_en,
+          score: a.answerScore
+        }))
+      });
+
       // Randomize the answers
       const shuffled = [...answers].sort(() => Math.random() - 0.5);
       setRandomizedAnswers(shuffled);
@@ -166,7 +197,7 @@ export const AssessmentInteractiveCard = () => {
   const questionAnswers = !currentQuestion.answerId?.length 
     ? methodAnswers // Show all answers if no specific answers are linked
     : methodAnswers.filter((answer: AirtableMethodAnswer) => 
-        currentQuestion.answerId?.includes(answer.id)
+        currentQuestion.answerId?.includes(answer.answerId)
       );
 
   return (

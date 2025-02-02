@@ -135,10 +135,19 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
                 airtableId: question.id,
                 text: locale === 'et' ? question.questionText_et : question.questionText_en,
                 categoryId: [category.categoryId],
-                answerId: question.answerId,
+                answerId: question.answerId || [], // Ensure we have an array even if empty
                 order: parseInt(question.questionId.replace('Q', ''), 10) || 0
               }))
               .sort((a, b) => a.order - b.order);
+
+            console.log('Transformed questions for category:', {
+              categoryId: category.categoryId,
+              questionCount: categoryQuestions.length,
+              sampleQuestion: categoryQuestions[0] ? {
+                id: categoryQuestions[0].id,
+                answerIds: categoryQuestions[0].answerId
+              } : null
+            });
 
             return {
               id: category.categoryId,
@@ -151,6 +160,15 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
             };
           })
           .sort((a, b) => a.order - b.order);
+
+        console.log('Available answers:', {
+          total: data.answers.length,
+          sample: data.answers[0] ? {
+            id: data.answers[0].id,
+            answerId: data.answers[0].answerId,
+            text: data.answers[0].answerText_en
+          } : null
+        });
 
         // Auto-select first category only on assessment page
         const hasRequiredFormData = state.formData.name && 

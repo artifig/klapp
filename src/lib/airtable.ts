@@ -169,13 +169,20 @@ export async function getMethodQuestions(): Promise<AirtableMethodQuestion[]> {
       })
       .all();
     
+    console.log('📝 Raw Questions from Airtable:', records.slice(0, 2).map(record => ({
+      id: record.id,
+      questionId: record.get('questionId'),
+      answerId: record.get('MethodAnswers'),
+      text_en: record.get('questionText_en')
+    })));
+    
     return records.map((record) => ({
       id: record.id,
       questionId: record.get('questionId') as string,
       questionText_et: record.get('questionText_et') as string,
       questionText_en: record.get('questionText_en') as string,
       isActive: record.get('isActive') as boolean,
-      answerId: record.get('answerId') as string[],
+      answerId: record.get('MethodAnswers') as string[],
       categoryId: record.get('categoryId') as string[],
     }));
   } catch (error) {
@@ -188,9 +195,19 @@ export async function getMethodAnswers(): Promise<AirtableMethodAnswer[]> {
   try {
     const records = await base('MethodAnswers')
       .select({
+        filterByFormula: '{isActive} = 1',
         sort: [{ field: 'answerId', direction: 'asc' }],
       })
       .all();
+
+    console.log('✨ Raw Answers from Airtable:', records.slice(0, 2).map(record => ({
+      id: record.id,
+      answerId: record.get('answerId'),
+      text_en: record.get('answerText_en'),
+      score: record.get('answerScore'),
+      isActive: record.get('isActive'),
+      questionId: record.get('MethodQuestions')
+    })));
 
     return records.map((record) => ({
       id: record.id,
@@ -200,8 +217,8 @@ export async function getMethodAnswers(): Promise<AirtableMethodAnswer[]> {
       answerDescription_et: record.get('answerDescription_et') as string,
       answerDescription_en: record.get('answerDescription_en') as string,
       answerScore: record.get('answerScore') as number,
-      isActive: true,
-      questionId: record.get('questionId') as string[],
+      isActive: record.get('isActive') as boolean,
+      questionId: record.get('MethodQuestions') as string[],
     }));
   } catch (error) {
     console.error('Error fetching method answers:', error);
@@ -261,6 +278,12 @@ export async function getDataForCompanyType(companyType: string) {
       getMethodAnswers()
     ]);
 
+    console.log('🔍 Data fetched:', {
+      categoriesCount: categories.length,
+      questionsCount: questions.length,
+      answersCount: answers.length
+    });
+
     const normalizedCompanyType = normalizeCompanyType(companyType);
 
     const filteredCategories = categories.filter(category =>
@@ -269,6 +292,11 @@ export async function getDataForCompanyType(companyType: string) {
         normalizeCompanyType(type) === normalizedCompanyType
       ) && category.isActive
     );
+
+    console.log('📊 Filtered Categories:', {
+      count: filteredCategories.length,
+      sample: filteredCategories[0]?.categoryId
+    });
 
     const categoryQuestions = new Set<string>();
     filteredCategories.forEach(category => {
@@ -284,13 +312,33 @@ export async function getDataForCompanyType(companyType: string) {
       categoryQuestions.has(q.id) && q.isActive
     );
 
+    console.log('❓ Filtered Questions:', {
+      count: filteredQuestions.length,
+      sample: filteredQuestions[0] ? {
+        id: filteredQuestions[0].id,
+        text: filteredQuestions[0].questionText_en,
+        answerIds: filteredQuestions[0].answerId
+      } : null
+    });
+
+    // Get all answer IDs from the filtered questions
     const answerIds = new Set(
-      filteredQuestions.flatMap(q => q.answerId)
+      filteredQuestions.flatMap(q => q.answerId || [])
     );
 
-    const filteredAnswers = answers.filter(a => 
-      answerIds.has(a.id) && a.isActive
-    );
+    console.log('🎯 Answer IDs to find:', Array.from(answerIds).slice(0, 3));
+
+    // Filter answers that are linked to our questions
+    const filteredAnswers = answers.filter(a => a.isActive);
+
+    console.log('✅ Filtered Answers:', {
+      count: filteredAnswers.length,
+      sample: filteredAnswers[0] ? {
+        id: filteredAnswers[0].id,
+        text: filteredAnswers[0].answerText_en,
+        score: filteredAnswers[0].answerScore
+      } : null
+    });
 
     return {
       categories: filteredCategories,
