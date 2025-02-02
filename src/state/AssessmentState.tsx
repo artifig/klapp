@@ -110,7 +110,6 @@ export function useAssessment() {
 }
 
 export function useAssessmentState() {
-  const locale = useLocale();
   const pathname = usePathname();
   
   const [state, setState] = useState<AssessmentState>(() => {
@@ -368,8 +367,8 @@ export function useEmailUpdateForm() {
       setEmailUpdateForm(emailUpdate);
       // Here you would typically call an API to send results
       // await sendResultsToEmail(emailUpdate.email);
-    } catch (err) {
-      setError('Failed to send results. Please try again.');
+    } catch {
+      setError('Failed to update email');
     } finally {
       setIsSubmitting(false);
     }

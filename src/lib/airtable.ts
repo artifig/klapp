@@ -110,6 +110,23 @@ export interface AirtableSchema {
   }[];
 }
 
+interface AirtableTableField {
+  id: string;
+  name: string;
+  type: string;
+  description?: string;
+}
+
+interface AirtableTable {
+  id: string;
+  name: string;
+  fields: AirtableTableField[];
+}
+
+interface AirtableMetaResponse {
+  tables: AirtableTable[];
+}
+
 // Data fetching functions
 export async function getMethodCategories(): Promise<AirtableMethodCategory[]> {
   try {
@@ -522,7 +539,6 @@ function calculateOverallAverage(
  */
 export async function getAirtableSchema(): Promise<AirtableSchema> {
   try {
-    // Use the Airtable Meta API to get table information
     const response = await fetch(`https://api.airtable.com/v0/meta/bases/${process.env.AIRTABLE_BASE_ID}/tables`, {
       headers: {
         'Authorization': `Bearer ${process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN}`
@@ -533,11 +549,11 @@ export async function getAirtableSchema(): Promise<AirtableSchema> {
       throw new Error(`Failed to fetch tables: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    const tables = data.tables.map((table: any) => ({
+    const data = await response.json() as AirtableMetaResponse;
+    const tables = data.tables.map((table: AirtableTable) => ({
       id: table.id,
       name: table.name,
-      fields: table.fields.map((field: any) => ({
+      fields: table.fields.map((field: AirtableTableField) => ({
         id: field.id,
         name: field.name,
         type: field.type,

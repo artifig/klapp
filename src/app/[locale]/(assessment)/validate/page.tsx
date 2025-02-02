@@ -52,6 +52,13 @@ interface TableSchema {
   }>;
 }
 
+interface TableField {
+  id: string;
+  name: string;
+  type: string;
+  description?: string;
+}
+
 const expectedTables: TableValidation[] = [
   {
     name: 'MethodCategories',
