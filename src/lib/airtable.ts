@@ -175,7 +175,7 @@ export async function getMethodQuestions(): Promise<AirtableMethodQuestion[]> {
       })
       .all();
     
-    console.log('📝 Raw Questions from Airtable:', records.slice(0, 2).map(record => ({
+    console.log('📝 Raw Questions from Airtable:', records.map(record => ({
       id: record.id,
       questionId: record.get('questionId'),
       MethodAnswers: record.get('MethodAnswers'),
@@ -206,7 +206,7 @@ export async function getMethodAnswers(): Promise<AirtableMethodAnswer[]> {
       })
       .all();
 
-    console.log('✨ Raw Answers from Airtable:', records.slice(0, 2).map(record => ({
+    console.log('✨ Raw Answers from Airtable:', records.map(record => ({
       id: record.id,
       answerId: record.get('answerId'),
       text_en: record.get('answerText_en'),
@@ -241,11 +241,12 @@ export async function getMethodCompanyTypes(): Promise<AirtableMethodCompanyType
       })
       .all();
 
-    console.log('📊 Raw company types from Airtable:', records.slice(0, 2).map(record => ({
+    console.log('📊 Raw company types from Airtable:', records.map(record => ({
       recordId: record.id,
       companyTypeId: record.get('companyTypeId'),
       name_en: record.get('companyTypeText_en'),
-      name_et: record.get('companyTypeText_et')
+      name_et: record.get('companyTypeText_et'),
+      isActive: record.get('isActive')
     })));
 
     return records.map((record) => ({
