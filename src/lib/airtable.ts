@@ -13,8 +13,8 @@ console.log('Base ID:', baseId);
 type FieldSet = Record<string, any>;
 
 // Initialize Airtable
-const base = new Airtable({
-  apiKey: process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN,
+const base = new Airtable({ 
+  apiKey: process.env.NEXT_PUBLIC_AIRTABLE_PERSONAL_ACCESS_TOKEN 
 }).base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID!);
 
 // Types for table inspection
@@ -67,8 +67,8 @@ export interface AirtableMethodAnswer {
   answerId: string;
   answerText_et: string;
   answerText_en: string;
-  answerDescription_et: string;
-  answerDescription_en: string;
+  answerDescription_et?: string;
+  answerDescription_en?: string;
   answerScore: number;
   isActive: boolean;
   questionId: string[];
@@ -100,6 +100,58 @@ interface GlobalCacheData {
 const CACHE_KEY = 'assessment_global_cache';
 const CACHE_VERSION = '1.0';
 const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
+
+// Types
+interface AirtableField {
+  id: string;
+  name: string;
+  type: string;
+  description?: string;
+}
+
+interface AirtableTable {
+  id: string;
+  name: string;
+  fields: AirtableField[];
+}
+
+export interface AirtableSchema {
+  tables: AirtableTable[];
+}
+
+export interface SchemaValidation {
+  isValid: boolean;
+  errors: string[];
+  suggestions: string[];
+  commoditiesTable: {
+    exists: boolean;
+    name: string | null;
+    requiredFields: Record<string, boolean>;
+  };
+  countriesTable: {
+    exists: boolean;
+    name: string | null;
+    requiredFields: Record<string, boolean>;
+  };
+  analysesTable: {
+    exists: boolean;
+    name: string | null;
+    requiredFields: Record<string, boolean>;
+  };
+  usersTable: {
+    exists: boolean;
+    name: string | null;
+    requiredFields: Record<string, boolean>;
+  };
+}
+
+// Required fields for each table
+const REQUIRED_FIELDS = {
+  commodities: ['name', 'description', 'category'],
+  countries: ['name', 'code', 'region'],
+  analyses: ['title', 'date', 'status'],
+  users: ['email', 'name', 'role']
+} as const;
 
 // Function to fetch all data from Airtable
 async function fetchAllData(): Promise<GlobalCacheData> {
@@ -858,5 +910,203 @@ export async function getAssessmentResponses(): Promise<AirtableAssessmentRespon
   } catch (error) {
     console.error('Error fetching assessment responses:', error);
     throw error;
+  }
+}
+
+/**
+ * Fetches the schema of all tables in the Airtable base
+ */
+export async function getAirtableSchema(): Promise<AirtableSchema> {
+  try {
+    // Get all tables in the base using list method
+    const tables = await new Promise<AirtableTable[]>((resolve, reject) => {
+      const tableList: AirtableTable[] = [];
+      
+      // Use base._tables to access the tables (internal API)
+      const baseTables = (base as any)._tables;
+      
+      if (!baseTables) {
+        reject(new Error('Could not access Airtable tables'));
+        return;
+      }
+
+      // Convert tables to our schema format
+      for (const [tableName, table] of Object.entries(baseTables)) {
+        const tableFields = (table as any).fields || [];
+        tableList.push({
+          id: (table as any).id || tableName,
+          name: tableName,
+          fields: tableFields.map((field: any) => ({
+            id: field.id || field.name,
+            name: field.name,
+            type: field.type || 'text',
+            description: field.description
+          }))
+        });
+      }
+
+      resolve(tableList);
+    });
+    
+    return { tables };
+  } catch (error) {
+    console.error('Error fetching Airtable schema:', error);
+    throw new Error('Failed to fetch Airtable schema');
+  }
+}
+
+/**
+ * Validates the Airtable schema against our required structure
+ */
+export async function validateAirtableSchema(): Promise<SchemaValidation> {
+  try {
+    const schema = await getAirtableSchema();
+    const errors: string[] = [];
+    const suggestions: string[] = [];
+
+    // Initialize validation result
+    const validation: SchemaValidation = {
+      isValid: true,
+      errors: [],
+      suggestions: [],
+      commoditiesTable: {
+        exists: false,
+        name: null,
+        requiredFields: Object.fromEntries(
+          REQUIRED_FIELDS.commodities.map(field => [field, false])
+        )
+      },
+      countriesTable: {
+        exists: false,
+        name: null,
+        requiredFields: Object.fromEntries(
+          REQUIRED_FIELDS.countries.map(field => [field, false])
+        )
+      },
+      analysesTable: {
+        exists: false,
+        name: null,
+        requiredFields: Object.fromEntries(
+          REQUIRED_FIELDS.analyses.map(field => [field, false])
+        )
+      },
+      usersTable: {
+        exists: false,
+        name: null,
+        requiredFields: Object.fromEntries(
+          REQUIRED_FIELDS.users.map(field => [field, false])
+        )
+      }
+    };
+
+    // Check each required table
+    for (const table of schema.tables) {
+      const tableName = table.name.toLowerCase();
+      const fieldNames = table.fields.map(f => f.name.toLowerCase());
+
+      // Check Commodities table
+      if (tableName.includes('commodit')) {
+        validation.commoditiesTable.exists = true;
+        validation.commoditiesTable.name = table.name;
+        checkRequiredFields(
+          'commodities',
+          fieldNames,
+          validation.commoditiesTable.requiredFields,
+          errors,
+          suggestions
+        );
+      }
+
+      // Check Countries table
+      if (tableName.includes('countr')) {
+        validation.countriesTable.exists = true;
+        validation.countriesTable.name = table.name;
+        checkRequiredFields(
+          'countries',
+          fieldNames,
+          validation.countriesTable.requiredFields,
+          errors,
+          suggestions
+        );
+      }
+
+      // Check Analyses table
+      if (tableName.includes('analys')) {
+        validation.analysesTable.exists = true;
+        validation.analysesTable.name = table.name;
+        checkRequiredFields(
+          'analyses',
+          fieldNames,
+          validation.analysesTable.requiredFields,
+          errors,
+          suggestions
+        );
+      }
+
+      // Check Users table
+      if (tableName.includes('user')) {
+        validation.usersTable.exists = true;
+        validation.usersTable.name = table.name;
+        checkRequiredFields(
+          'users',
+          fieldNames,
+          validation.usersTable.requiredFields,
+          errors,
+          suggestions
+        );
+      }
+    }
+
+    // Check if any required tables are missing
+    if (!validation.commoditiesTable.exists) {
+      errors.push('Commodities table is missing');
+      suggestions.push('Create a table named "Commodities" with the required fields');
+    }
+    if (!validation.countriesTable.exists) {
+      errors.push('Countries table is missing');
+      suggestions.push('Create a table named "Countries" with the required fields');
+    }
+    if (!validation.analysesTable.exists) {
+      errors.push('Analyses table is missing');
+      suggestions.push('Create a table named "Analyses" with the required fields');
+    }
+    if (!validation.usersTable.exists) {
+      errors.push('Users table is missing');
+      suggestions.push('Create a table named "Users" with the required fields');
+    }
+
+    validation.isValid = errors.length === 0;
+    validation.errors = errors;
+    validation.suggestions = suggestions;
+
+    return validation;
+  } catch (error) {
+    console.error('Error validating Airtable schema:', error);
+    throw new Error('Failed to validate Airtable schema');
+  }
+}
+
+/**
+ * Helper function to check required fields in a table
+ */
+function checkRequiredFields(
+  tableType: keyof typeof REQUIRED_FIELDS,
+  fieldNames: string[],
+  requiredFieldsStatus: Record<string, boolean>,
+  errors: string[],
+  suggestions: string[]
+) {
+  const requiredFields = REQUIRED_FIELDS[tableType];
+  
+  for (const field of requiredFields) {
+    const hasField = fieldNames.some(name => name.includes(field.toLowerCase()));
+    requiredFieldsStatus[field] = hasField;
+    
+    if (!hasField) {
+      errors.push(`${tableType} table is missing the required field: ${field}`);
+      suggestions.push(
+        `Add a field named "${field}" to the ${tableType} table`
+      );
+    }
   }
 } 
