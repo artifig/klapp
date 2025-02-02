@@ -107,7 +107,7 @@ const AssessmentContext = createContext<AssessmentContextType | undefined>(undef
 export function AssessmentProvider({ children }: { children: React.ReactNode }) {
   const locale = useLocale();
   const router = useRouter();
-  const [state, setState] = useState<AssessmentState>(defaultState);
+  const [state, setState] = usePersistentState<AssessmentState>('assessment-state', defaultState);
   const [isLoading, setIsLoading] = useState(false);
   const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
 

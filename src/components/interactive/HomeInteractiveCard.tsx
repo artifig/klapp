@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
 import { useAssessmentContext } from '@/context/AssessmentContext';
@@ -9,6 +9,7 @@ import ClientOnly from '@/components/ClientOnly';
 
 export const HomeInteractiveCard = () => {
   const t = useTranslations('home');
+  const locale = useLocale();
   const router = useRouter();
   const { setGoal } = useAssessmentContext();
   const [goalText, setGoalText] = useState('');
@@ -16,7 +17,7 @@ export const HomeInteractiveCard = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setGoal(goalText);
-    router.push('/setup');
+    router.push(`/${locale}/setup`);
   };
 
   return (
