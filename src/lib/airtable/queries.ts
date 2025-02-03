@@ -16,12 +16,14 @@ const transformLocalizedFields = (record: AirtableRecord, fieldPrefix: string): 
 export const getCategories = cache(async (companyTypeId?: string): Promise<Category[]> => {
   try {
     let query = airtableBase(TABLES.CATEGORIES).select({
-      filterByFormula: '{isActive} = 1'
+      filterByFormula: '{isActive} = 1',
+      sort: [{ field: 'categoryId', direction: 'asc' }]
     });
 
     if (companyTypeId) {
       query = airtableBase(TABLES.CATEGORIES).select({
-        filterByFormula: `AND({isActive} = 1, FIND("${companyTypeId}", {companyType}))`
+        filterByFormula: `AND({isActive} = 1, FIND("${companyTypeId}", {companyType}))`,
+        sort: [{ field: 'categoryId', direction: 'asc' }]
       });
     }
 
@@ -45,7 +47,8 @@ export const getQuestions = cache(async (): Promise<Question[]> => {
   try {
     const records = await airtableBase(TABLES.QUESTIONS)
       .select({
-        filterByFormula: '{isActive} = 1'
+        filterByFormula: '{isActive} = 1',
+        sort: [{ field: 'questionId', direction: 'asc' }]
       })
       .all();
 
@@ -67,7 +70,8 @@ export const getAnswers = cache(async (): Promise<Answer[]> => {
   try {
     const records = await airtableBase(TABLES.ANSWERS)
       .select({
-        filterByFormula: '{isActive} = 1'
+        filterByFormula: '{isActive} = 1',
+        sort: [{ field: 'answerId', direction: 'asc' }]
       })
       .all();
 
@@ -90,7 +94,8 @@ export const getCompanyTypes = cache(async (): Promise<CompanyType[]> => {
   try {
     const records = await airtableBase(TABLES.COMPANY_TYPES)
       .select({
-        filterByFormula: '{isActive} = 1'
+        filterByFormula: '{isActive} = 1',
+        sort: [{ field: 'companyTypeId', direction: 'asc' }]
       })
       .all();
 
