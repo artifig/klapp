@@ -22,21 +22,30 @@ export const getCategories = cache(async (companyTypeId?: string): Promise<Categ
 
     if (companyTypeId) {
       query = airtableBase(TABLES.CATEGORIES).select({
-        filterByFormula: `AND({isActive} = 1, FIND("${companyTypeId}", {companyType}))`,
+        filterByFormula: `AND({isActive} = 1, FIND("${companyTypeId}", {MethodCompanyTypes}))`,
         sort: [{ field: 'categoryId', direction: 'asc' }]
       });
     }
 
     const records = await query.all();
-    return records.map(record => ({
+    console.log('🔍 Raw categories data:', records.map(record => ({
       id: record.id,
-      categoryId: record.get('categoryId') as string,
-      text: transformLocalizedFields(record, 'categoryText'),
-      description: transformLocalizedFields(record, 'categoryDescription'),
-      companyType: record.get('companyType') as string[],
-      questions: record.get('MethodQuestions') as string[],
-      isActive: record.get('isActive') as boolean
-    }));
+      categoryId: record.get('categoryId'),
+      companyTypes: record.get('MethodCompanyTypes')
+    })));
+
+    return records.map(record => {
+      const companyTypes = record.get('MethodCompanyTypes');
+      return {
+        id: record.id,
+        categoryId: record.get('categoryId') as string,
+        text: transformLocalizedFields(record, 'categoryText'),
+        description: transformLocalizedFields(record, 'categoryDescription'),
+        companyType: Array.isArray(companyTypes) ? companyTypes : [],
+        questions: record.get('MethodQuestions') as string[],
+        isActive: record.get('isActive') as boolean
+      };
+    });
   } catch (error: unknown) {
     console.error('Error fetching categories:', error);
     throw new AirtableError('Failed to fetch categories', 'FETCH_CATEGORIES_ERROR');

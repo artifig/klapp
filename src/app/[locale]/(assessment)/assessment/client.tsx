@@ -5,6 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import type { Category, Question, Answer, LocalizedText } from '@/lib/airtable/types';
 import { useEffect, useMemo, useState } from 'react';
 import type { UserAnswer } from '@/state/AssessmentState';
+import { useAssessment } from '@/state/AssessmentState';
+import { useRouter } from '@/i18n/navigation';
 
 interface Props {
   initialData: {
@@ -87,6 +89,15 @@ const AnswerOption = ({ answer, isSelected, onClick }: AnswerOptionProps) => {
 export function Client({ initialData }: Props) {
   const locale = useLocale();
   const t = useTranslations('assessment');
+  const router = useRouter();
+  const { formData } = useAssessment();
+
+  // Redirect if no company type is selected
+  useEffect(() => {
+    if (!formData.companyType) {
+      router.push('/setup');
+    }
+  }, [formData.companyType, router]);
 
   // Local state
   const [currentCategory, setCurrentCategory] = useState<TransformedCategory | null>(null);
@@ -94,14 +105,29 @@ export function Client({ initialData }: Props) {
   const [answers, setAnswers] = useState<Record<string, UserAnswer>>({});
   const [completedCategories, setCompletedCategories] = useState<string[]>([]);
 
-  // Transform and organize data
+  // Transform and organize data with company type filtering
   const categories = useMemo(() => {
-    return initialData.categories.map(cat => ({
-      ...cat,
-      name: getLocalizedText(cat.text, locale),
-      description: cat.description ? getLocalizedText(cat.description, locale) : undefined
-    }));
-  }, [initialData.categories, locale]);
+    const filtered = initialData.categories
+      .filter(cat => Array.isArray(cat.companyType) && cat.companyType.includes(formData.companyType))
+      .map(cat => ({
+        ...cat,
+        name: getLocalizedText(cat.text, locale),
+        description: cat.description ? getLocalizedText(cat.description, locale) : undefined
+      }));
+
+    console.log('🎯 Filtered categories:', {
+      companyType: formData.companyType,
+      totalCategories: initialData.categories.length,
+      filteredCount: filtered.length,
+      filtered: filtered.map(c => ({
+        id: c.id,
+        name: c.name,
+        companyTypes: c.companyType
+      }))
+    });
+
+    return filtered;
+  }, [initialData.categories, formData.companyType, locale]);
 
   const questions = useMemo(() => {
     return initialData.questions.map(q => ({
