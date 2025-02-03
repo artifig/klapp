@@ -8,13 +8,14 @@ interface LogoProps {
 
 export function Logo({ className }: LogoProps) {
   return (
-    <div className={className}>
+    <div className={`h-8 w-[120px] relative ${className || ''}`}>
       <Image
-        src="/logo.svg"
+        src="/Tehnopol_logo_RGB.png"
         alt="Logo"
-        width={32}
-        height={32}
+        fill
         priority
+        sizes="120px"
+        style={{ objectFit: 'contain' }}
       />
     </div>
   );

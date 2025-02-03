@@ -12,16 +12,12 @@ export default createMiddleware({
 });
 
 export const config = {
-  // Skip all internal paths (_next)
-  // Skip all api routes (/api)
-  // Skip all static files (public folder)
   matcher: [
-    // Match all pathnames except for
-    // - _next
-    // - api (API routes)
-    // - static files in the public directory (e.g. favicon.ico)
-    '/((?!api|_next|.*\\..*).*)',
-    // Match root path
+    // Match all pathnames except for:
+    // - /api routes
+    // - /_next routes
+    // - /public files (images, etc)
+    '/((?!_next|api|Tehnopol_logo_RGB.png|globe.svg|next.svg|vercel.svg|window.svg|file.svg).*)',
     '/'
   ]
 }; 
