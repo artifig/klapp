@@ -86,6 +86,16 @@ const AnswerOption = ({ answer, isSelected, onClick }: AnswerOptionProps) => {
   );
 };
 
+// Add shuffle utility function
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 export function Client({ initialData }: Props) {
   const locale = useLocale();
   const t = useTranslations('assessment');
@@ -104,6 +114,7 @@ export function Client({ initialData }: Props) {
   const [currentQuestion, setCurrentQuestion] = useState<TransformedQuestion | null>(null);
   const [answers, setAnswers] = useState<Record<string, UserAnswer>>({});
   const [completedCategories, setCompletedCategories] = useState<string[]>([]);
+  const [shuffledAnswersMap, setShuffledAnswersMap] = useState<Record<string, Answer[]>>({});
 
   // Transform and organize data with company type filtering
   const categories = useMemo(() => {
@@ -222,8 +233,18 @@ export function Client({ initialData }: Props) {
               </div>
 
               <div className="space-y-3">
-                {initialData.answers.filter(
-                  answer => currentQuestion.answers.includes(answer.id) && answer.isActive
+                {(shuffledAnswersMap[currentQuestion.id] ||
+                  (() => {
+                    const filteredAnswers = initialData.answers.filter(
+                      answer => currentQuestion.answers.includes(answer.id) && answer.isActive
+                    );
+                    const shuffled = shuffleArray(filteredAnswers);
+                    setShuffledAnswersMap(prev => ({
+                      ...prev,
+                      [currentQuestion.id]: shuffled
+                    }));
+                    return shuffled;
+                  })()
                 ).map(answer => (
                   <AnswerOption
                     key={answer.id}

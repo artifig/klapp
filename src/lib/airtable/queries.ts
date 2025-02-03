@@ -79,8 +79,7 @@ export const getAnswers = cache(async (): Promise<Answer[]> => {
   try {
     const records = await airtableBase(TABLES.ANSWERS)
       .select({
-        filterByFormula: '{isActive} = 1',
-        sort: [{ field: 'answerId', direction: 'asc' }]
+        filterByFormula: '{isActive} = 1'
       })
       .all();
 
