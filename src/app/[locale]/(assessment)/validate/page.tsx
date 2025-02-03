@@ -1,5 +1,5 @@
 import { Client } from './client';
 
-export default function Page() {
+export default function ValidatePage() {
   return <Client />;
 } 

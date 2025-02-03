@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
-import { AirtableMethodAnswer, AirtableMethodCompanyType } from '@/lib/airtable';
+import type { Answer, CompanyType } from '@/lib/airtable/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 
 // Form Types
@@ -50,7 +50,7 @@ export interface FormData {
   companyType: string;
 }
 
-export interface Answer {
+export interface UserAnswer {
   questionId: string;
   answerId: string;
   score: number;
@@ -62,13 +62,13 @@ export interface AssessmentState {
   currentStep: 'home' | 'setup' | 'assessment' | 'results';
   goal: string | null;
   formData: FormData;
-  companyTypes: AirtableMethodCompanyType[];
+  companyTypes: CompanyType[];
   categories: Category[];
   currentCategory: Category | null;
   currentQuestion: Question | null;
   completedCategories: string[];
-  answers: Record<string, Answer>;
-  methodAnswers: AirtableMethodAnswer[];
+  answers: Record<string, UserAnswer>;
+  methodAnswers: Answer[];
   error: string | null;
   progress: number;
   forms: {
@@ -317,9 +317,9 @@ export function useAssessmentState() {
       formData,
       forms: { ...prev.forms, setup: formData }
     })),
-    setCompanyTypes: (types: AirtableMethodCompanyType[]) =>
+    setCompanyTypes: (types: CompanyType[]) =>
       setState(prev => ({ ...prev, companyTypes: types })),
-    setAssessmentData: (categories: Category[], answers: AirtableMethodAnswer[]) =>
+    setAssessmentData: (categories: Category[], answers: Answer[]) =>
       setState(prev => {
         // Get filtered categories based on current company type
         const filtered = categories.filter(category =>

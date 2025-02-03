@@ -1,14 +1,14 @@
+import { validateAirtableSchema } from '@/lib/airtable/validation';
 import { NextResponse } from 'next/server';
-import { validateAirtableSchema } from '@/lib/airtable';
 
 export async function GET() {
   try {
-    const validation = await validateAirtableSchema();
-    return NextResponse.json(validation);
+    const result = await validateAirtableSchema();
+    return NextResponse.json(result);
   } catch (error) {
-    console.error('Failed to validate Airtable schema:', error);
+    console.error('Error in /api/airtable/validate:', error);
     return NextResponse.json(
-      { error: 'Failed to validate schema' },
+      { error: 'Failed to validate Airtable schema' },
       { status: 500 }
     );
   }

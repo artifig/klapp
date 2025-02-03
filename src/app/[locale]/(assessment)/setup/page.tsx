@@ -1,8 +1,7 @@
-import { getMethodCompanyTypes } from '@/lib/airtable';
-import { SetupClient } from './client';
+import { getCompanyTypes } from '@/lib/airtable/queries';
+import { Client } from './client';
 
-export default async function Page() {
-  const companyTypes = await getMethodCompanyTypes();
-
-  return <SetupClient initialCompanyTypes={companyTypes} />;
+export default async function SetupPage() {
+  const companyTypes = await getCompanyTypes();
+  return <Client initialCompanyTypes={companyTypes} />;
 } 

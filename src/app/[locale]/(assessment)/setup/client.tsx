@@ -1,19 +1,24 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { AirtableMethodCompanyType } from '@/lib/airtable';
+import type { CompanyType, LocalizedText } from '@/lib/airtable/types';
 import { useAssessment } from '@/state/AssessmentState';
 import { ChangeEvent } from 'react';
 
-interface SetupClientProps {
-  initialCompanyTypes: AirtableMethodCompanyType[];
+interface Props {
+  initialCompanyTypes: CompanyType[];
 }
 
-export function SetupClient({ initialCompanyTypes }: SetupClientProps) {
+const getLocalizedText = (text: LocalizedText, locale: string): string => {
+  return text[locale as keyof LocalizedText] || '';
+};
+
+export function Client({ initialCompanyTypes }: Props) {
   const t = useTranslations('setup');
+  const locale = useLocale();
   const router = useRouter();
   const { forms, setFormData } = useAssessment();
   const { setup: formData } = forms;
@@ -85,10 +90,10 @@ export function SetupClient({ initialCompanyTypes }: SetupClientProps) {
                 required
                 className="w-full p-2 border rounded"
               >
-                <option value="">{t('interactiveCard.companyTypePlaceholder')}</option>
-                {initialCompanyTypes.map((type) => (
+                <option value="">{t('interactiveCard.companyTypeSelect')}</option>
+                {initialCompanyTypes.map(type => (
                   <option key={type.id} value={type.id}>
-                    {type.companyTypeText_et}
+                    {getLocalizedText(type.text, locale)}
                   </option>
                 ))}
               </select>
