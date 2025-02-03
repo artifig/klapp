@@ -203,7 +203,7 @@ export function useAssessmentState() {
 
   // Memoize answer-related functions
   const answerFunctions = useMemo(() => ({
-    getAnswer: (questionId: string, context?: string): Answer | undefined => {
+    getAnswer: (questionId: string, context?: string): UserAnswer | undefined => {
       const answer = state.answers[questionId];
       if (context) {
         console.log('🔍 Getting answer:', {
@@ -220,7 +220,7 @@ export function useAssessmentState() {
       setState(prev => {
         if (!prev.currentCategory) return prev;
 
-        const answer: Answer = {
+        const answer: UserAnswer = {
           questionId,
           answerId,
           score,
@@ -251,7 +251,7 @@ export function useAssessmentState() {
         const existingAnswer = prev.answers[questionId];
         if (!existingAnswer || !prev.currentCategory) return prev;
 
-        const updatedAnswer: Answer = {
+        const updatedAnswer: UserAnswer = {
           ...existingAnswer,
           answerId,
           score,
@@ -274,7 +274,7 @@ export function useAssessmentState() {
       });
     },
 
-    getCategoryAnswers: (categoryId: string): Answer[] => {
+    getCategoryAnswers: (categoryId: string): UserAnswer[] => {
       const answers = Object.values(state.answers).filter(answer => answer.categoryId === categoryId);
       console.log('📊 Category answers:', {
         categoryId,
@@ -287,7 +287,7 @@ export function useAssessmentState() {
       });
       return answers;
     }
-  }), [state.answers, state.currentCategory]);
+  }), [state.answers]);
 
   return {
     // State

@@ -1,11 +1,16 @@
 import { cache } from 'react';
 import { airtableBase, TABLES } from './config';
 import { AirtableError } from './types';
-import type { Category, Question, Answer, CompanyType } from './types';
+import type { Category, Question, Answer, CompanyType, LocalizedText } from './types';
 
-const transformLocalizedFields = (record: Record<string, any>, fieldPrefix: string) => ({
-  et: record.get(`${fieldPrefix}_et`),
-  en: record.get(`${fieldPrefix}_en`)
+interface AirtableRecord {
+  id: string;
+  get(field: string): unknown;
+}
+
+const transformLocalizedFields = (record: AirtableRecord, fieldPrefix: string): LocalizedText => ({
+  et: record.get(`${fieldPrefix}_et`) as string,
+  en: record.get(`${fieldPrefix}_en`) as string
 });
 
 export const getCategories = cache(async (companyTypeId?: string): Promise<Category[]> => {
@@ -31,6 +36,7 @@ export const getCategories = cache(async (companyTypeId?: string): Promise<Categ
       isActive: record.get('isActive') as boolean
     }));
   } catch (error: unknown) {
+    console.error('Error fetching categories:', error);
     throw new AirtableError('Failed to fetch categories', 'FETCH_CATEGORIES_ERROR');
   }
 });
@@ -52,6 +58,7 @@ export const getQuestions = cache(async (): Promise<Question[]> => {
       isActive: record.get('isActive') as boolean
     }));
   } catch (error: unknown) {
+    console.error('Error fetching questions:', error);
     throw new AirtableError('Failed to fetch questions', 'FETCH_QUESTIONS_ERROR');
   }
 });
@@ -74,6 +81,7 @@ export const getAnswers = cache(async (): Promise<Answer[]> => {
       isActive: record.get('isActive') as boolean
     }));
   } catch (error: unknown) {
+    console.error('Error fetching answers:', error);
     throw new AirtableError('Failed to fetch answers', 'FETCH_ANSWERS_ERROR');
   }
 });
@@ -94,6 +102,7 @@ export const getCompanyTypes = cache(async (): Promise<CompanyType[]> => {
       isActive: record.get('isActive') as boolean
     }));
   } catch (error: unknown) {
+    console.error('Error fetching company types:', error);
     throw new AirtableError('Failed to fetch company types', 'FETCH_COMPANY_TYPES_ERROR');
   }
 }); 

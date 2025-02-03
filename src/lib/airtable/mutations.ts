@@ -42,6 +42,7 @@ export async function createResponse(input: CreateResponseInput): Promise<Assess
       isActive: record.get('isActive') as boolean
     };
   } catch (error: unknown) {
+    console.error('Error creating response:', error);
     throw new AirtableError('Failed to create response', 'CREATE_RESPONSE_ERROR');
   }
 }
@@ -56,6 +57,7 @@ export async function updateResponseStatus(
       updatedAt: new Date().toISOString()
     });
   } catch (error: unknown) {
+    console.error('Error updating response status:', error);
     throw new AirtableError('Failed to update response status', 'UPDATE_RESPONSE_STATUS_ERROR');
   }
 } 
