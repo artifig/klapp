@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { useSearchParams } from 'next/navigation';
 import { AirtableMethodAnswer, AirtableMethodCompanyType } from '@/lib/airtable';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 

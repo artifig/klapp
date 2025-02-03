@@ -1,14 +1,17 @@
 import createMiddleware from 'next-intl/middleware';
-import { locales, defaultLocale } from './config';
+import { locales, defaultLocale } from './i18n/config';
 
+// Create the middleware with explicit configuration
 export default createMiddleware({
-  defaultLocale,
+  // A list of all locales that are supported
   locales,
+  // Used when no locale matches
+  defaultLocale,
+  // Always require a locale prefix in the URL
   localePrefix: 'always'
 });
 
 export const config = {
-  // Skip all internal paths (_next, api)
-  // Match all routes that should be internationalized
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
+  // Match only internationalized pathnames
+  matcher: ['/', `/(${locales.join('|')})/:path*`]
 }; 

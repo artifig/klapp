@@ -42,17 +42,18 @@
   },
   "setup": {
     "title": "Alustame",
-    "nameLabel": "Teie nimi",
-    "emailLabel": "E-posti aadress",
-    "companyNameLabel": "Ettevõtte nimi",
-    "companyTypeLabel": "Ettevõtte tüüp",
-    "form": {
-      "name": "Teie nimi",
-      "email": "E-posti aadress",
-      "companyName": "Ettevõtte nimi",
-      "companyType": "Ettevõtte tüüp",
-      "selectCompanyType": "Valige ettevõtte tüüp",
-      "submit": "Jätka hindamisega"
+    "interactiveCard": {
+      "title": "Ettevõtte informatsioon",
+      "nameLabel": "Teie nimi",
+      "emailLabel": "E-posti aadress",
+      "companyNameLabel": "Ettevõtte nimi",
+      "companyTypeLabel": "Ettevõtte tüüp",
+      "companyTypePlaceholder": "Valige ettevõtte tüüp",
+      "submitButton": "Jätka hindamisega"
+    },
+    "contextCard": {
+      "title": "Seadistuse info",
+      "description": "Palun sisestage oma ettevõtte andmed hindamise alustamiseks."
     },
     "loading": {
       "fetchingData": "Hindamisandmete laadimine...",
@@ -97,19 +98,6 @@
       "required": "Kõik väljad on kohustuslikud",
       "confidential": "Teie andmeid käsitletakse konfidentsiaalselt",
       "proceed": "Pärast andmete sisestamist saate jätkata hindamisega"
-    },
-    "interactiveCard": {
-      "title": "Ettevõtte informatsioon",
-      "nameLabel": "Teie nimi",
-      "emailLabel": "E-posti aadress",
-      "companyNameLabel": "Ettevõtte nimi",
-      "companyTypeLabel": "Ettevõtte tüüp",
-      "companyTypePlaceholder": "Valige ettevõtte tüüp",
-      "submitButton": "Jätka hindamisega"
-    },
-    "contextCard": {
-      "title": "Seadistuse info",
-      "description": "Palun sisestage oma ettevõtte andmed hindamise alustamiseks."
     },
     "goal": {
       "empty": "Eesmärk pole veel määratud"

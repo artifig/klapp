@@ -1,12 +1,9 @@
-import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+import { redirect } from '@/i18n/navigation';
 
-export interface PageProps {
-    params: Promise<{ locale: string }>;
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export default async function Page({ params }: PageProps) {
-    const resolvedParams = await params;
-    const { locale } = resolvedParams;
-    redirect(`/${locale}/home`);
+export default async function Page() {
+    // Ensure headers are properly awaited
+    await headers();
+    // We don't need to use the locale here since next-intl middleware will handle it
+    redirect('/home');
 } 

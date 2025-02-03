@@ -1,7 +1,7 @@
 'use client';
 
-import {useLocale, useTranslations} from 'next-intl';
-import {usePathname, useRouter} from '@/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import { usePathname, useRouter } from '@/i18n/navigation';
 
 export default function LanguageSwitcher() {
   const t = useTranslations('common');
@@ -11,7 +11,7 @@ export default function LanguageSwitcher() {
 
   const switchLocale = () => {
     const newLocale = locale === 'et' ? 'en' : 'et';
-    router.replace(pathname, {locale: newLocale});
+    router.replace(pathname, { locale: newLocale });
   };
 
   return (
@@ -25,7 +25,7 @@ export default function LanguageSwitcher() {
         bg-gray-700 text-gray-400">
         {locale.toUpperCase()}
       </div>
-      
+
       {/* Label showing target language */}
       <span className="text-xs font-medium text-center text-gray-400">
         {locale === 'et' ? 'EN' : 'ET'}
