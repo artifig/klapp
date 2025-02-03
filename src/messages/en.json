@@ -24,15 +24,14 @@
     "timeRequired": "Time Required",
     "timeEstimate": "This assessment takes approximately 15-20 minutes to complete",
     "stepsTitle": "Assessment Steps",
+    "interactiveCard": {
+      "title": "Start Assessment",
+      "description": "Begin your AI readiness assessment journey",
+      "startButton": "Start Assessment"
+    },
     "contextCard": {
-      "title": "AI Readiness Assessment",
-      "description": "Welcome to the AI Readiness Assessment tool! This will help you understand your organization's readiness for implementing AI.",
-      "steps": {
-        "step1": "Complete a brief questionnaire",
-        "step2": "Get an overview of your organization's readiness",
-        "step3": "Identify opportunities and challenges",
-        "step4": "Receive personalized recommendations for next steps"
-      }
+      "title": "About the Assessment",
+      "description": "This assessment will help you understand your organization's readiness for implementing AI solutions."
     },
     "form": {
       "goal": "Your Goal",
@@ -43,17 +42,18 @@
   },
   "setup": {
     "title": "Let's Get Started",
-    "nameLabel": "Your Name",
-    "emailLabel": "Email Address",
-    "companyNameLabel": "Company Name",
-    "companyTypeLabel": "Company Type",
-    "form": {
-      "name": "Your Name",
-      "email": "Email Address",
-      "companyName": "Company Name",
-      "companyType": "Company Type",
-      "selectCompanyType": "Select company type",
-      "submit": "Continue to Assessment"
+    "interactiveCard": {
+      "title": "Company Information",
+      "nameLabel": "Your Name",
+      "emailLabel": "Email Address",
+      "companyNameLabel": "Company Name",
+      "companyTypeLabel": "Company Type",
+      "companyTypePlaceholder": "Select company type",
+      "submitButton": "Continue to Assessment"
+    },
+    "contextCard": {
+      "title": "Setup Information",
+      "description": "Please provide your company details to begin the assessment."
     },
     "loading": {
       "fetchingData": "Loading assessment data...",
@@ -99,18 +99,6 @@
       "confidential": "Your data will be treated confidentially",
       "proceed": "After entering your data, you can proceed with the assessment"
     },
-    "contextCard": {
-      "title": "Setup",
-      "description": "Before starting the assessment, we need some information about your organization.",
-      "yourGoal": "Your Goal",
-      "requirements": "Requirements",
-      "steps": {
-        "step1": "Enter your details",
-        "step2": "Choose company type",
-        "step3": "Set your goal",
-        "step4": "Continue to assessment"
-      }
-    },
     "goal": {
       "empty": "Goal not yet set"
     }
@@ -138,20 +126,13 @@
       "4": "Advanced",
       "5": "Optimized"
     },
-    "contextCard": {
-      "title": "Assessment Progress",
-      "description": "Track your progress through different assessment categories",
-      "categoryStatus": "Category Status",
-      "overallProgress": "Overall Progress"
-    },
     "interactiveCard": {
       "title": "Current Question",
-      "selectCategory": "Select a category to begin",
-      "navigation": {
-        "back": "Previous",
-        "next": "Next",
-        "finish": "Complete Assessment"
-      }
+      "selectCategory": "Select a category to begin"
+    },
+    "contextCard": {
+      "title": "Assessment Progress",
+      "description": "Track your progress through different assessment categories"
     }
   },
   "results": {
@@ -174,7 +155,15 @@
     "exporting": "Exporting...",
     "emailResults": "Email Results",
     "matchedProviders": "Matched Providers",
-    "contactProvider": "Contact Provider"
+    "contactProvider": "Contact Provider",
+    "interactiveCard": {
+      "title": "Assessment Results"
+    },
+    "contextCard": {
+      "title": "Results Overview",
+      "description": "Here's a summary of your AI readiness assessment.",
+      "backButton": "Back to Assessment"
+    }
   },
   "common": {
     "loading": "Loading...",

@@ -2,7 +2,7 @@
   "Navigation": "Navigeerimine",
   "app": {
     "title": "Tehisaru valmisoleku hindamine",
-    "description": "Hinda oma ettevõtte valmisolekut tehisaru rakendamiseks ja saa personaalseid soovitusi"
+    "description": "Hinda oma ettevõtte tehisaru valmisolekut ja saa personaalseid soovitusi"
   },
   "nav": {
     "home": "Avaleht",
@@ -24,15 +24,14 @@
     "timeRequired": "Ajakulu",
     "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit",
     "stepsTitle": "Hindamise sammud",
+    "interactiveCard": {
+      "title": "Alusta hindamist",
+      "description": "Alusta oma tehisaru valmisoleku hindamise teekonda",
+      "startButton": "Alusta hindamist"
+    },
     "contextCard": {
-      "title": "Tehisaru valmisoleku hindamine",
-      "description": "Tere tulemast tehisaru valmisoleku hindamise tööriista! See aitab teil mõista oma organisatsiooni valmisolekut tehisaru juurutamiseks.",
-      "steps": {
-        "step1": "Täitke lühike küsimustik",
-        "step2": "Saage ülevaade oma organisatsiooni valmisolekust",
-        "step3": "Tuvastage võimalused ja väljakutsed",
-        "step4": "Saage personaalsed soovitused järgmisteks sammudeks"
-      }
+      "title": "Hindamisest",
+      "description": "See hindamine aitab teil mõista oma organisatsiooni valmisolekut tehisaru lahenduste juurutamiseks."
     },
     "form": {
       "goal": "Teie eesmärk",
@@ -99,17 +98,18 @@
       "confidential": "Teie andmeid käsitletakse konfidentsiaalselt",
       "proceed": "Pärast andmete sisestamist saate jätkata hindamisega"
     },
+    "interactiveCard": {
+      "title": "Ettevõtte informatsioon",
+      "nameLabel": "Teie nimi",
+      "emailLabel": "E-posti aadress",
+      "companyNameLabel": "Ettevõtte nimi",
+      "companyTypeLabel": "Ettevõtte tüüp",
+      "companyTypePlaceholder": "Valige ettevõtte tüüp",
+      "submitButton": "Jätka hindamisega"
+    },
     "contextCard": {
-      "title": "Seadistus",
-      "description": "Enne hindamise alustamist vajame mõningat teavet teie organisatsiooni kohta.",
-      "yourGoal": "Teie eesmärk",
-      "requirements": "Nõuded",
-      "steps": {
-        "step1": "Sisestage oma andmed",
-        "step2": "Valige ettevõtte tüüp",
-        "step3": "Määrake oma eesmärk",
-        "step4": "Jätkake hindamisega"
-      }
+      "title": "Seadistuse info",
+      "description": "Palun sisestage oma ettevõtte andmed hindamise alustamiseks."
     },
     "goal": {
       "empty": "Eesmärk pole veel määratud"
@@ -138,20 +138,13 @@
       "4": "Edasijõudnud",
       "5": "Optimeeritud"
     },
-    "contextCard": {
-      "title": "Hindamise progress",
-      "description": "Jälgige oma progressi erinevates hindamiskategooriates",
-      "categoryStatus": "Kategooria staatus",
-      "overallProgress": "Üldine progress"
-    },
     "interactiveCard": {
       "title": "Praegune küsimus",
-      "selectCategory": "Valige alustamiseks kategooria",
-      "navigation": {
-        "back": "Eelmine",
-        "next": "Järgmine",
-        "finish": "Lõpeta hindamine"
-      }
+      "selectCategory": "Valige alustamiseks kategooria"
+    },
+    "contextCard": {
+      "title": "Hindamise progress",
+      "description": "Jälgige oma progressi erinevates hindamiskategooriates"
     }
   },
   "results": {
@@ -174,7 +167,15 @@
     "exporting": "Eksportimine...",
     "emailResults": "Saada tulemused e-postiga",
     "matchedProviders": "Sobivad teenusepakkujad",
-    "contactProvider": "Võta ühendust"
+    "contactProvider": "Võta ühendust",
+    "interactiveCard": {
+      "title": "Hindamise tulemused"
+    },
+    "contextCard": {
+      "title": "Tulemuste ülevaade",
+      "description": "Siin on kokkuvõte teie tehisaru valmisoleku hindamisest.",
+      "backButton": "Tagasi hindamisele"
+    }
   },
   "common": {
     "loading": "Laadimine...",
