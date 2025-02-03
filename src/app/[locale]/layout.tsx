@@ -19,37 +19,33 @@ export default async function LocaleLayout({
   const { locale } = resolvedParams;
 
   // Enable static rendering
-  await unstable_setRequestLocale(locale);
+  unstable_setRequestLocale(locale);
 
   // Get messages for the current locale
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <body>
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <div className="min-h-screen bg-gray-50">
-            <LoadingScreen />
-            <nav className="bg-white border-b">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16">
-                  <div className="flex">
-                    <div className="flex-shrink-0 flex items-center">
-                      <Logo />
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <LanguageSwitcher />
-                  </div>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <div className="min-h-screen bg-gray-50">
+        <LoadingScreen />
+        <nav className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between h-16">
+              <div className="flex">
+                <div className="flex-shrink-0 flex items-center">
+                  <Logo />
                 </div>
               </div>
-            </nav>
-            <main className="py-8">
-              {children}
-            </main>
+              <div className="flex items-center">
+                <LanguageSwitcher />
+              </div>
+            </div>
           </div>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+        </nav>
+        <main className="py-8">
+          {children}
+        </main>
+      </div>
+    </NextIntlClientProvider>
   );
 } 

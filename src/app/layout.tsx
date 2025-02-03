@@ -13,7 +13,10 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body suppressHydrationWarning>
         {children}
       </body>
