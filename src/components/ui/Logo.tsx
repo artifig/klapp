@@ -13,8 +13,9 @@ export function Logo({ className }: LogoProps) {
         src="/Tehnopol_logo_RGB.png"
         alt="Logo"
         fill
-        priority
-        sizes="120px"
+        sizes="(max-width: 768px) 120px, 120px"
+        priority={false}
+        loading="lazy"
         style={{ objectFit: 'contain' }}
       />
     </div>
