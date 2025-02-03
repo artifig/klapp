@@ -115,6 +115,7 @@ export function Client({ initialData }: Props) {
   const [answers, setAnswers] = useState<Record<string, UserAnswer>>({});
   const [completedCategories, setCompletedCategories] = useState<string[]>([]);
   const [shuffledAnswersMap, setShuffledAnswersMap] = useState<Record<string, Answer[]>>({});
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Transform and organize data with company type filtering
   const categories = useMemo(() => {
@@ -211,6 +212,9 @@ export function Client({ initialData }: Props) {
 
       if (nextCategory) {
         handleCategorySelect(nextCategory);
+      } else {
+        // All categories completed
+        setIsCompleted(true);
       }
     }
   };
@@ -223,7 +227,19 @@ export function Client({ initialData }: Props) {
           <CardTitle className="sr-only">Assessment Questions</CardTitle>
         </CardHeader>
         <CardContent>
-          {currentCategory && currentQuestion ? (
+          {isCompleted ? (
+            <div className="text-center space-y-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                {t('allQuestionsCompleted')}
+              </h3>
+              <button
+                onClick={() => router.push('/results')}
+                className="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+              >
+                {t('viewResults')}
+              </button>
+            </div>
+          ) : currentCategory && currentQuestion ? (
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-medium text-gray-900">
