@@ -3,8 +3,7 @@
 import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import type { Category, Question, Answer, LocalizedText } from '@/lib/airtable/types';
-import { useEffect, useMemo, useState } from 'react';
-import type { UserAnswer } from '@/state/AssessmentState';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useAssessment } from '@/state/AssessmentState';
 import { useRouter } from '@/i18n/navigation';
 
@@ -100,7 +99,9 @@ export function Client({ initialData }: Props) {
   const locale = useLocale();
   const t = useTranslations('assessment');
   const router = useRouter();
-  const { formData } = useAssessment();
+  const assessment = useAssessment();
+  const { formData, answers: contextAnswers, setAnswer, setAssessmentData } = assessment;
+  const hasInitialized = useRef(false);
 
   // Redirect if no company type is selected
   useEffect(() => {
@@ -109,10 +110,17 @@ export function Client({ initialData }: Props) {
     }
   }, [formData.companyType, router]);
 
+  // Initialize assessment data only once
+  useEffect(() => {
+    if (!hasInitialized.current) {
+      setAssessmentData(initialData.categories, initialData.questions, initialData.answers);
+      hasInitialized.current = true;
+    }
+  }, [initialData, setAssessmentData]);
+
   // Local state
   const [currentCategory, setCurrentCategory] = useState<TransformedCategory | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<TransformedQuestion | null>(null);
-  const [answers, setAnswers] = useState<Record<string, UserAnswer>>({});
   const [completedCategories, setCompletedCategories] = useState<string[]>([]);
   const [shuffledAnswersMap, setShuffledAnswersMap] = useState<Record<string, Answer[]>>({});
   const [isCompleted, setIsCompleted] = useState(false);
@@ -178,18 +186,8 @@ export function Client({ initialData }: Props) {
   const handleAnswer = (answerId: string, score: number) => {
     if (!currentQuestion || !currentCategory) return;
 
-    const newAnswer: UserAnswer = {
-      questionId: currentQuestion.id,
-      answerId,
-      score,
-      categoryId: currentCategory.id,
-      timestamp: new Date().toISOString()
-    };
-
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion.id]: newAnswer
-    }));
+    // Use the context's setAnswer instead of local state
+    setAnswer(currentQuestion.id, answerId, score);
 
     // Find next question in current category
     const categoryQuestions = questions.filter(q =>
@@ -265,7 +263,7 @@ export function Client({ initialData }: Props) {
                   <AnswerOption
                     key={answer.id}
                     answer={answer}
-                    isSelected={answers[currentQuestion.id]?.answerId === answer.id}
+                    isSelected={contextAnswers[currentQuestion.id]?.answerId === answer.id}
                     onClick={() => handleAnswer(answer.id, answer.score)}
                   />
                 ))}

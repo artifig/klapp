@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
-import type { Answer, CompanyType } from '@/lib/airtable/types';
+import type { Answer, CompanyType, Category as AirtableCategory, Question as AirtableQuestion } from '@/lib/airtable/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 
 // Form Types
@@ -38,7 +38,7 @@ export interface Question {
   id: string;
   airtableId: string;
   text: string;
-  categoryId: string[];
+  categories: string[];
   answerId: string[];
   order: number;
 }
@@ -55,6 +55,7 @@ export interface UserAnswer {
   answerId: string;
   score: number;
   categoryId: string;
+  companyType: string;
   timestamp: string;
 }
 
@@ -140,7 +141,7 @@ export function useAssessmentState() {
     }
   }, [state]);
 
-  // Sync step with pathname
+  // Sync step with pathname without resetting state
   useEffect(() => {
     const step = pathname.endsWith('/setup') ? 'setup'
       : pathname.endsWith('/assessment') ? 'assessment'
@@ -149,7 +150,6 @@ export function useAssessmentState() {
 
     if (step !== state.currentStep) {
       setState(prev => ({ ...prev, currentStep: step }));
-      if (step === 'home') setState(defaultState);
     }
   }, [pathname, state.currentStep]);
 
@@ -225,14 +225,20 @@ export function useAssessmentState() {
           answerId,
           score,
           categoryId: prev.currentCategory.id,
+          companyType: prev.formData.companyType,
           timestamp: new Date().toISOString()
         };
 
+        // Get the current category from the categories array to access its text
+        const category = prev.categories.find(c => c.id === prev.currentCategory?.id);
+        const categoryName = category ? category.name : 'Unknown Category';
+
         console.log('💾 Saving answer:', {
-          categoryName: prev.currentCategory.name,
+          categoryName,
           questionId,
           answerId,
           score,
+          companyType: prev.formData.companyType,
           existingAnswers: Object.keys(prev.answers).length,
         });
 
@@ -289,13 +295,41 @@ export function useAssessmentState() {
     }
   }), [state.answers]);
 
+  // Add helper function to transform questions
+  const transformQuestion = (question: AirtableQuestion, order: number): Question => ({
+    id: question.id,
+    airtableId: question.id,
+    text: question.text.en,
+    categories: question.categories,
+    answerId: question.answers,
+    order
+  });
+
+  // Add helper function to transform categories
+  const transformCategory = (category: AirtableCategory, questions: AirtableQuestion[], index: number): Category => {
+    const categoryQuestions = questions
+      .filter(q => q.categories.includes(category.id))
+      .map((q, qIndex) => transformQuestion(q, qIndex));
+
+    return {
+      id: category.id,
+      key: category.id,
+      name: category.text.en,
+      order: index,
+      questions: categoryQuestions,
+      companyType: category.companyType,
+      description: category.description?.en
+    };
+  };
+
   return {
     // State
     currentStep: state.currentStep,
     goal: state.goal,
     formData: state.formData,
     companyTypes: state.companyTypes,
-    categories: filteredCategories, // Use filtered categories instead of all categories
+    categories: state.categories,
+    filteredCategories,
     currentCategory: state.currentCategory,
     currentQuestion: state.currentQuestion,
     completedCategories: state.completedCategories,
@@ -319,18 +353,31 @@ export function useAssessmentState() {
     })),
     setCompanyTypes: (types: CompanyType[]) =>
       setState(prev => ({ ...prev, companyTypes: types })),
-    setAssessmentData: (categories: Category[], answers: Answer[]) =>
+    setAssessmentData: (
+      categories: AirtableCategory[],
+      questions: AirtableQuestion[],
+      answers: Answer[]
+    ) =>
       setState(prev => {
+        // Transform categories and include their questions
+        const transformedCategories = categories.map((cat, index) =>
+          transformCategory(cat, questions, index)
+        );
+
         // Get filtered categories based on current company type
-        const filtered = categories.filter(category =>
+        const filtered = transformedCategories.filter(category =>
           category.companyType.includes(prev.formData.companyType)
         );
+
+        const firstCategory = filtered[0] || null;
+        const firstQuestion = firstCategory?.questions[0] || null;
+
         return {
           ...prev,
-          categories,
+          categories: transformedCategories,
           methodAnswers: answers,
-          currentCategory: filtered[0] || null,
-          currentQuestion: filtered[0]?.questions[0] || null
+          currentCategory: firstCategory,
+          currentQuestion: firstQuestion
         };
       }),
     setError: (error: string | null) => setState(prev => ({ ...prev, error })),

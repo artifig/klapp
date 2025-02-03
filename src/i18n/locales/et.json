@@ -152,6 +152,7 @@
       "yellow": "Keskmine",
       "green": "Kõrge"
     },
+    "questions": "küsimust",
     "downloadReport": "Laadi raport alla",
     "exportPDF": "Ekspordi PDF",
     "exporting": "Eksportimine...",

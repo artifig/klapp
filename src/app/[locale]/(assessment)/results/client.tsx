@@ -1,122 +1,176 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { useAssessment } from '@/state/AssessmentState';
+import type { UserAnswer } from '@/state/AssessmentState';
+import type { Answer, Category, Question, LocalizedText } from '@/lib/airtable/types';
+import { useMemo, useEffect, useRef } from 'react';
 
-const getReadinessLevel = (score: number) => {
+interface CategoryScore {
+  categoryId: string;
+  name: string;
+  score: number;
+  totalScore: number;
+  maxScore: number;
+  level: 'red' | 'yellow' | 'green';
+  answeredQuestions: number;
+  totalQuestions: number;
+}
+
+const getReadinessLevel = (score: number): 'red' | 'yellow' | 'green' => {
   if (score < 40) return 'red';
   if (score < 70) return 'yellow';
   return 'green';
 };
 
-export function ResultsClient() {
-  const t = useTranslations('results');
-  const router = useRouter();
-  const { answers, categories } = useAssessment();
+const getLocalizedText = (text: LocalizedText, locale: string): string => {
+  return text[locale as keyof LocalizedText] || '';
+};
 
-  // Calculate category scores
-  const categoryScores = categories.map(category => {
-    const categoryAnswers = category.questions.map(question => answers[question.id]);
-    const totalScore = categoryAnswers.reduce((sum, answer) => sum + (answer?.score || 0), 0);
-    const maxScore = category.questions.length * 5; // Assuming max score per question is 5
-    const percentage = (totalScore / maxScore) * 100;
+const calculateCategoryScore = (
+  category: Category,
+  answers: Record<string, UserAnswer>,
+  locale: string
+): CategoryScore => {
+  // Get questions for this category
+  const questionIds = category.questions;
 
-    return {
-      categoryId: category.id,
-      name: category.name,
-      score: percentage,
-      totalScore,
-      maxScore,
-      level: getReadinessLevel(percentage)
-    };
+  console.log('🔍 Debug - Category Questions:', {
+    categoryId: category.id,
+    categoryText: category.text,
+    questionsFound: questionIds.length,
+    questionIds,
+    totalAnswers: Object.keys(answers).length
   });
 
-  // Calculate overall score
-  const overallScore = categoryScores.reduce((sum, category) => sum + category.score, 0) / categoryScores.length;
+  // Get answered questions and their scores
+  const answeredQuestions = questionIds.filter(question => {
+    const hasAnswer = !!answers[question];
+    console.log('🔍 Debug - Question Answer:', {
+      questionId: question,
+      hasAnswer,
+      answer: answers[question]
+    });
+    return hasAnswer;
+  });
+
+  const totalScore = answeredQuestions.reduce((sum, question) => {
+    const answer = answers[question];
+    console.log('🎯 Debug - Answer Score:', {
+      questionId: question,
+      hasAnswer: !!answer,
+      score: answer?.score || 0
+    });
+    return sum + (answer?.score || 0);
+  }, 0);
+
+  // Calculate max possible score (5 points per question)
+  const maxScore = questionIds.length * 5;
+
+  // Calculate percentage (only if there are questions)
+  const percentage = questionIds.length > 0
+    ? (totalScore / maxScore) * 100
+    : 0;
+
+  const result = {
+    categoryId: category.id,
+    name: getLocalizedText(category.text, locale),
+    score: percentage,
+    totalScore,
+    maxScore,
+    level: getReadinessLevel(percentage),
+    answeredQuestions: answeredQuestions.length,
+    totalQuestions: questionIds.length
+  };
+
+  console.log('🎯 Debug - Category Score Result:', result);
+
+  return result;
+}
+
+interface Props {
+  initialData: {
+    categories: Category[];
+    questions: Question[];
+    answers: Answer[];
+  };
+}
+
+export function ResultsClient({ initialData }: Props) {
+  const t = useTranslations('results');
+  const router = useRouter();
+  const locale = useLocale();
+  const { answers, setAssessmentData } = useAssessment();
+  const hasInitialized = useRef(false);
+
+  // Initialize assessment data only once
+  useEffect(() => {
+    if (!hasInitialized.current) {
+      setAssessmentData(initialData.categories, initialData.questions, initialData.answers);
+      hasInitialized.current = true;
+    }
+  }, [initialData, setAssessmentData]);
+
+  // Calculate scores for each category
+  const categoryScores = useMemo(() => {
+    return initialData.categories.map(category =>
+      calculateCategoryScore(category, answers, locale)
+    );
+  }, [initialData.categories, answers, locale]);
+
+  // Filter categories that have answers
+  const categoriesWithAnswers = categoryScores.filter(cat => cat.answeredQuestions > 0);
+
+  // Calculate overall score (average of categories with answers)
+  const overallScore = categoriesWithAnswers.length > 0
+    ? categoriesWithAnswers.reduce((sum, category) => sum + category.score, 0) / categoriesWithAnswers.length
+    : 0;
   const overallLevel = getReadinessLevel(overallScore);
 
+  // Calculate completion percentage
+  const totalAnswered = categoryScores.reduce((sum, cat) => sum + cat.answeredQuestions, 0);
+  const totalQuestions = categoryScores.reduce((sum, cat) => sum + cat.totalQuestions, 0);
+  const completionPercentage = totalQuestions > 0
+    ? (totalAnswered / totalQuestions) * 100
+    : 0;
+
   return (
-    <div className="space-y-8">
+    <div>
+      <h1>{t('title')}</h1>
+
       {/* Overall Score */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center space-y-4">
-            <div className={`text-4xl font-bold ${overallLevel === 'red' ? 'text-red-500' :
-                overallLevel === 'yellow' ? 'text-yellow-500' :
-                  'text-green-500'
-              }`}>
-              {Math.round(overallScore)}%
-            </div>
-            <div className="text-lg font-medium">
-              {t(`levels.${overallLevel}`)}
-            </div>
-            <p className="text-gray-600">{t('summary')}</p>
+      <div>
+        <h2>Overall Score: {Math.round(overallScore)}%</h2>
+        <p>Level: {t(`levels.${overallLevel}`)}</p>
+        <p>{t('summary')}</p>
+        <p>
+          {t('completion.title')}: {Math.round(completionPercentage)}%
+          ({totalAnswered}/{totalQuestions} {t('questions')})
+        </p>
+      </div>
+
+      {/* Category Scores */}
+      <div>
+        <h2>{t('categories.title')}</h2>
+        {categoryScores.map(category => (
+          <div key={category.categoryId}>
+            <h3>{category.name}</h3>
+            <p>
+              Score: {category.totalScore}/{category.maxScore} ({Math.round(category.score)}%)
+            </p>
+            <p>
+              Questions answered: {category.answeredQuestions}/{category.totalQuestions}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Category Scores */}
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>{t('categories.title')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {categoryScores.map(category => (
-                <div key={category.categoryId} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium">{category.name}</h3>
-                    <span className={`text-sm ${category.level === 'red' ? 'text-red-500' :
-                        category.level === 'yellow' ? 'text-yellow-500' :
-                          'text-green-500'
-                      }`}>
-                      {category.totalScore}/{category.maxScore} ({Math.round(category.score)}%)
-                    </span>
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all ${category.level === 'red' ? 'bg-red-500' :
-                          category.level === 'yellow' ? 'bg-yellow-500' :
-                            'bg-green-500'
-                        }`}
-                      style={{ width: `${category.score}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Actions */}
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>{t('contextCard.title')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p>{t('contextCard.description')}</p>
-              <div className="space-y-2">
-                <Button onClick={() => console.log('Download PDF')} className="w-full">
-                  {t('downloadReport')}
-                </Button>
-                <Button onClick={() => console.log('Email Results')} className="w-full" variant="outline">
-                  {t('emailResults')}
-                </Button>
-                <Button onClick={() => router.push('/assessment')} className="w-full" variant="outline">
-                  {t('contextCard.backButton')}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Basic Actions */}
+      <div>
+        <button onClick={() => router.push('/assessment')}>
+          {t('contextCard.backButton')}
+        </button>
       </div>
     </div>
   );
