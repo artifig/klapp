@@ -49,6 +49,7 @@
       "companyNameLabel": "Company Name",
       "companyTypeLabel": "Company Type",
       "companyTypePlaceholder": "Select company type",
+      "companyTypeSelect": "Select company type",
       "submitButton": "Continue to Assessment"
     },
     "contextCard": {

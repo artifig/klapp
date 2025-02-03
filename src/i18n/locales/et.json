@@ -49,6 +49,7 @@
       "companyNameLabel": "Ettevõtte nimi",
       "companyTypeLabel": "Ettevõtte tüüp",
       "companyTypePlaceholder": "Valige ettevõtte tüüp",
+      "companyTypeSelect": "Valige ettevõtte tüüp",
       "submitButton": "Jätka hindamisega"
     },
     "contextCard": {
