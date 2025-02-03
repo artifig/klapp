@@ -1,20 +1,8 @@
-import { getMethodCategories, getMethodAnswers, getMethodQuestions } from '@/lib/airtable';
-import { AssessmentClient } from './client';
+import { getAirtableData } from '@/lib/airtable';
+import { Client } from './client';
 
 export default async function Page() {
-  const [categories, questions, answers] = await Promise.all([
-    getMethodCategories(), // Fetch all categories, we'll filter in the client
-    getMethodQuestions(),
-    getMethodAnswers()
-  ]);
+  const initialData = await getAirtableData();
 
-  return (
-    <AssessmentClient
-      initialData={{
-        categories,
-        questions,
-        answers
-      }}
-    />
-  );
+  return <Client initialData={initialData} />;
 } 

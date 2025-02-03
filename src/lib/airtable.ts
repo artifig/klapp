@@ -710,4 +710,18 @@ export async function validateAirtableSchema(): Promise<{ isValid: boolean; issu
       issues: ['Failed to validate Airtable schema']
     };
   }
+}
+
+export async function getAirtableData() {
+  const [categories, questions, answers] = await Promise.all([
+    getMethodCategories(),
+    getMethodQuestions(),
+    getMethodAnswers()
+  ]);
+
+  return {
+    categories,
+    questions,
+    answers
+  };
 } 
