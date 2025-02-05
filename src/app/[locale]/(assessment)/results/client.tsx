@@ -158,13 +158,9 @@ export function ResultsClient({ initialData }: Props) {
               {
                 value: stats.totalCategoriesCount,
                 label: t('categoriesAssessed')
-              },
-              {
-                value: `${stats.averagePercentageScore}%`,
-                label: t('averageScore')
               }
             ].map((stat, index) => (
-              <div key={`stat-${index}`} className="text-center">
+              <div key={`stat-${index}`} className="text-center col-span-1">
                 <div className="text-2xl font-semibold text-gray-900">
                   {stat.value}
                 </div>
