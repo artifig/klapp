@@ -45,31 +45,47 @@ export function ResultsClient({ initialData }: Props) {
     }
   }, [initialData, dispatch]);
 
+  // Filter categories for the selected company type
+  const relevantCategories = useMemo(() => {
+    return categories.filter(category =>
+      Array.isArray(category.companyType) &&
+      category.companyType.includes(setup.companyType)
+    );
+  }, [categories, setup.companyType]);
+
   // Calculate overall score and stats
   const stats = useMemo(() => {
     const answeredQuestions = Object.values(answers);
-    const totalScore = answeredQuestions.reduce((sum, answer) => sum + answer.score, 0);
-    const maxPossibleScore = answeredQuestions.length * 4; // Assuming max score per question is 4
-    const averageScore = totalScore / answeredQuestions.length;
+    const relevantAnswers = answeredQuestions.filter(answer => {
+      // Find the category for this answer
+      const category = relevantCategories.find(cat => cat.id === answer.categoryId);
+      return category !== undefined;
+    });
+
+    const totalScore = relevantAnswers.reduce((sum, answer) => sum + answer.score, 0);
+    const maxPossibleScore = relevantAnswers.length * 4; // Max score is 4 per question
+    const averageScore = relevantAnswers.length > 0 ? totalScore / relevantAnswers.length : 0;
+    const percentageScore = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
 
     return {
       totalScore,
       maxPossibleScore,
       averageScore,
-      percentageScore: (totalScore / maxPossibleScore) * 100,
-      answeredCount: answeredQuestions.length
+      percentageScore,
+      answeredCount: relevantAnswers.length,
+      relevantCategoriesCount: relevantCategories.length
     };
-  }, [answers]);
+  }, [answers, relevantCategories]);
 
   // Calculate category scores for radar chart
   const categoryScores = useMemo(() => {
-    const scores = categories.map(category => {
+    const scores = relevantCategories.map(category => {
       const categoryAnswers = Object.values(answers).filter(
         answer => answer.categoryId === category.id
       );
 
       const totalScore = categoryAnswers.reduce((sum, answer) => sum + answer.score, 0);
-      const maxPossible = categoryAnswers.length * 4; // Assuming max score per question is 4
+      const maxPossible = categoryAnswers.length * 4; // Max score is 4 per question
       const percentage = maxPossible > 0 ? (totalScore / maxPossible) * 100 : 0;
 
       return {
@@ -81,7 +97,7 @@ export function ResultsClient({ initialData }: Props) {
     });
 
     return scores;
-  }, [categories, answers]);
+  }, [relevantCategories, answers]);
 
   // Get recommendations based on scores
   const recommendations = useMemo(() => {
@@ -133,7 +149,7 @@ export function ResultsClient({ initialData }: Props) {
             </div>
             <div className="text-center">
               <div className="text-2xl font-semibold text-gray-900">
-                {categories.length}
+                {stats.relevantCategoriesCount}
               </div>
               <div className="text-sm text-gray-600">{t('categoriesAssessed')}</div>
             </div>
