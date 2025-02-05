@@ -161,7 +161,31 @@
     "areasForImprovement": "Areas for Improvement",
     "currentScore": "Current Score",
     "downloadReport": "Download Detailed Report",
+    "downloadReportDescription": "Enter your details to download a detailed PDF report and get expert guidance for your AI journey",
     "summary": "Analysis of your company's AI readiness",
+    "userDetails": {
+      "title": "Your Details",
+      "description": "Please provide your contact information to receive your detailed assessment report and connect with our AI experts.",
+      "nameLabel": "Your Name",
+      "emailLabel": "Email Address",
+      "companyNameLabel": "Company Name",
+      "submit": "Download Report",
+      "submitting": "Preparing Report..."
+    },
+    "validation": {
+      "name": {
+        "required": "Please enter your name",
+        "tooShort": "Name is too short"
+      },
+      "email": {
+        "required": "Please enter email address",
+        "invalid": "Please enter a valid email address"
+      },
+      "company": {
+        "required": "Please enter company name",
+        "tooShort": "Company name is too short"
+      }
+    },
     "completion": {
       "title": "Assessment Completion"
     },

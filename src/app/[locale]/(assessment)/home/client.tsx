@@ -64,6 +64,7 @@ export function HomeClient({ initialCompanyTypes }: Props) {
         }
       });
 
+      // Set only company type in state
       dispatch({
         type: 'SET_SETUP_FORM',
         payload: {
@@ -74,7 +75,7 @@ export function HomeClient({ initialCompanyTypes }: Props) {
         }
       });
 
-      router.push('/setup');
+      router.push('/assessment');
     } catch (error) {
       console.error('Error submitting goal:', error);
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');

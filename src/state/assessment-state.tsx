@@ -3,10 +3,8 @@
 import { createContext, useContext, useReducer, useEffect, useMemo, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import { useSearchParams } from 'next/navigation';
-import type { Answer, CompanyType, Category as AirtableCategory, Question as AirtableQuestion } from '@/lib/airtable/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import type { AssessmentState, SetupFormData, Category } from './types';
+import type { AssessmentState, SetupFormData, Category, AssessmentAction } from './types';
 import { assessmentReducer, defaultState } from './reducer';
 import { persistenceManager } from './persistence';
 
@@ -47,7 +45,7 @@ export interface UserAnswer {
 
 interface AssessmentContextType {
   state: AssessmentState;
-  dispatch: React.Dispatch<any>;
+  dispatch: React.Dispatch<AssessmentAction>;
 }
 
 const AssessmentContext = createContext<AssessmentContextType | null>(null);
@@ -179,11 +177,12 @@ const CategoryItem = ({ name, isActive, isCompleted, onClick }: CategoryItemProp
 
 export const AssessmentProgress = () => {
   const {
-    categories,
-    currentCategory,
-    completedCategories,
+    assessment: { currentCategory },
+    reference: { categories },
+    assessment: { completedCategories },
     setCurrentCategory
   } = useAssessment();
+
   const t = useTranslations('assessment');
 
   return (
@@ -193,7 +192,7 @@ export const AssessmentProgress = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {categories.map((category) => (
+          {categories.map((category: Category) => (
             <CategoryItem
               key={category.id}
               name={category.name}
@@ -210,7 +209,7 @@ export const AssessmentProgress = () => {
 
 // Form-specific hooks
 export function useGoalForm() {
-  const { goal, setGoal } = useAssessment();
+  const { forms: { goal }, setGoal } = useAssessment();
   const router = useRouter();
   const locale = useLocale();
 
@@ -218,54 +217,14 @@ export function useGoalForm() {
     e.preventDefault();
     if (!goal) return;
 
-    setGoal(goal);
-    router.push(`/${locale}/setup`);
+    setGoal({ goal: goal.goal, responseId: '' });
+    router.push(`/${locale}/assessment`);
   };
 
   return {
     goal,
     handleSubmit,
     setGoal
-  };
-}
-
-export function useSetupForm() {
-  const { forms, setSetupForm, companyTypes } = useAssessment();
-  const router = useRouter();
-  const locale = useLocale();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-
-    const { setup } = forms;
-    if (!setup.name || !setup.email || !setup.companyName || !setup.companyType) {
-      setError('Please fill in all required fields');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setError(null);
-      setSetupForm(setup);
-      router.push(`/${locale}/assessment`);
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      setError('An error occurred while submitting the form');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return {
-    formData: forms.setup,
-    companyTypes,
-    handleSubmit,
-    setSetupForm,
-    isSubmitting,
-    error
   };
 }
 

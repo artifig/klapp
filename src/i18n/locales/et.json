@@ -153,15 +153,39 @@
   },
   "results": {
     "title": "Hindamise Tulemused",
-    "overallScore": "Üldine Tulemus",
-    "questionsAnswered": "Vastatud Küsimusi",
+    "overallScore": "Üldine Skoor",
+    "questionsAnswered": "Vastatud Küsimused",
     "categoriesAssessed": "Hinnatud Kategooriad",
-    "averageScore": "Keskmine Tulemus",
-    "score": "Tulemus",
+    "averageScore": "Keskmine Skoor",
+    "score": "Skoor",
     "areasForImprovement": "Parendamist Vajavad Valdkonnad",
-    "currentScore": "Praegune Tulemus",
-    "downloadReport": "Lae Alla Detailne Raport",
-    "summary": "Teie ettevõtte tehisaru valmisoleku analüüs",
+    "currentScore": "Praegune Skoor",
+    "downloadReport": "Laadi alla detailne raport",
+    "downloadReportDescription": "Sisesta oma andmed, et laadida alla detailne PDF-raport ja saada ekspertide nõuandeid oma AI-teekonnaks",
+    "summary": "Teie ettevõtte AI-valmiduse analüüs",
+    "userDetails": {
+      "title": "Teie Andmed",
+      "description": "Palun sisestage oma kontaktandmed, et saada detailne hindamisraport ja ühenduda meie AI-ekspertidega.",
+      "nameLabel": "Teie Nimi",
+      "emailLabel": "E-posti Aadress",
+      "companyNameLabel": "Ettevõtte Nimi",
+      "submit": "Laadi Raport Alla",
+      "submitting": "Raporti Ettevalmistamine..."
+    },
+    "validation": {
+      "name": {
+        "required": "Palun sisestage oma nimi",
+        "tooShort": "Nimi on liiga lühike"
+      },
+      "email": {
+        "required": "Palun sisestage e-posti aadress",
+        "invalid": "Palun sisestage korrektne e-posti aadress"
+      },
+      "company": {
+        "required": "Palun sisestage ettevõtte nimi",
+        "tooShort": "Ettevõtte nimi on liiga lühike"
+      }
+    },
     "completion": {
       "title": "Hindamise lõpetatus"
     },

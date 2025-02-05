@@ -3,10 +3,11 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useAssessment } from '@/state/assessment-state';
-import { useMemo, useEffect, useCallback } from 'react';
+import { useMemo, useEffect, useCallback, useState } from 'react';
 import { updateAssessmentResults } from '@/lib/airtable/mutations';
 import type { Category } from '@/lib/airtable/types';
 import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 interface Props {
   initialData: {
@@ -22,6 +23,124 @@ interface Props {
   };
 }
 
+interface UserDetailsFormProps {
+  onSubmit: (data: { name: string; email: string; companyName: string }) => void;
+  isSubmitting: boolean;
+}
+
+function UserDetailsForm({ onSubmit, isSubmitting }: UserDetailsFormProps) {
+  const t = useTranslations('results');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    companyName: ''
+  });
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    companyName?: string;
+  }>({});
+
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+    if (!formData.name.trim()) {
+      newErrors.name = t('validation.name.required');
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = t('validation.email.required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = t('validation.email.invalid');
+    }
+    if (!formData.companyName.trim()) {
+      newErrors.companyName = t('validation.company.required');
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onSubmit(formData);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+          {t('userDetails.nameLabel')}
+        </label>
+        <input
+          id="name"
+          type="text"
+          value={formData.name}
+          onChange={(e) => {
+            setFormData({ ...formData, name: e.target.value });
+            if (errors.name) setErrors({ ...errors, name: undefined });
+          }}
+          className={`mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary ${errors.name ? 'border-red-500' : ''
+            }`}
+          disabled={isSubmitting}
+        />
+        {errors.name && (
+          <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          {t('userDetails.emailLabel')}
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => {
+            setFormData({ ...formData, email: e.target.value });
+            if (errors.email) setErrors({ ...errors, email: undefined });
+          }}
+          className={`mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary ${errors.email ? 'border-red-500' : ''
+            }`}
+          disabled={isSubmitting}
+        />
+        {errors.email && (
+          <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+          {t('userDetails.companyNameLabel')}
+        </label>
+        <input
+          id="companyName"
+          type="text"
+          value={formData.companyName}
+          onChange={(e) => {
+            setFormData({ ...formData, companyName: e.target.value });
+            if (errors.companyName) setErrors({ ...errors, companyName: undefined });
+          }}
+          className={`mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary ${errors.companyName ? 'border-red-500' : ''
+            }`}
+          disabled={isSubmitting}
+        />
+        {errors.companyName && (
+          <p className="mt-1 text-sm text-red-500">{errors.companyName}</p>
+        )}
+      </div>
+
+      <Button
+        type="submit"
+        className="w-full py-3 text-lg font-semibold"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? t('userDetails.submitting') : t('userDetails.submit')}
+      </Button>
+    </form>
+  );
+}
+
 export function ResultsClient({ initialData }: Props) {
   const t = useTranslations('results');
   const router = useRouter();
@@ -31,6 +150,8 @@ export function ResultsClient({ initialData }: Props) {
     forms: { setup, goal },
     dispatch
   } = useAssessment();
+  const [showUserDetailsForm, setShowUserDetailsForm] = useState(false);
+  const [isSubmittingDetails, setIsSubmittingDetails] = useState(false);
 
   // All hooks must be called before any conditional returns
   const filteredCategories = useMemo(() => {
@@ -150,6 +271,32 @@ export function ResultsClient({ initialData }: Props) {
     saveResults();
   }, [saveResults]);
 
+  const handleUserDetailsSubmit = async (data: { name: string; email: string; companyName: string }) => {
+    setIsSubmittingDetails(true);
+    try {
+      // Update the setup form data in state
+      dispatch({
+        type: 'SET_SETUP_FORM',
+        payload: {
+          ...data,
+          companyType: setup.companyType
+        }
+      });
+
+      // Save results again with the updated user details
+      await saveResults();
+
+      // TODO: Generate and download PDF report
+      console.log('Generating PDF report...');
+
+      setShowUserDetailsForm(false);
+    } catch (error) {
+      console.error('Error saving user details:', error);
+    } finally {
+      setIsSubmittingDetails(false);
+    }
+  };
+
   // If no record ID, don't render anything while redirecting
   if (!goal.recordId) {
     return null;
@@ -191,6 +338,29 @@ export function ResultsClient({ initialData }: Props) {
               ))}
             </div>
           </div>
+
+          {!showUserDetailsForm ? (
+            <div className="flex flex-col space-y-4">
+              <Button
+                onClick={() => setShowUserDetailsForm(true)}
+                className="w-full py-3 text-lg font-semibold"
+              >
+                {t('downloadReport')}
+              </Button>
+              <p className="text-sm text-gray-600 text-center">
+                {t('downloadReportDescription')}
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">{t('userDetails.title')}</h2>
+              <p className="text-gray-600 mb-4">{t('userDetails.description')}</p>
+              <UserDetailsForm
+                onSubmit={handleUserDetailsSubmit}
+                isSubmitting={isSubmittingDetails}
+              />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
