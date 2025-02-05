@@ -1,4 +1,4 @@
-import type { Answer, CompanyType } from '@/lib/airtable/types';
+import type { Answer, CompanyType, LocalizedText } from '@/lib/airtable/types';
 
 // Navigation
 export type AssessmentStep = 'home' | 'setup' | 'assessment' | 'results';
@@ -36,12 +36,11 @@ export interface FormsState {
 // Assessment
 export interface Category {
   id: string;
-  key: string;
-  name: string;
-  order: number;
-  questions: string[];
+  text: LocalizedText;
+  description?: LocalizedText;
+  isActive: boolean;
   companyType: string[];
-  description?: string;
+  questions: string[];
 }
 
 export interface Question {
@@ -90,7 +89,7 @@ export type AssessmentAction =
   | { type: 'SET_STEP'; payload: AssessmentStep }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'SET_GOAL'; payload: { goal: string; responseId: string } }
+  | { type: 'SET_GOAL'; payload: { goal: string; responseId: string; recordId?: string } }
   | { type: 'SET_SETUP_FORM'; payload: SetupFormData }
   | { type: 'SET_EMAIL'; payload: string }
   | { type: 'SET_ANSWER'; payload: { questionId: string; answerId: string; score: number } }

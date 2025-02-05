@@ -192,7 +192,7 @@ export function ResultsClient({ initialData }: Props) {
         ? totalScore / categoryAnswers.length
         : 0;
 
-      console.log(`Category ${category.name} score calculation:`, {
+      console.log(`Category ${category.text.et} score calculation:`, {
         totalScore,
         answersCount: categoryAnswers.length,
         averageScore
@@ -200,7 +200,7 @@ export function ResultsClient({ initialData }: Props) {
 
       return {
         id: category.id,
-        name: category.name,
+        name: category.text.et,
         averageScore,
         questions: category.questions.map(questionId => {
           const answer = answers[questionId];
@@ -211,7 +211,7 @@ export function ResultsClient({ initialData }: Props) {
 
           return {
             id: questionId,
-            text: category.name,
+            text: category.text.et,
             answer: {
               id: answer.answerId,
               text: methodAnswer.text.et,
@@ -255,7 +255,7 @@ export function ResultsClient({ initialData }: Props) {
 
   const radarData = useMemo(() => {
     return categoryLevels.map(({ category, level }) => ({
-      subject: category.name,
+      subject: category.text.et,
       level: level.levelText_et,
       score: level.levelScore_upperThreshold,
       fullMark: 5 // Assuming 5 is the maximum score
@@ -401,7 +401,7 @@ export function ResultsClient({ initialData }: Props) {
               {categoryLevels.map(({ category, level }) => (
                 <div key={category.id} className="border-b pb-4">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium">{category.name}</h3>
+                    <h3 className="font-medium">{category.text.et}</h3>
                     <span className="text-lg font-semibold text-primary">
                       {level.levelText_et}
                     </span>

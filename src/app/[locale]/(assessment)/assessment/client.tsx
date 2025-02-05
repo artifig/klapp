@@ -57,21 +57,13 @@ export default function Client({ initialData }: Props) {
 
       // Transform categories to match our state type
       const transformedCategories = initialData.categories.map(category => {
-        const localizedName = getLocalizedText(category.text, locale);
-        console.log('Category transformation:', {
-          id: category.id,
-          text: category.text,
-          locale,
-          localizedName
-        });
         return {
           id: category.id,
-          key: category.id.substring(0, 8),
-          name: localizedName,
-          order: 0,
-          questions: category.questions || [],
+          text: category.text,
+          description: category.description,
+          isActive: category.isActive,
           companyType: category.companyType || [],
-          description: category.description ? getLocalizedText(category.description, locale) : undefined
+          questions: category.questions || []
         };
       });
 
@@ -183,7 +175,7 @@ export default function Client({ initialData }: Props) {
       console.log('Assessment completed!');
       router.push('/results');
     }
-  }, [dispatch, currentQuestionIndex, categoryQuestions.length, currentCategoryIndex, categoriesData.length, router]);
+  }, [dispatch, currentQuestionIndex, categoryQuestions.length, currentCategoryIndex, categoriesData.length, router, savedAnswers]);
 
   if (!currentCategory || !currentQuestion) {
     return null;

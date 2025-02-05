@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useReducer, useEffect, useMemo, useCallback } from 'react';
+import { createContext, useContext, useReducer, useEffect, useMemo, useCallback, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -8,39 +8,12 @@ import type { AssessmentState, SetupFormData, Category, AssessmentAction } from 
 import { assessmentReducer, defaultState } from './reducer';
 import { persistenceManager } from './persistence';
 
-// Form Types
-export interface GoalFormData {
-  goal: string;
-}
-
-export interface EmailUpdateFormData {
-  email: string;
-}
-
 // Types
-export interface Question {
-  id: string;
-  airtableId: string;
-  text: string;
-  categories: string[];
-  answerId: string[];
-  order: number;
-}
-
 export interface FormData {
   name: string;
   email: string;
   companyName: string;
   companyType: string;
-}
-
-export interface UserAnswer {
-  questionId: string;
-  answerId: string;
-  score: number;
-  categoryId: string;
-  companyType: string;
-  timestamp: string;
 }
 
 interface AssessmentContextType {
@@ -195,7 +168,7 @@ export const AssessmentProgress = () => {
           {categories.map((category: Category) => (
             <CategoryItem
               key={category.id}
-              name={category.name}
+              name={category.text.et}
               isActive={category.id === currentCategory?.id}
               isCompleted={completedCategories.includes(category.id)}
               onClick={() => setCurrentCategory(category)}
