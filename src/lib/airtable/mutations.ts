@@ -1,10 +1,16 @@
 'use server';
 
 import { airtableBase, TABLES } from './config';
-import { AirtableError } from './types';
 import type { FieldSet } from 'airtable';
 
-// Only the fields we need for initial creation
+// Common result type for all mutations
+export interface MutationResult<T = void> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+// Input types
 export interface CreateResponseInput {
   initialGoal: string;
   responseContent: string;
@@ -12,7 +18,6 @@ export interface CreateResponseInput {
   isActive: boolean;
 }
 
-// Fields for updating company details
 export interface UpdateCompanyDetailsInput {
   contactName: string;
   contactEmail: string;
@@ -20,7 +25,7 @@ export interface UpdateCompanyDetailsInput {
   companyType: string;
 }
 
-// Response type with only the fields we need
+// Response types
 export interface AssessmentResponse {
   id: string;
   responseId: string;
@@ -29,12 +34,21 @@ export interface AssessmentResponse {
   isActive: boolean;
 }
 
-export async function createResponse(input: CreateResponseInput): Promise<{ success: boolean; responseId?: string; error?: string }> {
+export interface InitialContent {
+  answers: Record<string, never>;
+  version: string;
+}
+
+export async function createResponse(input: CreateResponseInput): Promise<MutationResult<{ responseId: string }>> {
   try {
     console.log('Creating Airtable record with input:', input);
 
     const record = await airtableBase(TABLES.RESPONSES).create({
-      ...input
+      ...input,
+      responseContent: JSON.stringify({ 
+        answers: {},
+        version: '1.0'
+      } satisfies InitialContent)
     } as Partial<FieldSet>);
 
     console.log('Airtable record created:', record);
@@ -45,21 +59,23 @@ export async function createResponse(input: CreateResponseInput): Promise<{ succ
 
     return {
       success: true,
-      responseId: record.get('responseId') as string
+      data: {
+        responseId: record.get('responseId') as string
+      }
     };
   } catch (error: unknown) {
     console.error('Error creating response in Airtable:', error);
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: 'Failed to create response' };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create response'
+    };
   }
 }
 
 export async function updateCompanyDetails(
   responseId: string,
   input: UpdateCompanyDetailsInput
-): Promise<void> {
+): Promise<MutationResult> {
   try {
     await airtableBase(TABLES.RESPONSES).update(responseId, {
       contactName: input.contactName,
@@ -68,22 +84,32 @@ export async function updateCompanyDetails(
       MethodCompanyTypes: input.companyType,
       responseStatus: 'In Progress'
     } as Partial<FieldSet>);
+
+    return { success: true };
   } catch (error: unknown) {
     console.error('Error updating company details:', error);
-    throw new AirtableError('Failed to update company details', 'UPDATE_COMPANY_DETAILS_ERROR');
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update company details'
+    };
   }
 }
 
 export async function updateResponseStatus(
   responseId: string,
   status: 'In Progress' | 'Completed'
-): Promise<void> {
+): Promise<MutationResult> {
   try {
     await airtableBase(TABLES.RESPONSES).update(responseId, {
       responseStatus: status,
     } as Partial<FieldSet>);
+
+    return { success: true };
   } catch (error: unknown) {
     console.error('Error updating response status:', error);
-    throw new AirtableError('Failed to update response status', 'UPDATE_RESPONSE_STATUS_ERROR');
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update response status'
+    };
   }
 } 

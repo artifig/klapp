@@ -34,18 +34,18 @@ export function HomeClient() {
       console.log('Creating initial response with goal:', goal);
       const result = await createResponse({
         initialGoal: goal,
-        responseContent: JSON.stringify({ answers: {} }),
+        responseContent: '', // This will be overridden by the server
         responseStatus: 'New',
         isActive: true
       });
       console.log('Create response result:', result);
 
-      if (!result.success || !result.responseId) {
+      if (!result.success || !result.data) {
         setError(result.error || 'Failed to create assessment');
         return;
       }
 
-      setGoal({ goal, responseId: result.responseId });
+      setGoal({ goal, responseId: result.data.responseId });
       router.push('/setup');
     } catch (error) {
       console.error('Error submitting goal:', error);
