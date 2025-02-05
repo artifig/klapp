@@ -62,10 +62,27 @@ export function ResultsClient({ initialData }: Props) {
       return category !== undefined;
     });
 
+    // Calculate total score from answers
     const totalScore = relevantAnswers.reduce((sum, answer) => sum + answer.score, 0);
-    const maxPossibleScore = relevantAnswers.length * 4; // Max score is 4 per question
+
+    // Calculate total possible questions from relevant categories
+    const totalPossibleQuestions = relevantCategories.reduce((sum, category) =>
+      sum + (category.questions?.length || 0), 0
+    );
+
+    // Max score would be 4 points per question for all possible questions
+    const maxPossibleScore = totalPossibleQuestions * 4;
+
     const averageScore = relevantAnswers.length > 0 ? totalScore / relevantAnswers.length : 0;
     const percentageScore = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
+
+    console.log('Score calculation:', {
+      totalScore,
+      maxPossibleScore,
+      totalPossibleQuestions,
+      relevantAnswersCount: relevantAnswers.length,
+      percentageScore
+    });
 
     return {
       totalScore,

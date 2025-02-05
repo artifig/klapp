@@ -5,7 +5,7 @@ import { useRouter } from '@/i18n/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import type { CompanyType, LocalizedText } from '@/lib/airtable/types';
-import { useAssessment } from '@/state';
+import { useAssessment } from '@/state/assessment-state';
 import { useState, useEffect } from 'react';
 import { updateCompanyDetails } from '@/lib/airtable/mutations';
 
@@ -33,7 +33,7 @@ export function Client({ initialCompanyTypes }: Props) {
   const t = useTranslations('setup');
   const locale = useLocale();
   const router = useRouter();
-  const { forms: { goal }, setSetupForm } = useAssessment();
+  const { forms: { goal }, dispatch } = useAssessment();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -47,6 +47,7 @@ export function Client({ initialCompanyTypes }: Props) {
   // Redirect if no goal is set
   useEffect(() => {
     if (!goal.responseId) {
+      console.log('⚠️ Setup: No goal found, redirecting to home');
       router.push('/');
     }
   }, [goal.responseId, router]);
@@ -96,6 +97,7 @@ export function Client({ initialCompanyTypes }: Props) {
         throw new Error('No response ID found');
       }
 
+      console.log('🔄 Setup: Updating company details:', formData);
       const result = await updateCompanyDetails(goal.recordId, {
         contactName: formData.name,
         contactEmail: formData.email,
@@ -107,10 +109,20 @@ export function Client({ initialCompanyTypes }: Props) {
         throw new Error(result.error || 'Failed to update company details');
       }
 
-      setSetupForm(formData);
+      console.log('🧹 Setup: Resetting assessment progress');
+      // Reset assessment progress before setting new company type
+      dispatch({ type: 'RESET_PROGRESS' });
+
+      console.log('💾 Setup: Setting new company data:', formData);
+      // Set the new setup data
+      dispatch({
+        type: 'SET_SETUP_FORM',
+        payload: formData
+      });
+
       router.push('/assessment');
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('❌ Error in setup:', error);
       setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);

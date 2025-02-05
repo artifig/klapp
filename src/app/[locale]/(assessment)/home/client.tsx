@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { useAssessment } from '@/state';
+import { useAssessment } from '@/state/assessment-state';
 import { useState, useEffect } from 'react';
 import { createResponse } from '@/lib/airtable/mutations';
 import { useSearchParams } from 'next/navigation';
@@ -14,15 +14,16 @@ export function HomeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEmbedded = searchParams?.get('embedded') === 'true';
-  const { setGoal, resetState } = useAssessment();
+  const { dispatch } = useAssessment();
   const [goal, setLocalGoal] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset state when component mounts
+  // Reset state when home page is mounted
   useEffect(() => {
-    resetState();
-  }, [resetState]);
+    console.log('🏠 Home: Resetting entire state');
+    dispatch({ type: 'RESET_STATE' });
+  }, [dispatch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,21 +32,24 @@ export function HomeClient() {
     setIsSubmitting(true);
     setError(null);
     try {
-      console.log('Creating initial response with goal:', goal);
+      console.log('🎯 Creating initial response with goal:', goal);
       const result = await createResponse({
         initialGoal: goal
       });
-      console.log('Create response result:', result);
+      console.log('📝 Create response result:', result);
 
       if (!result.success || !result.data) {
         setError(result.error || 'Failed to create assessment');
         return;
       }
 
-      setGoal({
-        goal,
-        responseId: result.data.responseId,
-        recordId: result.data.recordId
+      dispatch({
+        type: 'SET_GOAL',
+        payload: {
+          goal,
+          responseId: result.data.responseId,
+          recordId: result.data.recordId
+        }
       });
       router.push('/setup');
     } catch (error) {
