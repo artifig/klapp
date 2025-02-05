@@ -126,8 +126,8 @@ export default function Client({ initialData }: Props) {
 
   const progress = useMemo(() => {
     const percentage = (answeredQuestions / totalQuestions) * 100;
-    console.log(`Progress calculation: ${answeredQuestions} / ${totalQuestions} = ${percentage}%`);
-    return percentage;
+    console.log(`Progress calculation: ${answeredQuestions} / ${totalQuestions} = ${Math.round(percentage)}%`);
+    return Math.round(percentage);
   }, [answeredQuestions, totalQuestions]);
 
   // Memoize category questions and completion status
@@ -181,6 +181,7 @@ export default function Client({ initialData }: Props) {
     const filteredAnswers = initialData.answers.filter(
       answer => currentQuestion.answers.includes(answer.id)
     );
+    console.log('Answer scores for question:', currentQuestion.id, filteredAnswers.map(a => a.score));
     const shuffled = shuffleArray(filteredAnswers);
     setShuffledAnswersMap(prev => ({
       ...prev,

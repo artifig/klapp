@@ -55,73 +55,65 @@ export function ResultsClient({ initialData }: Props) {
 
   // Calculate overall score and stats
   const stats = useMemo(() => {
+    // Get all answers for this company type
     const answeredQuestions = Object.values(answers);
     const relevantAnswers = answeredQuestions.filter(answer => {
-      // Find the category for this answer
       const category = relevantCategories.find(cat => cat.id === answer.categoryId);
       return category !== undefined;
     });
 
-    // Calculate total score from answers
-    const totalScore = relevantAnswers.reduce((sum, answer) => sum + answer.score, 0);
-
-    // Calculate total possible questions from relevant categories
-    const totalPossibleQuestions = relevantCategories.reduce((sum, category) =>
-      sum + (category.questions?.length || 0), 0
-    );
-
-    // Max score would be 4 points per question for all possible questions
-    const maxPossibleScore = totalPossibleQuestions * 4;
-
-    const averageScore = relevantAnswers.length > 0 ? totalScore / relevantAnswers.length : 0;
-    const percentageScore = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
+    // Each answer already has a percentage score (0, 33, 67, 100)
+    // Calculate the average percentage across all answers
+    const averagePercentageScore = relevantAnswers.length > 0
+      ? relevantAnswers.reduce((sum, answer) => sum + answer.score, 0) / relevantAnswers.length
+      : 0;
 
     console.log('Score calculation:', {
-      totalScore,
-      maxPossibleScore,
-      totalPossibleQuestions,
-      relevantAnswersCount: relevantAnswers.length,
-      percentageScore
+      numberOfAnswers: relevantAnswers.length,
+      totalPossibleQuestions: relevantCategories.reduce((sum, category) =>
+        sum + (category.questions?.length || 0), 0
+      ),
+      averagePercentageScore: Math.round(averagePercentageScore)
     });
 
     return {
-      totalScore,
-      maxPossibleScore,
-      averageScore,
-      percentageScore,
-      answeredCount: relevantAnswers.length,
-      relevantCategoriesCount: relevantCategories.length
+      averagePercentageScore: Math.round(averagePercentageScore),
+      answeredQuestionsCount: relevantAnswers.length,
+      totalCategoriesCount: relevantCategories.length
     };
   }, [answers, relevantCategories]);
 
-  // Calculate category scores for radar chart
+  // Calculate per-category scores for radar chart
   const categoryScores = useMemo(() => {
     const scores = relevantCategories.map(category => {
+      // Get all answers for this category
       const categoryAnswers = Object.values(answers).filter(
         answer => answer.categoryId === category.id
       );
 
-      const totalScore = categoryAnswers.reduce((sum, answer) => sum + answer.score, 0);
-      const maxPossible = categoryAnswers.length * 4; // Max score is 4 per question
-      const percentage = maxPossible > 0 ? (totalScore / maxPossible) * 100 : 0;
+      // Calculate average percentage score for this category
+      const categoryAveragePercentage = categoryAnswers.length > 0
+        ? categoryAnswers.reduce((sum, answer) => sum + answer.score, 0) / categoryAnswers.length
+        : 0;
 
       return {
+        id: category.id,
         category: category.name,
-        score: percentage,
-        absoluteScore: totalScore,
-        maxScore: maxPossible
+        percentageScore: Math.round(categoryAveragePercentage),
+        answeredCount: categoryAnswers.length,
+        totalQuestions: category.questions?.length || 0
       };
     });
 
     return scores;
   }, [relevantCategories, answers]);
 
-  // Get recommendations based on scores
+  // Get recommendations based on scores (categories below 50%)
   const recommendations = useMemo(() => {
     return categoryScores
-      .filter(cat => cat.score < 50) // Focus on categories that need most improvement
-      .sort((a, b) => a.score - b.score) // Sort by score ascending
-      .slice(0, 3); // Top 3 areas for improvement
+      .filter(cat => cat.percentageScore < 50)
+      .sort((a, b) => a.percentageScore - b.percentageScore)
+      .slice(0, 3);
   }, [categoryScores]);
 
   return (
@@ -145,7 +137,7 @@ export function ResultsClient({ initialData }: Props) {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-primary">
-                    {Math.round(stats.percentageScore)}%
+                    {stats.averagePercentageScore}%
                   </div>
                   <div className="text-sm text-gray-600">
                     {t('overallScore')}
@@ -158,24 +150,27 @@ export function ResultsClient({ initialData }: Props) {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">
-                {stats.answeredCount}
+            {[
+              {
+                value: stats.answeredQuestionsCount,
+                label: t('questionsAnswered')
+              },
+              {
+                value: stats.totalCategoriesCount,
+                label: t('categoriesAssessed')
+              },
+              {
+                value: `${stats.averagePercentageScore}%`,
+                label: t('averageScore')
+              }
+            ].map((stat, index) => (
+              <div key={`stat-${index}`} className="text-center">
+                <div className="text-2xl font-semibold text-gray-900">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
               </div>
-              <div className="text-sm text-gray-600">{t('questionsAnswered')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">
-                {stats.relevantCategoriesCount}
-              </div>
-              <div className="text-sm text-gray-600">{t('categoriesAssessed')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">
-                {Math.round(stats.averageScore * 10) / 10}
-              </div>
-              <div className="text-sm text-gray-600">{t('averageScore')}</div>
-            </div>
+            ))}
           </div>
 
           {/* Radar Chart */}
@@ -190,7 +185,7 @@ export function ResultsClient({ initialData }: Props) {
                 <PolarRadiusAxis angle={30} domain={[0, 100]} />
                 <Radar
                   name={t('score')}
-                  dataKey="score"
+                  dataKey="percentageScore"
                   stroke="#2563eb"
                   fill="#3b82f6"
                   fillOpacity={0.6}
@@ -200,7 +195,7 @@ export function ResultsClient({ initialData }: Props) {
             </ResponsiveContainer>
           </div>
 
-          {/* Top Areas for Improvement */}
+          {/* Areas for Improvement */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">
               {t('areasForImprovement')}
@@ -208,7 +203,7 @@ export function ResultsClient({ initialData }: Props) {
             <div className="space-y-3">
               {recommendations.map((rec, index) => (
                 <div
-                  key={rec.category}
+                  key={`recommendation-${rec.id}`}
                   className="p-4 rounded-lg bg-orange-50 border border-orange-100"
                 >
                   <div className="flex justify-between items-center">
@@ -217,7 +212,7 @@ export function ResultsClient({ initialData }: Props) {
                         {index + 1}. {rec.category}
                       </div>
                       <div className="text-sm text-gray-600 mt-1">
-                        {t('currentScore')}: {Math.round(rec.score)}%
+                        {t('currentScore')}: {rec.percentageScore}%
                       </div>
                     </div>
                     <div className="text-orange-600">
