@@ -42,6 +42,32 @@ export interface AssessmentResponse {
   isActive: boolean;
 }
 
+export interface UpdateAssessmentResultsInput {
+  recordId: string;
+  responseContent: {
+    metadata: {
+      overallScore: number;
+      totalQuestions: number;
+      answeredQuestions: number;
+    };
+    categories: {
+      id: string;
+      name: string;
+      averageScore: number;
+      questions: {
+        id: string;
+        text: string;
+        answer: {
+          id: string;
+          text: string;
+          score: number;
+          timestamp: string;
+        }
+      }[]
+    }[];
+  };
+}
+
 const CURRENT_CONTENT_VERSION = '1.0';
 
 export async function createResponse(input: CreateResponseInput): Promise<MutationResult<{ responseId: string; recordId: string }>> {
@@ -171,6 +197,37 @@ export async function updateResponseStatus(
       error: error instanceof Error 
         ? `Failed to update response status: ${error.message}`
         : 'Failed to update response status: Unknown error'
+    };
+  }
+}
+
+export async function updateAssessmentResults(input: UpdateAssessmentResultsInput) {
+  try {
+    const result = await airtableBase(TABLES.RESPONSES).update(input.recordId, {
+      responseContent: JSON.stringify(input.responseContent),
+      responseStatus: 'Completed'
+    });
+
+    if (!result) {
+      throw new Error('Failed to update assessment results');
+    }
+
+    // Return only the necessary, serializable data
+    return {
+      success: true,
+      data: {
+        id: result.id,
+        fields: {
+          responseContent: result.get('responseContent'),
+          responseStatus: result.get('responseStatus')
+        }
+      }
+    };
+  } catch (error) {
+    console.error('Error updating assessment results:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update assessment results'
     };
   }
 } 
