@@ -1,4 +1,4 @@
-import type { AssessmentState, AssessmentAction, AssessmentStep, SetupFormData, Category } from './types';
+import type { AssessmentState, AssessmentAction, UserAnswer } from './types';
 
 export const defaultState: AssessmentState = {
   version: '1.0',
@@ -86,20 +86,30 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
 
     case 'SET_ANSWER': {
       const { questionId, answerId, score } = action.payload;
-      const currentCategory = state.assessment.currentCategory;
       
-      if (!currentCategory) return state;
+      // Find the category that contains this question
+      const category = state.reference.categories.find(cat => 
+        Array.isArray(cat.questions) && cat.questions.includes(questionId)
+      );
 
-      const answer = {
+      if (!category) {
+        console.warn('No category found for question:', questionId);
+        return state;
+      }
+
+      const answer: UserAnswer = {
         questionId,
         answerId,
         score,
-        categoryId: currentCategory.id,
+        categoryId: category.id,
         companyType: state.forms.setup.companyType,
         timestamp: new Date().toISOString()
       };
 
-      return {
+      console.log('Saving answer to state:', answer);
+      console.log('Previous answers:', state.assessment.answers);
+
+      const newState = {
         ...state,
         assessment: {
           ...state.assessment,
@@ -109,37 +119,46 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
           }
         }
       };
+
+      console.log('New state answers:', newState.assessment.answers);
+      return newState;
     }
 
-    case 'SET_CATEGORY':
-      const firstUnansweredQuestion = action.payload.questions.find(
-        q => !state.assessment.answers[q.id]
+    case 'SET_CATEGORY': {
+      const category = action.payload;
+      const firstUnansweredQuestion = category.questions.find(
+        questionId => !state.assessment.answers[questionId]
       );
 
       return {
         ...state,
         assessment: {
           ...state.assessment,
-          currentCategory: action.payload,
-          currentQuestion: firstUnansweredQuestion || action.payload.questions[0] || null
+          currentCategory: category,
+          currentQuestion: firstUnansweredQuestion || category.questions[0] || null
         }
       };
+    }
 
     case 'NEXT_QUESTION': {
-      if (!state.assessment.currentCategory || !state.assessment.currentQuestion) {
+      if (!state.assessment.currentCategory) {
         return state;
       }
 
-      const currentIndex = state.assessment.currentCategory.questions.findIndex(
-        q => q.id === state.assessment.currentQuestion?.id
-      );
-      const nextQuestion = state.assessment.currentCategory.questions[currentIndex + 1];
+      const currentQuestionId = state.assessment.currentQuestion;
+      if (!currentQuestionId) {
+        return state;
+      }
+
+      const currentCategory = state.assessment.currentCategory;
+      const currentIndex = currentCategory.questions.indexOf(currentQuestionId);
+      const nextQuestionId = currentCategory.questions[currentIndex + 1];
 
       return {
         ...state,
         assessment: {
           ...state.assessment,
-          currentQuestion: nextQuestion || null
+          currentQuestion: nextQuestionId || null
         }
       };
     }
@@ -154,7 +173,7 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
       );
       const nextCategory = state.reference.categories[currentIndex + 1];
       const firstUnansweredQuestion = nextCategory?.questions.find(
-        q => !state.assessment.answers[q.id]
+        questionId => !state.assessment.answers[questionId]
       );
 
       return {
@@ -163,7 +182,7 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
           ...state.assessment,
           currentCategory: nextCategory || null,
           currentQuestion: nextCategory
-            ? firstUnansweredQuestion || nextCategory.questions[0]
+            ? firstUnansweredQuestion || nextCategory.questions[0] || null
             : null,
           completedCategories: state.assessment.currentCategory
             ? [...state.assessment.completedCategories, state.assessment.currentCategory.id]
@@ -171,6 +190,15 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
         }
       };
     }
+
+    case 'SET_REFERENCE':
+      return {
+        ...state,
+        reference: {
+          ...state.reference,
+          ...action.payload
+        }
+      };
 
     case 'RESET_STATE':
       return defaultState;

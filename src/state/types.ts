@@ -39,7 +39,7 @@ export interface Category {
   key: string;
   name: string;
   order: number;
-  questions: Question[];
+  questions: string[];
   companyType: string[];
   description?: string;
 }
@@ -64,7 +64,7 @@ export interface UserAnswer {
 
 export interface AssessmentProgressState {
   currentCategory: Category | null;
-  currentQuestion: Question | null;
+  currentQuestion: string | null;
   completedCategories: string[];
   answers: Record<string, UserAnswer>;
 }
@@ -100,4 +100,5 @@ export type AssessmentAction =
   | { type: 'RESET_STATE' }
   | { type: 'RESET_FORMS' }
   | { type: 'RESET_PROGRESS' }
-  | { type: 'LOAD_STATE'; payload: AssessmentState }; 
+  | { type: 'LOAD_STATE'; payload: AssessmentState }
+  | { type: 'SET_REFERENCE'; payload: Partial<ReferenceDataState> }; 

@@ -146,7 +146,8 @@ export function useAssessment() {
     nextCategory,
     resetState,
     resetForms,
-    resetProgress
+    resetProgress,
+    dispatch
   } as const;
 }
 

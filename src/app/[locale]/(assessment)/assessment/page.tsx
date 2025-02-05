@@ -1,5 +1,5 @@
 import { getCategories, getQuestions, getAnswers } from '@/lib/airtable/queries';
-import { Client } from './client';
+import Client from './client';
 import { redirect } from '@/i18n/navigation';
 
 export default async function AssessmentPage() {

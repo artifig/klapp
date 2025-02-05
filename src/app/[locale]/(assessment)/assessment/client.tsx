@@ -2,10 +2,11 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/Card';
-import type { Category, Question, Answer, LocalizedText } from '@/lib/airtable/types';
-import { useEffect, useMemo, useState } from 'react';
-import { useAssessment } from '@/state';
+import type { Category, Question, Answer } from '@/lib/airtable/types';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useAssessment } from '@/state/assessment-state';
 import { useRouter } from '@/i18n/navigation';
+import { getLocalizedText } from '@/lib/utils';
 
 interface Props {
   initialData: {
@@ -14,10 +15,6 @@ interface Props {
     answers: Answer[];
   };
 }
-
-const getLocalizedText = (text: LocalizedText, locale: string): string => {
-  return text[locale as keyof LocalizedText] || '';
-};
 
 // Shuffle utility remains the same
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -29,15 +26,53 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
-export function Client({ initialData }: Props) {
+export default function Client({ initialData }: Props) {
   const locale = useLocale();
   const t = useTranslations('assessment');
   const router = useRouter();
   const {
-    forms,
     assessment: { answers: savedAnswers },
-    setAnswer,
+    forms,
+    reference,
+    dispatch
   } = useAssessment();
+
+  console.log('Current savedAnswers:', savedAnswers);
+
+  // Track state changes
+  useEffect(() => {
+    console.log('State updated - savedAnswers:', savedAnswers);
+  }, [savedAnswers]);
+
+  // Initialize reference data once on mount
+  useEffect(() => {
+    console.log('Reference data check:', {
+      hasCategories: initialData.categories.length > 0,
+      referenceCategories: reference.categories.length
+    });
+    if (initialData.categories.length > 0 && !reference.categories.length) {
+      console.log('Initializing reference data with categories:', initialData.categories.length);
+
+      // Transform categories to match our state type
+      const transformedCategories = initialData.categories.map(category => ({
+        id: category.id,
+        key: category.id.substring(0, 8), // Use first part of the ID as key
+        name: getLocalizedText(category.text, locale),
+        order: 0, // Default order
+        questions: category.questions || [],
+        companyType: category.companyType || [],
+        description: category.description ? getLocalizedText(category.description, locale) : undefined
+      }));
+
+      dispatch({
+        type: 'SET_REFERENCE',
+        payload: {
+          categories: transformedCategories,
+          methodAnswers: initialData.answers
+        }
+      });
+    }
+  }, [initialData.categories.length, reference.categories.length, dispatch, initialData.answers, initialData.categories, locale]);
 
   // Redirect if no company type is selected
   useEffect(() => {
@@ -50,14 +85,16 @@ export function Client({ initialData }: Props) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [shuffledAnswersMap, setShuffledAnswersMap] = useState<Record<string, Answer[]>>({});
 
-  // Transform and organize data with company type filtering
-  const categories = useMemo(() => {
+  // Transform and organize data with company type filtering - memoized
+  const categoriesData = useMemo(() => {
+    console.log('Filtering categories for company type:', forms.setup.companyType);
     return initialData.categories
       .filter(cat => Array.isArray(cat.companyType) && cat.companyType.includes(forms.setup.companyType))
-      .map(cat => ({
-        ...cat,
-        name: getLocalizedText(cat.text, locale),
-        description: cat.description ? getLocalizedText(cat.description, locale) : undefined
+      .map(category => ({
+        ...category,
+        name: getLocalizedText(category.text, locale),
+        description: category.description ? getLocalizedText(category.description, locale) : undefined,
+        isActive: false
       }));
   }, [initialData.categories, forms.setup.companyType, locale]);
 
@@ -69,7 +106,7 @@ export function Client({ initialData }: Props) {
   }, [initialData.questions, locale]);
 
   // Get current category's questions
-  const currentCategory = categories[currentCategoryIndex];
+  const currentCategory = categoriesData[currentCategoryIndex];
   const categoryQuestions = useMemo(() => {
     if (!currentCategory) return [];
     return questions.filter(q => q.categories.includes(currentCategory.id));
@@ -77,32 +114,63 @@ export function Client({ initialData }: Props) {
 
   const currentQuestion = categoryQuestions[currentQuestionIndex];
 
-  // Calculate progress
+  // Calculate total questions and progress
   const totalQuestions = useMemo(() => {
-    return categories.reduce((total, category) => {
-      return total + questions.filter(q => q.categories.includes(category.id)).length;
-    }, 0);
-  }, [categories, questions]);
+    return categoriesData.reduce((total, category) => total + category.questions.length, 0);
+  }, [categoriesData]);
 
-  const answeredQuestions = Object.keys(savedAnswers).length;
-  const progress = Math.round((answeredQuestions / totalQuestions) * 100);
+  const answeredQuestions = useMemo(() => {
+    console.log('Calculating answered questions from:', savedAnswers);
+    return Object.keys(savedAnswers).length;
+  }, [savedAnswers]);
 
-  const handleAnswer = (answerId: string, score: number) => {
-    if (!currentQuestion) return;
+  const progress = useMemo(() => {
+    const percentage = (answeredQuestions / totalQuestions) * 100;
+    console.log(`Progress calculation: ${answeredQuestions} / ${totalQuestions} = ${percentage}%`);
+    return percentage;
+  }, [answeredQuestions, totalQuestions]);
 
-    setAnswer(currentQuestion.id, answerId, score);
+  // Memoize category questions and completion status
+  const categoryStatus = useMemo(() => {
+    console.log('Recalculating category status');
+    return categoriesData.map((category, index) => {
+      const categoryAnswers = Object.values(savedAnswers).filter(
+        answer => answer.categoryId === category.id
+      );
+      const answered = categoryAnswers.length;
+      const total = category.questions.length;
+      console.log(`Category ${category.name}: ${answered} / ${total} answered`);
+      return {
+        ...category,
+        answered,
+        total,
+        isComplete: answered === total,
+        isCurrent: index === currentCategoryIndex
+      };
+    });
+  }, [categoriesData, savedAnswers, currentCategoryIndex]);
+
+  const handleAnswer = useCallback((questionId: string, answerId: string, score: number) => {
+    console.log('Saving answer:', { questionId, answerId, score, previousAnswers: savedAnswers });
+
+    // Dispatch the answer
+    dispatch({
+      type: 'SET_ANSWER',
+      payload: { questionId, answerId, score }
+    });
 
     // Move to next question or category
     if (currentQuestionIndex < categoryQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else if (currentCategoryIndex < categories.length - 1) {
-      setCurrentCategoryIndex(currentCategoryIndex + 1);
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else if (currentCategoryIndex < categoriesData.length - 1) {
+      setCurrentCategoryIndex(prev => prev + 1);
       setCurrentQuestionIndex(0);
     } else {
-      // Assessment completed
+      // All questions completed
+      console.log('Assessment completed!');
       router.push('/results');
     }
-  };
+  }, [dispatch, currentQuestionIndex, categoryQuestions.length, currentCategoryIndex, categoriesData.length, router]);
 
   if (!currentCategory || !currentQuestion) {
     return null;
@@ -111,7 +179,7 @@ export function Client({ initialData }: Props) {
   // Get shuffled answers for current question
   const currentAnswers = shuffledAnswersMap[currentQuestion.id] || (() => {
     const filteredAnswers = initialData.answers.filter(
-      answer => currentQuestion.answers.includes(answer.id) && answer.isActive
+      answer => currentQuestion.answers.includes(answer.id)
     );
     const shuffled = shuffleArray(filteredAnswers);
     setShuffledAnswersMap(prev => ({
@@ -145,44 +213,37 @@ export function Client({ initialData }: Props) {
               {t('categories.title')}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {categories.map((category, index) => {
-                const categoryQuestions = questions.filter(q => q.categories.includes(category.id));
-                const answeredInCategory = categoryQuestions.filter(q => savedAnswers[q.id]).length;
-                const isComplete = answeredInCategory === categoryQuestions.length;
-                const isCurrent = index === currentCategoryIndex;
-
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      setCurrentCategoryIndex(index);
-                      setCurrentQuestionIndex(0);
-                    }}
-                    className={`p-3 rounded-lg text-left transition-colors ${isCurrent
-                        ? 'bg-primary text-white'
-                        : isComplete
-                          ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                          : 'bg-gray-50 hover:bg-gray-100'
-                      }`}
-                  >
-                    <div className="text-sm font-medium truncate">
-                      {category.name}
-                    </div>
-                    <div className="text-xs mt-1 flex items-center gap-1">
-                      {isComplete ? (
-                        <>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span>{t('completed')}</span>
-                        </>
-                      ) : (
-                        <span>{answeredInCategory}/{categoryQuestions.length}</span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+              {categoryStatus.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => {
+                    setCurrentCategoryIndex(categoriesData.findIndex(c => c.id === category.id));
+                    setCurrentQuestionIndex(0);
+                  }}
+                  className={`p-3 rounded-lg text-left transition-colors ${category.isCurrent
+                    ? 'bg-primary text-white'
+                    : category.isComplete
+                      ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                      : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
+                >
+                  <div className="text-sm font-medium truncate">
+                    {category.name}
+                  </div>
+                  <div className="text-xs mt-1 flex items-center gap-1">
+                    {category.isComplete ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>{t('completed')}</span>
+                      </>
+                    ) : (
+                      <span>{category.answered}/{category.total}</span>
+                    )}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -204,7 +265,7 @@ export function Client({ initialData }: Props) {
             {currentAnswers.map(answer => (
               <button
                 key={answer.id}
-                onClick={() => handleAnswer(answer.id, answer.score)}
+                onClick={() => handleAnswer(currentQuestion.id, answer.id, answer.score)}
                 className="w-full text-left p-4 rounded-lg border transition-colors hover:border-primary/50 hover:bg-gray-50"
               >
                 <div className="flex gap-4">
@@ -229,4 +290,4 @@ export function Client({ initialData }: Props) {
       </Card>
     </div>
   );
-} 
+}
