@@ -10,6 +10,8 @@ export default async function ResultsPage() {
       getAnswers()
     ]);
 
+    console.log('🔍 Raw categories data:', categories);
+
     return <ResultsClient initialData={{ categories, questions, answers }} />;
   } catch (error) {
     console.error('Error in ResultsPage:', error);

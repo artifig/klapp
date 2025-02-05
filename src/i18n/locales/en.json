@@ -146,7 +146,15 @@
     }
   },
   "results": {
-    "title": "Your AI Readiness Level",
+    "title": "Assessment Results",
+    "overallScore": "Overall Score",
+    "questionsAnswered": "Questions Answered",
+    "categoriesAssessed": "Categories Assessed",
+    "averageScore": "Average Score",
+    "score": "Score",
+    "areasForImprovement": "Areas for Improvement",
+    "currentScore": "Current Score",
+    "downloadReport": "Download Detailed Report",
     "summary": "Analysis of your company's AI readiness",
     "completion": {
       "title": "Assessment Completion"
@@ -161,7 +169,6 @@
       "green": "High"
     },
     "questions": "questions",
-    "downloadReport": "Download Report",
     "exportPDF": "Export PDF",
     "exporting": "Exporting...",
     "emailResults": "Email Results",

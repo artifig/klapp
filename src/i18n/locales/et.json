@@ -146,7 +146,15 @@
     }
   },
   "results": {
-    "title": "Teie tehisaru valmisoleku tase",
+    "title": "Hindamise Tulemused",
+    "overallScore": "Üldine Tulemus",
+    "questionsAnswered": "Vastatud Küsimusi",
+    "categoriesAssessed": "Hinnatud Kategooriad",
+    "averageScore": "Keskmine Tulemus",
+    "score": "Tulemus",
+    "areasForImprovement": "Parendamist Vajavad Valdkonnad",
+    "currentScore": "Praegune Tulemus",
+    "downloadReport": "Lae Alla Detailne Raport",
     "summary": "Teie ettevõtte tehisaru valmisoleku analüüs",
     "completion": {
       "title": "Hindamise lõpetatus"
@@ -161,7 +169,6 @@
       "green": "Kõrge"
     },
     "questions": "küsimust",
-    "downloadReport": "Laadi raport alla",
     "exportPDF": "Ekspordi PDF",
     "exporting": "Eksportimine...",
     "emailResults": "Saada tulemused e-postiga",
