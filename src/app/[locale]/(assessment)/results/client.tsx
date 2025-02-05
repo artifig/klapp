@@ -5,9 +5,19 @@ import { useRouter } from 'next/navigation';
 import { useAssessment } from '@/state/assessment-state';
 import { useMemo, useEffect, useCallback, useState } from 'react';
 import { updateAssessmentResults } from '@/lib/airtable/mutations';
-import type { Category } from '@/lib/airtable/types';
+import type { Category } from '@/state/types';
+import type { MethodSolutionLevel } from '@/lib/airtable/types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import {
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  ResponsiveContainer,
+  Tooltip
+} from 'recharts';
 
 interface Props {
   initialData: {
@@ -20,6 +30,7 @@ interface Props {
       isActive: boolean;
       questions: string[];
     }[];
+    solutionLevels: MethodSolutionLevel[];
   };
 }
 
@@ -141,6 +152,12 @@ function UserDetailsForm({ onSubmit, isSubmitting }: UserDetailsFormProps) {
   );
 }
 
+interface CategoryLevel {
+  category: Category;
+  level: MethodSolutionLevel;
+  score: number;
+}
+
 export function ResultsClient({ initialData }: Props) {
   const t = useTranslations('results');
   const router = useRouter();
@@ -170,12 +187,21 @@ export function ResultsClient({ initialData }: Props) {
         sum + answer.score, 0
       );
 
+      // Don't multiply by 100 here, keep the raw average
+      const averageScore = categoryAnswers.length > 0
+        ? totalScore / categoryAnswers.length
+        : 0;
+
+      console.log(`Category ${category.name} score calculation:`, {
+        totalScore,
+        answersCount: categoryAnswers.length,
+        averageScore
+      });
+
       return {
         id: category.id,
         name: category.name,
-        averageScore: categoryAnswers.length > 0
-          ? (totalScore / categoryAnswers.length) * 100
-          : 0,
+        averageScore,
         questions: category.questions.map(questionId => {
           const answer = answers[questionId];
           if (!answer) return null;
@@ -185,10 +211,10 @@ export function ResultsClient({ initialData }: Props) {
 
           return {
             id: questionId,
-            text: category.name, // Using category name as we don't have question text
+            text: category.name,
             answer: {
               id: answer.answerId,
-              text: methodAnswer.text.et, // Using Estonian text for now
+              text: methodAnswer.text.et,
               score: answer.score,
               timestamp: answer.timestamp
             }
@@ -197,6 +223,44 @@ export function ResultsClient({ initialData }: Props) {
       };
     });
   }, [filteredCategories, answers, methodAnswers]);
+
+  const categoryLevels = useMemo(() => {
+    console.log('Solution levels:', initialData.solutionLevels);
+    return categoryScores.map(category => {
+      console.log(`Finding level for category ${category.name}:`, {
+        score: category.averageScore,
+        levels: initialData.solutionLevels.map(l => ({
+          lower: l.levelScore_lowerThreshold,
+          upper: l.levelScore_upperThreshold
+        }))
+      });
+
+      const matchingLevel = initialData.solutionLevels.find(level =>
+        category.averageScore >= level.levelScore_lowerThreshold &&
+        category.averageScore <= level.levelScore_upperThreshold
+      );
+
+      if (!matchingLevel) {
+        console.warn(`No matching level found for category ${category.name} with score ${category.averageScore}`);
+        return null;
+      }
+
+      return {
+        category: categories.find(c => c.id === category.id)!,
+        level: matchingLevel,
+        score: category.averageScore
+      };
+    }).filter((level): level is CategoryLevel => level !== null);
+  }, [categoryScores, initialData.solutionLevels, categories]);
+
+  const radarData = useMemo(() => {
+    return categoryLevels.map(({ category, level }) => ({
+      subject: category.name,
+      level: level.levelText_et,
+      score: level.levelScore_upperThreshold,
+      fullMark: 5 // Assuming 5 is the maximum score
+    }));
+  }, [categoryLevels]);
 
   const overallScore = useMemo(() => {
     if (categoryScores.length === 0) return 0;
@@ -307,38 +371,50 @@ export function ResultsClient({ initialData }: Props) {
       <CardContent className="p-6">
         <h1 className="text-2xl font-bold mb-4">{t('title')}</h1>
         <div className="space-y-6">
+          {/* Radar Chart */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">{t('overallScore')}</h2>
-            <div className="text-4xl font-bold text-primary">
-              {Math.round(overallScore)}%
-            </div>
-            <div className="text-sm text-gray-600 mt-2">
-              {questionCounts.answered} / {questionCounts.total} {t('questionsAnswered')}
+            <h2 className="text-xl font-semibold mb-4">{t('categoryLevels')}</h2>
+            <div className="w-full h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                  <PolarGrid gridType="circle" />
+                  <PolarAngleAxis dataKey="subject" />
+                  <PolarRadiusAxis angle={30} domain={[0, 5]} />
+                  <Radar
+                    name="Score"
+                    dataKey="score"
+                    stroke="#2563eb"
+                    fill="#2563eb"
+                    fillOpacity={0.6}
+                    isAnimationActive={false}
+                  />
+                  <Tooltip />
+                </RadarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
+          {/* Category Levels */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">{t('categoryScores')}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('categoryDetails')}</h2>
             <div className="space-y-4">
-              {categoryScores.map(category => (
+              {categoryLevels.map(({ category, level }) => (
                 <div key={category.id} className="border-b pb-4">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-medium">{category.name}</h3>
-                    <span className="text-lg font-semibold">
-                      {Math.round(category.averageScore)}%
+                    <span className="text-lg font-semibold text-primary">
+                      {level.levelText_et}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full transition-all"
-                      style={{ width: `${category.averageScore}%` }}
-                    />
-                  </div>
+                  <p className="text-gray-600">
+                    {level.levelDescription_et}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* User Details Form */}
           {!showUserDetailsForm ? (
             <div className="flex flex-col space-y-4">
               <Button

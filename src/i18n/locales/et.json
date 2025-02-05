@@ -153,6 +153,8 @@
   },
   "results": {
     "title": "Hindamise Tulemused",
+    "categoryLevels": "Kategooriate Küpsustasemed",
+    "categoryDetails": "Detailne Hinnang",
     "overallScore": "Üldine Skoor",
     "questionsAnswered": "Vastatud Küsimused",
     "categoriesAssessed": "Hinnatud Kategooriad",

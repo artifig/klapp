@@ -1,18 +1,18 @@
-import { getCategories, getQuestions, getAnswers } from '@/lib/airtable/queries';
 import { ResultsClient } from './client';
+import { getCategories, getAnswers, getSolutionLevels } from '@/lib/airtable/queries';
 import { redirect } from '@/i18n/navigation';
 
 export default async function ResultsPage() {
   try {
-    const [categories, questions, answers] = await Promise.all([
+    const [categories, answers, solutionLevels] = await Promise.all([
       getCategories(),
-      getQuestions(),
-      getAnswers()
+      getAnswers(),
+      getSolutionLevels()
     ]);
 
     console.log('🔍 Raw categories data:', categories);
 
-    return <ResultsClient initialData={{ categories, questions, answers }} />;
+    return <ResultsClient initialData={{ categories, answers, solutionLevels }} />;
   } catch (error) {
     console.error('Error in ResultsPage:', error);
     redirect('/assessment');

@@ -153,6 +153,8 @@
   },
   "results": {
     "title": "Assessment Results",
+    "categoryLevels": "Category Maturity Levels",
+    "categoryDetails": "Detailed Assessment",
     "overallScore": "Overall Score",
     "questionsAnswered": "Questions Answered",
     "categoriesAssessed": "Categories Assessed",

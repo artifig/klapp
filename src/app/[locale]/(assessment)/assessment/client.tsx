@@ -48,21 +48,34 @@ export default function Client({ initialData }: Props) {
   useEffect(() => {
     console.log('Reference data check:', {
       hasCategories: initialData.categories.length > 0,
-      referenceCategories: reference.categories.length
+      referenceCategories: reference.categories.length,
+      sampleCategory: initialData.categories[0], // Log a sample category
+      locale // Log the current locale
     });
     if (initialData.categories.length > 0 && !reference.categories.length) {
       console.log('Initializing reference data with categories:', initialData.categories.length);
 
       // Transform categories to match our state type
-      const transformedCategories = initialData.categories.map(category => ({
-        id: category.id,
-        key: category.id.substring(0, 8), // Use first part of the ID as key
-        name: getLocalizedText(category.text, locale),
-        order: 0, // Default order
-        questions: category.questions || [],
-        companyType: category.companyType || [],
-        description: category.description ? getLocalizedText(category.description, locale) : undefined
-      }));
+      const transformedCategories = initialData.categories.map(category => {
+        const localizedName = getLocalizedText(category.text, locale);
+        console.log('Category transformation:', {
+          id: category.id,
+          text: category.text,
+          locale,
+          localizedName
+        });
+        return {
+          id: category.id,
+          key: category.id.substring(0, 8),
+          name: localizedName,
+          order: 0,
+          questions: category.questions || [],
+          companyType: category.companyType || [],
+          description: category.description ? getLocalizedText(category.description, locale) : undefined
+        };
+      });
+
+      console.log('Transformed categories:', transformedCategories);
 
       dispatch({
         type: 'SET_REFERENCE',
