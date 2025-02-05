@@ -13,17 +13,11 @@ export interface CreateResponseInput {
 
 export async function createResponse(input: CreateResponseInput): Promise<AssessmentResponse> {
   try {
+    // For initial creation, we only send the goal and content
     const record = await airtableBase(TABLES.RESPONSES).create({
-      responseId: `resp_${Date.now()}`,
-      contactName: input.contactName,
-      contactEmail: input.contactEmail,
-      companyName: input.companyName,
-      companyType: input.companyType,
       initialGoal: input.initialGoal,
-      content: input.content,
-      status: 'New',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      responseContent: input.content,
+      responseStatus: 'New',
       isActive: true
     });
 
@@ -33,12 +27,12 @@ export async function createResponse(input: CreateResponseInput): Promise<Assess
       contactName: record.get('contactName') as string,
       contactEmail: record.get('contactEmail') as string,
       companyName: record.get('companyName') as string,
-      companyType: record.get('companyType') as string,
+      companyType: record.get('MethodCompanyTypes') as string,
       initialGoal: record.get('initialGoal') as string,
-      status: record.get('status') as 'New' | 'In Progress' | 'Completed',
-      content: record.get('content') as string,
-      createdAt: record.get('createdAt') as string,
-      updatedAt: record.get('updatedAt') as string,
+      status: record.get('responseStatus') as 'New' | 'In Progress' | 'Completed',
+      content: record.get('responseContent') as string,
+      createdAt: record.get('Created time') as string,
+      updatedAt: record.get('Last modified time') as string,
       isActive: record.get('isActive') as boolean
     };
   } catch (error: unknown) {
@@ -53,8 +47,8 @@ export async function updateResponseStatus(
 ): Promise<void> {
   try {
     await airtableBase(TABLES.RESPONSES).update(responseId, {
-      status,
-      updatedAt: new Date().toISOString()
+      responseStatus: status,
+      // Last modified time is updated automatically by Airtable
     });
   } catch (error: unknown) {
     console.error('Error updating response status:', error);

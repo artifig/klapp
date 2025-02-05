@@ -1,4 +1,4 @@
-import type { AssessmentState, AssessmentAction } from './types';
+import type { AssessmentState, AssessmentAction, AssessmentStep, SetupFormData, Category } from './types';
 
 export const defaultState: AssessmentState = {
   version: '1.0',
@@ -27,6 +27,9 @@ export const defaultState: AssessmentState = {
 
 export function assessmentReducer(state: AssessmentState, action: AssessmentAction): AssessmentState {
   switch (action.type) {
+    case 'LOAD_STATE':
+      return action.payload;
+
     case 'SET_STEP':
       return {
         ...state,
@@ -59,7 +62,7 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
         ...state,
         forms: {
           ...state.forms,
-          goal: { goal: action.payload }
+          goal: action.payload
         }
       };
 

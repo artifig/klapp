@@ -2,7 +2,7 @@
   "Navigation": "Navigation",
   "app": {
     "title": "AI Readiness Assessment",
-    "description": "Assess your company's AI readiness level and get personalized recommendations"
+    "description": "Assess your company's AI readiness and get expert guidance for implementation"
   },
   "nav": {
     "home": "Home",
@@ -16,28 +16,29 @@
   "home": {
     "whatToExpect": "What to Expect",
     "expectationsList": {
-      "evaluation": "Comprehensive evaluation of your AI readiness",
-      "areas": "Assessment across key business areas",
-      "recommendations": "Tailored recommendations for improvement",
-      "insights": "Actionable insights and next steps"
+      "evaluation": "In-depth self-assessment of your AI readiness",
+      "areas": "Analysis across key business areas",
+      "recommendations": "Personalized recommendations and solution provider matches",
+      "insights": "Expert feedback on your goals and implementation path"
     },
     "timeRequired": "Time Required",
     "timeEstimate": "This assessment takes approximately 15-20 minutes to complete",
-    "stepsTitle": "Assessment Steps",
+    "stepsTitle": "How It Works",
     "interactiveCard": {
-      "title": "Start Assessment",
-      "description": "Begin your AI readiness assessment journey",
+      "title": "Start Your Journey",
+      "description": "Evaluate your AI readiness and get expert support for implementation",
       "startButton": "Start Assessment"
     },
     "contextCard": {
       "title": "About the Assessment",
-      "description": "This assessment will help you understand your organization's readiness for implementing AI solutions."
+      "description": "This tool helps you understand where you stand with AI adoption and connects you with our team of experts and trusted solution providers who can help turn your goals into reality."
     },
     "form": {
-      "goal": "Your Goal",
-      "goalDescription": "What are your main objectives for implementing AI in your organization?",
-      "goalPlaceholder": "E.g., We want to automate our customer service processes and implement predictive analytics for sales forecasting...",
-      "submit": "Start Your AI Readiness Journey"
+      "goal": "Your Business Goals",
+      "goalDescription": "What business challenges would you like to solve with AI? This helps us understand your needs and match you with relevant experts and solution providers.",
+      "goalPlaceholder": "Example: We want to reduce customer service response time, predict equipment maintenance needs, automate document processing, or improve inventory management...",
+      "submit": "Start Assessment",
+      "submitting": "Creating Assessment..."
     }
   },
   "setup": {
@@ -200,4 +201,4 @@
     "message": "The page you're looking for doesn't exist or has been moved.",
     "backHome": "Go back home"
   }
-} 
+}

@@ -1,12 +1,12 @@
 'use client';
 
-import { createContext, useContext, useReducer, useEffect, useMemo } from 'react';
+import { createContext, useContext, useReducer, useEffect, useMemo, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import type { Answer, CompanyType, Category as AirtableCategory, Question as AirtableQuestion } from '@/lib/airtable/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import type { AssessmentState as IAssessmentState, AssessmentAction, Category, SetupFormData } from './types';
+import type { AssessmentState, SetupFormData, Category } from './types';
 import { assessmentReducer, defaultState } from './reducer';
 import { persistenceManager } from './persistence';
 
@@ -20,16 +20,6 @@ export interface EmailUpdateFormData {
 }
 
 // Types
-export interface Category {
-  id: string;
-  key: string;
-  name: string;
-  order: number;
-  questions: Question[];
-  companyType: string[];
-  description?: string;
-}
-
 export interface Question {
   id: string;
   airtableId: string;
@@ -55,57 +45,33 @@ export interface UserAnswer {
   timestamp: string;
 }
 
-export interface AssessmentState {
-  currentStep: 'home' | 'setup' | 'assessment' | 'results';
-  goal: string | null;
-  formData: FormData;
-  companyTypes: CompanyType[];
-  categories: Category[];
-  currentCategory: Category | null;
-  currentQuestion: Question | null;
-  completedCategories: string[];
-  answers: Record<string, UserAnswer>;
-  methodAnswers: Answer[];
-  error: string | null;
-  progress: number;
-  forms: {
-    goal: GoalFormData;
-    setup: SetupFormData;
-    emailUpdate: EmailUpdateFormData;
-  };
-  isLoading: boolean;
+interface AssessmentContextType {
+  state: AssessmentState;
+  dispatch: React.Dispatch<any>;
 }
-
-type AssessmentContextType = {
-  state: IAssessmentState;
-  dispatch: React.Dispatch<AssessmentAction>;
-};
 
 const AssessmentContext = createContext<AssessmentContextType | null>(null);
 
 export function AssessmentProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(assessmentReducer, defaultState);
   const pathname = usePathname();
-  const [state, dispatch] = useReducer(assessmentReducer, defaultState, persistenceManager.load);
 
-  // Sync with localStorage
+  // Load state from storage on mount
+  useEffect(() => {
+    const savedState = persistenceManager.load();
+    if (savedState) {
+      dispatch({ type: 'LOAD_STATE', payload: savedState });
+    }
+  }, []);
+
+  // Save state to storage on change
   useEffect(() => {
     persistenceManager.save(state);
   }, [state]);
 
-  // Reset state when landing on home page
+  // Handle navigation state
   useEffect(() => {
-    if (pathname === '/' || pathname.endsWith('/home')) {
-      dispatch({ type: 'RESET_STATE' });
-    }
-  }, [pathname]);
-
-  // Update step based on pathname
-  useEffect(() => {
-    const step = pathname.endsWith('/setup') ? 'setup'
-      : pathname.endsWith('/assessment') ? 'assessment'
-        : pathname.endsWith('/results') ? 'results'
-          : 'home';
-
+    const step = pathname.split('/')[2] as AssessmentState['navigation']['currentStep'] || 'home';
     dispatch({ type: 'SET_STEP', payload: step });
   }, [pathname]);
 
@@ -126,38 +92,61 @@ export function useAssessment() {
 
   const { state, dispatch } = context;
 
-  const actions = useMemo(() => ({
-    setGoal: (goal: string) => dispatch({ type: 'SET_GOAL', payload: goal }),
+  const setGoal = useCallback((payload: { goal: string; responseId: string }) => {
+    dispatch({ type: 'SET_GOAL', payload });
+  }, [dispatch]);
 
-    setSetupForm: (data: SetupFormData) =>
-      dispatch({ type: 'SET_SETUP_FORM', payload: data }),
+  const setSetupForm = useCallback((data: SetupFormData) => {
+    dispatch({ type: 'SET_SETUP_FORM', payload: data });
+  }, [dispatch]);
 
-    setEmailUpdate: (email: string) =>
-      dispatch({ type: 'SET_EMAIL', payload: email }),
+  const setEmailUpdate = useCallback((email: string) => {
+    dispatch({ type: 'SET_EMAIL', payload: email });
+  }, [dispatch]);
 
-    setAnswer: (questionId: string, answerId: string, score: number) =>
-      dispatch({ type: 'SET_ANSWER', payload: { questionId, answerId, score } }),
+  const setAnswer = useCallback((questionId: string, answerId: string, score: number) => {
+    dispatch({
+      type: 'SET_ANSWER',
+      payload: { questionId, answerId, score }
+    });
+  }, [dispatch]);
 
-    setCategory: (category: IAssessmentState['assessment']['currentCategory']) => {
-      if (category) {
-        dispatch({ type: 'SET_CATEGORY', payload: category });
-      }
-    },
+  const setCurrentCategory = useCallback((category: Category) => {
+    dispatch({ type: 'SET_CATEGORY', payload: category });
+  }, [dispatch]);
 
-    nextQuestion: () => dispatch({ type: 'NEXT_QUESTION' }),
+  const nextQuestion = useCallback(() => {
+    dispatch({ type: 'NEXT_QUESTION' });
+  }, [dispatch]);
 
-    nextCategory: () => dispatch({ type: 'NEXT_CATEGORY' }),
+  const nextCategory = useCallback(() => {
+    dispatch({ type: 'NEXT_CATEGORY' });
+  }, [dispatch]);
 
-    resetState: () => dispatch({ type: 'RESET_STATE' }),
+  const resetState = useCallback(() => {
+    dispatch({ type: 'RESET_STATE' });
+  }, [dispatch]);
 
-    resetForms: () => dispatch({ type: 'RESET_FORMS' }),
+  const resetForms = useCallback(() => {
+    dispatch({ type: 'RESET_FORMS' });
+  }, [dispatch]);
 
-    resetProgress: () => dispatch({ type: 'RESET_PROGRESS' })
-  }), [dispatch]);
+  const resetProgress = useCallback(() => {
+    dispatch({ type: 'RESET_PROGRESS' });
+  }, [dispatch]);
 
   return {
     ...state,
-    ...actions
+    setGoal,
+    setSetupForm,
+    setEmailUpdate,
+    setAnswer,
+    setCurrentCategory,
+    nextQuestion,
+    nextCategory,
+    resetState,
+    resetForms,
+    resetProgress
   } as const;
 }
 

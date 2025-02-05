@@ -52,4 +52,23 @@ export async function updateAssessmentStatus(
     console.error('Error updating assessment status:', error);
     throw new Error('Failed to update assessment status');
   }
+}
+
+export async function createInitialResponse(goal: string) {
+  try {
+    const input: CreateResponseInput = {
+      contactName: '', // Will be updated in setup
+      contactEmail: '', // Will be updated in setup
+      companyName: '', // Will be updated in setup
+      companyType: '', // Will be updated in setup
+      initialGoal: goal,
+      content: JSON.stringify({ answers: {} }) // Initial empty answers
+    };
+
+    const response = await createResponse(input);
+    return { success: true, responseId: response.responseId };
+  } catch (error) {
+    console.error('Error creating initial response:', error);
+    return { success: false, error: 'Failed to create assessment response' };
+  }
 } 

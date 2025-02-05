@@ -6,24 +6,42 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useAssessment } from '@/state';
 import { useState, useEffect } from 'react';
+import { createInitialResponse } from '@/lib/actions';
 
 export function HomeClient() {
   const t = useTranslations('home');
   const router = useRouter();
   const { setGoal, resetState } = useAssessment();
   const [goal, setLocalGoal] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Reset state when component mounts
   useEffect(() => {
     resetState();
   }, [resetState]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!goal.trim()) return;
+    if (!goal.trim() || isSubmitting) return;
 
-    setGoal(goal);
-    router.push('/setup');
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const result = await createInitialResponse(goal);
+      if (!result.success) {
+        setError(result.error || 'Failed to create assessment');
+        return;
+      }
+
+      setGoal({ goal, responseId: result.responseId });
+      router.push('/setup');
+    } catch (error) {
+      console.error('Error submitting goal:', error);
+      setError('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -46,10 +64,16 @@ export function HomeClient() {
                 required
                 className="w-full p-2 border rounded mt-1"
                 rows={4}
+                disabled={isSubmitting}
               />
             </div>
-            <Button type="submit" className="w-full">
-              {t('form.submit')}
+            {error && (
+              <div className="text-red-500 text-sm">
+                {error}
+              </div>
+            )}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? t('form.submitting') : t('form.submit')}
             </Button>
           </form>
         </CardContent>

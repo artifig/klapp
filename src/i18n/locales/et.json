@@ -2,7 +2,7 @@
   "Navigation": "Navigeerimine",
   "app": {
     "title": "Tehisaru valmisoleku hindamine",
-    "description": "Hinda oma ettevõtte tehisaru valmisolekut ja saa personaalseid soovitusi"
+    "description": "Hinda oma ettevõtte valmisolekut tehisaru rakendamiseks ja saa meie ekspertidelt nõu"
   },
   "nav": {
     "home": "Avaleht",
@@ -16,28 +16,29 @@
   "home": {
     "whatToExpect": "Mida oodata",
     "expectationsList": {
-      "evaluation": "Põhjalik hinnang teie tehisaru valmisolekule",
-      "areas": "Hindamine põhilistes ärivaldkondades",
-      "recommendations": "Kohandatud soovitused parendamiseks",
-      "insights": "Praktilised teadmised ja järgmised sammud"
+      "evaluation": "Põhjalik enesehindamine tehisaru valmisolekule",
+      "areas": "Analüüs põhilistes ärivaldkondades",
+      "recommendations": "Personaalsed soovitused ja sobivad lahenduspakkujad",
+      "insights": "Ekspertide tagasiside teie eesmärkidele ja juurutamisteele"
     },
     "timeRequired": "Ajakulu",
     "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit",
-    "stepsTitle": "Hindamise sammud",
+    "stepsTitle": "Kuidas see toimib",
     "interactiveCard": {
-      "title": "Alusta hindamist",
-      "description": "Alusta oma tehisaru valmisoleku hindamise teekonda",
+      "title": "Alusta oma teekonda",
+      "description": "Hinda oma tehisaru valmisolekut ja saa ekspertide tuge juurutamiseks",
       "startButton": "Alusta hindamist"
     },
     "contextCard": {
       "title": "Hindamisest",
-      "description": "See hindamine aitab teil mõista oma organisatsiooni valmisolekut tehisaru lahenduste juurutamiseks."
+      "description": "See tööriist aitab teil mõista, kus te tehisaru kasutuselevõtuga olete, ning ühendab teid meie ekspertide ja usaldusväärse lahenduspakkujatega, kes aitavad teie eesmärgid ellu viia."
     },
     "form": {
-      "goal": "Teie eesmärk",
-      "goalDescription": "Millised on teie peamised eesmärgid tehisaru juurutamisel oma organisatsioonis?",
-      "goalPlaceholder": "Näiteks: Soovime automatiseerida klienditeeninduse protsesse ja rakendada müügiprognoosimiseks ennustavat analüütikat...",
-      "submit": "Alusta tehisaru valmisoleku teekonda"
+      "goal": "Teie ärilised eesmärgid",
+      "goalDescription": "Milliseid ärilisi väljakutseid soovite tehisaru abil lahendada? See aitab meil mõista teie vajadusi ja ühendada teid sobivate ekspertide ja lahenduspakkujatega.",
+      "goalPlaceholder": "Näiteks: Soovime vähendada klienditeeninduse vastamisaega, ennustada seadmete hooldusvajadust, automatiseerida dokumentide töötlemist või parandada laovarude haldamist...",
+      "submit": "Alusta hindamist",
+      "submitting": "Hindamise loomine..."
     }
   },
   "setup": {
@@ -201,4 +202,4 @@
     "message": "Otsitavat lehte ei eksisteeri või see on teisaldatud.",
     "backHome": "Tagasi avalehele"
   }
-} 
+}

@@ -4,10 +4,28 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { unstable_setRequestLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({
+  params: localeParam
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const resolvedParams = await localeParam;
+  const locale = resolvedParams.locale;
+  unstable_setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'app' });
+
+  return {
+    title: t('title'),
+    description: t('description'),
+  };
 }
 
 export default async function LocaleLayout({

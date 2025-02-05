@@ -12,6 +12,7 @@ export interface NavigationState {
 // Forms
 export interface GoalFormData {
   goal: string;
+  responseId?: string;
 }
 
 export interface SetupFormData {
@@ -88,7 +89,7 @@ export type AssessmentAction =
   | { type: 'SET_STEP'; payload: AssessmentStep }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'SET_GOAL'; payload: string }
+  | { type: 'SET_GOAL'; payload: { goal: string; responseId: string } }
   | { type: 'SET_SETUP_FORM'; payload: SetupFormData }
   | { type: 'SET_EMAIL'; payload: string }
   | { type: 'SET_ANSWER'; payload: { questionId: string; answerId: string; score: number } }
@@ -97,4 +98,5 @@ export type AssessmentAction =
   | { type: 'NEXT_CATEGORY' }
   | { type: 'RESET_STATE' }
   | { type: 'RESET_FORMS' }
-  | { type: 'RESET_PROGRESS' }; 
+  | { type: 'RESET_PROGRESS' }
+  | { type: 'LOAD_STATE'; payload: AssessmentState }; 
