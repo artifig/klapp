@@ -139,6 +139,53 @@ export function Client({ initialData }: Props) {
             </div>
           </div>
 
+          {/* Categories Selector */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              {t('categories.title')}
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {categories.map((category, index) => {
+                const categoryQuestions = questions.filter(q => q.categories.includes(category.id));
+                const answeredInCategory = categoryQuestions.filter(q => savedAnswers[q.id]).length;
+                const isComplete = answeredInCategory === categoryQuestions.length;
+                const isCurrent = index === currentCategoryIndex;
+
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      setCurrentCategoryIndex(index);
+                      setCurrentQuestionIndex(0);
+                    }}
+                    className={`p-3 rounded-lg text-left transition-colors ${isCurrent
+                        ? 'bg-primary text-white'
+                        : isComplete
+                          ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                          : 'bg-gray-50 hover:bg-gray-100'
+                      }`}
+                  >
+                    <div className="text-sm font-medium truncate">
+                      {category.name}
+                    </div>
+                    <div className="text-xs mt-1 flex items-center gap-1">
+                      {isComplete ? (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>{t('completed')}</span>
+                        </>
+                      ) : (
+                        <span>{answeredInCategory}/{categoryQuestions.length}</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Category and Question */}
           <div className="space-y-4">
             <div>

@@ -114,6 +114,7 @@
     "title": "AI Readiness Assessment",
     "progress": "Progress",
     "questionsAnswered": "questions answered",
+    "completed": "Completed",
     "previousQuestion": "Previous Question",
     "nextQuestion": "Next Question",
     "completeAllQuestions": "Please answer all questions before proceeding",

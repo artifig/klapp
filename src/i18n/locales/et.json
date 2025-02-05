@@ -114,6 +114,7 @@
     "title": "Tehisaru valmisoleku hindamine",
     "progress": "Progress",
     "questionsAnswered": "küsimust vastatud",
+    "completed": "Lõpetatud",
     "previousQuestion": "Eelmine küsimus",
     "nextQuestion": "Järgmine küsimus",
     "completeAllQuestions": "Palun vastake kõikidele küsimustele enne jätkamist",
