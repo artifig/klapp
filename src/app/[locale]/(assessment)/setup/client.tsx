@@ -1,44 +1,32 @@
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import type { CompanyType, LocalizedText } from '@/lib/airtable/types';
 import { useAssessment } from '@/state/assessment-state';
 import { useState, useEffect } from 'react';
 import { updateCompanyDetails } from '@/lib/airtable/mutations';
-
-interface Props {
-  initialCompanyTypes: CompanyType[];
-}
 
 interface FormErrors {
   name?: string;
   email?: string;
   companyName?: string;
-  companyType?: string;
 }
-
-const getLocalizedText = (text: LocalizedText, locale: string): string => {
-  return text[locale as keyof LocalizedText] || '';
-};
 
 const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
-export function Client({ initialCompanyTypes }: Props) {
+export function Client() {
   const t = useTranslations('setup');
-  const locale = useLocale();
   const router = useRouter();
-  const { forms: { goal }, dispatch } = useAssessment();
+  const { forms: { goal, setup }, dispatch } = useAssessment();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     companyName: '',
-    companyType: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,10 +61,6 @@ export function Client({ initialCompanyTypes }: Props) {
       newErrors.companyName = t('validation.company.tooShort');
     }
 
-    if (!formData.companyType) {
-      newErrors.companyType = t('validation.companyType.required');
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -102,7 +86,7 @@ export function Client({ initialCompanyTypes }: Props) {
         contactName: formData.name,
         contactEmail: formData.email,
         companyName: formData.companyName,
-        companyType: formData.companyType
+        companyType: setup.companyType // Use the company type from state
       });
 
       if (!result.success) {
@@ -117,7 +101,10 @@ export function Client({ initialCompanyTypes }: Props) {
       // Set the new setup data
       dispatch({
         type: 'SET_SETUP_FORM',
-        payload: formData
+        payload: {
+          ...formData,
+          companyType: setup.companyType // Keep the existing company type
+        }
       });
 
       router.push('/assessment');
@@ -222,34 +209,6 @@ export function Client({ initialCompanyTypes }: Props) {
               />
               {errors.companyName && (
                 <p className="mt-1 text-sm text-red-500">{errors.companyName}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="companyType" className="block text-sm font-medium text-gray-700">
-                {t('interactiveCard.companyTypeLabel')}
-              </label>
-              <select
-                id="companyType"
-                value={formData.companyType}
-                onChange={(e) => {
-                  setFormData({ ...formData, companyType: e.target.value });
-                  if (errors.companyType) setErrors({ ...errors, companyType: undefined });
-                }}
-                required
-                className={`mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary ${errors.companyType ? 'border-red-500' : ''
-                  }`}
-                disabled={isSubmitting}
-              >
-                <option value="">{t('interactiveCard.companyTypeSelect')}</option>
-                {initialCompanyTypes.map(type => (
-                  <option key={type.id} value={type.id}>
-                    {getLocalizedText(type.text, locale)}
-                  </option>
-                ))}
-              </select>
-              {errors.companyType && (
-                <p className="mt-1 text-sm text-red-500">{errors.companyType}</p>
               )}
             </div>
 

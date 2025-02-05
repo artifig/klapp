@@ -8,14 +8,21 @@ import { useAssessment } from '@/state/assessment-state';
 import { useState, useEffect } from 'react';
 import { createResponse } from '@/lib/airtable/mutations';
 import { useSearchParams } from 'next/navigation';
+import type { CompanyType } from '@/lib/airtable/types';
+import { getLocalizedText } from '@/lib/utils';
 
-export function HomeClient() {
+interface Props {
+  initialCompanyTypes: CompanyType[];
+}
+
+export function HomeClient({ initialCompanyTypes }: Props) {
   const t = useTranslations('home');
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEmbedded = searchParams?.get('embedded') === 'true';
   const { dispatch } = useAssessment();
   const [goal, setLocalGoal] = useState('');
+  const [companyType, setCompanyType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,14 +34,18 @@ export function HomeClient() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!goal.trim() || isSubmitting) return;
+    if (!goal.trim() || !companyType || isSubmitting) {
+      setError(t('validation.required'));
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
     try {
       console.log('🎯 Creating initial response with goal:', goal);
       const result = await createResponse({
-        initialGoal: goal
+        initialGoal: goal,
+        companyType: companyType
       });
       console.log('📝 Create response result:', result);
 
@@ -43,6 +54,7 @@ export function HomeClient() {
         return;
       }
 
+      // Set both goal and company type in state
       dispatch({
         type: 'SET_GOAL',
         payload: {
@@ -51,6 +63,17 @@ export function HomeClient() {
           recordId: result.data.recordId
         }
       });
+
+      dispatch({
+        type: 'SET_SETUP_FORM',
+        payload: {
+          name: '',
+          email: '',
+          companyName: '',
+          companyType
+        }
+      });
+
       router.push('/setup');
     } catch (error) {
       console.error('Error submitting goal:', error);
@@ -121,6 +144,32 @@ export function HomeClient() {
                 disabled={isSubmitting}
               />
             </div>
+
+            {/* Company Type Selector */}
+            <div>
+              <label htmlFor="companyType" className="block text-lg font-semibold text-gray-900">
+                {t('form.companyType')}
+              </label>
+              <p className="mt-1 text-sm text-gray-600">
+                {t('form.companyTypeDescription')}
+              </p>
+              <select
+                id="companyType"
+                value={companyType}
+                onChange={(e) => setCompanyType(e.target.value)}
+                required
+                className="mt-2 w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                disabled={isSubmitting}
+              >
+                <option value="">{t('form.companyTypeSelect')}</option>
+                {initialCompanyTypes.map(type => (
+                  <option key={type.id} value={type.id}>
+                    {getLocalizedText(type.text, 'et')}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {error && (
               <div className="text-red-500 text-sm">
                 {error}

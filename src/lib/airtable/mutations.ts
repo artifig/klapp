@@ -22,6 +22,7 @@ export interface AssessmentContent {
 // Input types
 export interface CreateResponseInput {
   initialGoal: string;
+  companyType?: string;
   responseStatus?: ResponseStatus; // Optional, defaults to 'New'
   isActive?: boolean; // Optional, defaults to true
 }
@@ -72,10 +73,12 @@ const CURRENT_CONTENT_VERSION = '1.0';
 
 export async function createResponse(input: CreateResponseInput): Promise<MutationResult<{ responseId: string; recordId: string }>> {
   try {
+    const { companyType, ...restInput } = input;
     const fullInput = {
-      ...input,
+      ...restInput,
       responseStatus: input.responseStatus ?? 'New',
       isActive: input.isActive ?? true,
+      MethodCompanyTypes: companyType ? [companyType] : undefined,
       responseContent: JSON.stringify({
         answers: {},
         version: CURRENT_CONTENT_VERSION
@@ -137,7 +140,7 @@ export async function updateCompanyDetails(
       contactName: input.contactName,
       contactEmail: input.contactEmail,
       companyName: input.companyName,
-      MethodCompanyTypes: [input.companyType],
+      MethodCompanyType: [input.companyType],
       responseStatus: 'In Progress'
     } as Partial<FieldSet>);
 

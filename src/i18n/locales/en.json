@@ -37,8 +37,14 @@
       "goal": "Your Business Goals",
       "goalDescription": "What business challenges would you like to solve with AI? This helps us understand your needs and match you with relevant experts and solution providers.",
       "goalPlaceholder": "Example: We want to reduce customer service response time, predict equipment maintenance needs, automate document processing, or improve inventory management...",
+      "companyType": "Company Type",
+      "companyTypeDescription": "Select your company type to help us provide more relevant recommendations.",
+      "companyTypeSelect": "Select your company type",
       "submit": "Start Assessment",
-      "submitting": "Creating Assessment..."
+      "submitting": "Creating Assessment...",
+      "validation": {
+        "required": "Please fill in all required fields"
+      }
     }
   },
   "setup": {

@@ -37,8 +37,14 @@
       "goal": "Teie ärilised eesmärgid",
       "goalDescription": "Milliseid ärilisi väljakutseid soovite tehisaru abil lahendada? See aitab meil mõista teie vajadusi ja ühendada teid sobivate ekspertide ja lahenduspakkujatega.",
       "goalPlaceholder": "Näiteks: Soovime vähendada klienditeeninduse vastamisaega, ennustada seadmete hooldusvajadust, automatiseerida dokumentide töötlemist või parandada laovarude haldamist...",
+      "companyType": "Ettevõtte tüüp",
+      "companyTypeDescription": "Valige oma ettevõtte tüüp, et saaksime pakkuda asjakohasemaid soovitusi.",
+      "companyTypeSelect": "Valige ettevõtte tüüp",
       "submit": "Alusta hindamist",
-      "submitting": "Hindamise loomine..."
+      "submitting": "Hindamise loomine...",
+      "validation": {
+        "required": "Palun täitke kõik kohustuslikud väljad"
+      }
     }
   },
   "setup": {
