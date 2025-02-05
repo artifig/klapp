@@ -10,12 +10,20 @@ export interface MutationResult<T = void> {
   error?: string;
 }
 
+// Response status type
+export type ResponseStatus = 'New' | 'In Progress' | 'Completed';
+
+// Content types
+export interface AssessmentContent {
+  answers: Record<string, never>;
+  version: string;
+}
+
 // Input types
 export interface CreateResponseInput {
   initialGoal: string;
-  responseContent: string;
-  responseStatus: 'New' | 'In Progress' | 'Completed';
-  isActive: boolean;
+  responseStatus?: ResponseStatus; // Optional, defaults to 'New'
+  isActive?: boolean; // Optional, defaults to true
 }
 
 export interface UpdateCompanyDetailsInput {
@@ -30,44 +38,58 @@ export interface AssessmentResponse {
   id: string;
   responseId: string;
   initialGoal: string;
-  status: 'New' | 'In Progress' | 'Completed';
+  status: ResponseStatus;
   isActive: boolean;
 }
 
-export interface InitialContent {
-  answers: Record<string, never>;
-  version: string;
-}
+const CURRENT_CONTENT_VERSION = '1.0';
 
 export async function createResponse(input: CreateResponseInput): Promise<MutationResult<{ responseId: string }>> {
   try {
-    console.log('Creating Airtable record with input:', input);
-
-    const record = await airtableBase(TABLES.RESPONSES).create({
+    const fullInput = {
       ...input,
-      responseContent: JSON.stringify({ 
+      responseStatus: input.responseStatus ?? 'New',
+      isActive: input.isActive ?? true,
+      responseContent: JSON.stringify({
         answers: {},
-        version: '1.0'
-      } satisfies InitialContent)
-    } as Partial<FieldSet>);
+        version: CURRENT_CONTENT_VERSION
+      } satisfies AssessmentContent)
+    };
+
+    console.log('Creating Airtable record with input:', fullInput);
+
+    const record = await airtableBase(TABLES.RESPONSES).create(fullInput as Partial<FieldSet>);
 
     console.log('Airtable record created:', record);
 
     if (!record || typeof record.get !== 'function') {
-      throw new Error('Invalid response from Airtable');
+      return {
+        success: false,
+        error: 'Invalid response from Airtable: Record creation failed'
+      };
+    }
+
+    const responseId = record.get('responseId');
+    if (!responseId) {
+      return {
+        success: false,
+        error: 'Invalid response from Airtable: Missing responseId'
+      };
     }
 
     return {
       success: true,
       data: {
-        responseId: record.get('responseId') as string
+        responseId: responseId as string
       }
     };
   } catch (error: unknown) {
     console.error('Error creating response in Airtable:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to create response'
+      error: error instanceof Error 
+        ? `Failed to create response: ${error.message}`
+        : 'Failed to create response: Unknown error'
     };
   }
 }
@@ -77,6 +99,13 @@ export async function updateCompanyDetails(
   input: UpdateCompanyDetailsInput
 ): Promise<MutationResult> {
   try {
+    if (!responseId) {
+      return {
+        success: false,
+        error: 'Invalid responseId: Cannot update company details'
+      };
+    }
+
     await airtableBase(TABLES.RESPONSES).update(responseId, {
       contactName: input.contactName,
       contactEmail: input.contactEmail,
@@ -90,18 +119,47 @@ export async function updateCompanyDetails(
     console.error('Error updating company details:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to update company details'
+      error: error instanceof Error 
+        ? `Failed to update company details: ${error.message}`
+        : 'Failed to update company details: Unknown error'
     };
   }
 }
 
+const isValidStatusTransition = (currentStatus: ResponseStatus, newStatus: ResponseStatus): boolean => {
+  const transitions: Record<ResponseStatus, ResponseStatus[]> = {
+    'New': ['In Progress'],
+    'In Progress': ['Completed'],
+    'Completed': []
+  };
+  return transitions[currentStatus]?.includes(newStatus) ?? false;
+};
+
 export async function updateResponseStatus(
   responseId: string,
-  status: 'In Progress' | 'Completed'
+  newStatus: ResponseStatus
 ): Promise<MutationResult> {
   try {
+    if (!responseId) {
+      return {
+        success: false,
+        error: 'Invalid responseId: Cannot update status'
+      };
+    }
+
+    // Get current status
+    const record = await airtableBase(TABLES.RESPONSES).find(responseId);
+    const currentStatus = record.get('responseStatus') as ResponseStatus;
+
+    if (!isValidStatusTransition(currentStatus, newStatus)) {
+      return {
+        success: false,
+        error: `Invalid status transition from ${currentStatus} to ${newStatus}`
+      };
+    }
+
     await airtableBase(TABLES.RESPONSES).update(responseId, {
-      responseStatus: status,
+      responseStatus: newStatus,
     } as Partial<FieldSet>);
 
     return { success: true };
@@ -109,7 +167,9 @@ export async function updateResponseStatus(
     console.error('Error updating response status:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to update response status'
+      error: error instanceof Error 
+        ? `Failed to update response status: ${error.message}`
+        : 'Failed to update response status: Unknown error'
     };
   }
 } 

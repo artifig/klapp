@@ -33,10 +33,7 @@ export function HomeClient() {
     try {
       console.log('Creating initial response with goal:', goal);
       const result = await createResponse({
-        initialGoal: goal,
-        responseContent: '', // This will be overridden by the server
-        responseStatus: 'New',
-        isActive: true
+        initialGoal: goal
       });
       console.log('Create response result:', result);
 
