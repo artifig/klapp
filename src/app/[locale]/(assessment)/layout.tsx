@@ -1,4 +1,4 @@
-import { AssessmentProvider } from '@/state/AssessmentState';
+import { AssessmentProvider } from '@/state';
 
 export default function AssessmentLayout({
   children,

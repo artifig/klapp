@@ -2,8 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import { useAssessment } from '@/state/AssessmentState';
-import type { UserAnswer } from '@/state/AssessmentState';
+import { useAssessment, type UserAnswer } from '@/state';
 import type { Answer, Category, Question, LocalizedText } from '@/lib/airtable/types';
 import { useMemo, useEffect, useRef } from 'react';
 
@@ -33,47 +32,17 @@ const calculateCategoryScore = (
   answers: Record<string, UserAnswer>,
   locale: string
 ): CategoryScore => {
-  // Get questions for this category
   const questionIds = category.questions;
-
-  console.log('🔍 Debug - Category Questions:', {
-    categoryId: category.id,
-    categoryText: category.text,
-    questionsFound: questionIds.length,
-    questionIds,
-    totalAnswers: Object.keys(answers).length
-  });
-
-  // Get answered questions and their scores
-  const answeredQuestions = questionIds.filter(question => {
-    const hasAnswer = !!answers[question];
-    console.log('🔍 Debug - Question Answer:', {
-      questionId: question,
-      hasAnswer,
-      answer: answers[question]
-    });
-    return hasAnswer;
-  });
-
+  const answeredQuestions = questionIds.filter(question => !!answers[question]);
   const totalScore = answeredQuestions.reduce((sum, question) => {
     const answer = answers[question];
-    console.log('🎯 Debug - Answer Score:', {
-      questionId: question,
-      hasAnswer: !!answer,
-      score: answer?.score || 0
-    });
     return sum + (answer?.score || 0);
   }, 0);
 
-  // Calculate max possible score (5 points per question)
   const maxScore = questionIds.length * 5;
+  const percentage = questionIds.length > 0 ? (totalScore / maxScore) * 100 : 0;
 
-  // Calculate percentage (only if there are questions)
-  const percentage = questionIds.length > 0
-    ? (totalScore / maxScore) * 100
-    : 0;
-
-  const result = {
+  return {
     categoryId: category.id,
     name: getLocalizedText(category.text, locale),
     score: percentage,
@@ -83,11 +52,7 @@ const calculateCategoryScore = (
     answeredQuestions: answeredQuestions.length,
     totalQuestions: questionIds.length
   };
-
-  console.log('🎯 Debug - Category Score Result:', result);
-
-  return result;
-}
+};
 
 interface Props {
   initialData: {
@@ -101,16 +66,16 @@ export function ResultsClient({ initialData }: Props) {
   const t = useTranslations('results');
   const router = useRouter();
   const locale = useLocale();
-  const { answers, setAssessmentData } = useAssessment();
+  const { assessment: { answers } } = useAssessment();
   const hasInitialized = useRef(false);
 
   // Initialize assessment data only once
   useEffect(() => {
     if (!hasInitialized.current) {
-      setAssessmentData(initialData.categories, initialData.questions, initialData.answers);
+      // Instead of setAssessmentData, we'll handle this in the reducer
       hasInitialized.current = true;
     }
-  }, [initialData, setAssessmentData]);
+  }, [initialData]);
 
   // Calculate scores for each category
   const categoryScores = useMemo(() => {

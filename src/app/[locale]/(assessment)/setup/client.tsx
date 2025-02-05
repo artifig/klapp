@@ -5,8 +5,8 @@ import { useRouter } from '@/i18n/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import type { CompanyType, LocalizedText } from '@/lib/airtable/types';
-import { useAssessment } from '@/state/AssessmentState';
-import { ChangeEvent } from 'react';
+import { useAssessment } from '@/state';
+import { useState } from 'react';
 
 interface Props {
   initialCompanyTypes: CompanyType[];
@@ -20,12 +20,17 @@ export function Client({ initialCompanyTypes }: Props) {
   const t = useTranslations('setup');
   const locale = useLocale();
   const router = useRouter();
-  const { forms, setFormData } = useAssessment();
-  const { setup: formData } = forms;
+  const { setSetupForm } = useAssessment();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    companyName: '',
+    companyType: ''
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setFormData(formData);
+    setSetupForm(formData);
     router.push('/assessment');
   };
 
@@ -45,7 +50,7 @@ export function Client({ initialCompanyTypes }: Props) {
                 id="name"
                 type="text"
                 value={formData.name}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 className="w-full p-2 border rounded"
               />
@@ -59,7 +64,7 @@ export function Client({ initialCompanyTypes }: Props) {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 className="w-full p-2 border rounded"
               />
@@ -73,7 +78,7 @@ export function Client({ initialCompanyTypes }: Props) {
                 id="companyName"
                 type="text"
                 value={formData.companyName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, companyName: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                 required
                 className="w-full p-2 border rounded"
               />
@@ -86,7 +91,7 @@ export function Client({ initialCompanyTypes }: Props) {
               <select
                 id="companyType"
                 value={formData.companyType}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, companyType: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, companyType: e.target.value })}
                 required
                 className="w-full p-2 border rounded"
               >

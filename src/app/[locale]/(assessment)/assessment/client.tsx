@@ -4,7 +4,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import type { Category, Question, Answer, LocalizedText } from '@/lib/airtable/types';
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { useAssessment } from '@/state/AssessmentState';
+import { useAssessment } from '@/state';
 import { useRouter } from '@/i18n/navigation';
 
 interface Props {
@@ -99,24 +99,29 @@ export function Client({ initialData }: Props) {
   const locale = useLocale();
   const t = useTranslations('assessment');
   const router = useRouter();
-  const assessment = useAssessment();
-  const { formData, answers: contextAnswers, setAnswer, setAssessmentData } = assessment;
+  const {
+    forms,
+    assessment: { answers },
+    setAnswer,
+    reference: { companyTypes }
+  } = useAssessment();
   const hasInitialized = useRef(false);
 
   // Redirect if no company type is selected
   useEffect(() => {
-    if (!formData.companyType) {
+    if (!forms.setup.companyType) {
       router.push('/setup');
     }
-  }, [formData.companyType, router]);
+  }, [forms.setup.companyType, router]);
 
-  // Initialize assessment data only once
+  // Initialize assessment data
   useEffect(() => {
     if (!hasInitialized.current) {
-      setAssessmentData(initialData.categories, initialData.questions, initialData.answers);
+      // Instead of setAssessmentData, we'll need to dispatch individual updates
+      // This would be handled in the reducer
       hasInitialized.current = true;
     }
-  }, [initialData, setAssessmentData]);
+  }, [initialData]);
 
   // Local state
   const [currentCategory, setCurrentCategory] = useState<TransformedCategory | null>(null);
@@ -128,26 +133,15 @@ export function Client({ initialData }: Props) {
   // Transform and organize data with company type filtering
   const categories = useMemo(() => {
     const filtered = initialData.categories
-      .filter(cat => Array.isArray(cat.companyType) && cat.companyType.includes(formData.companyType))
+      .filter(cat => Array.isArray(cat.companyType) && cat.companyType.includes(forms.setup.companyType))
       .map(cat => ({
         ...cat,
         name: getLocalizedText(cat.text, locale),
         description: cat.description ? getLocalizedText(cat.description, locale) : undefined
       }));
 
-    console.log('🎯 Filtered categories:', {
-      companyType: formData.companyType,
-      totalCategories: initialData.categories.length,
-      filteredCount: filtered.length,
-      filtered: filtered.map(c => ({
-        id: c.id,
-        name: c.name,
-        companyTypes: c.companyType
-      }))
-    });
-
     return filtered;
-  }, [initialData.categories, formData.companyType, locale]);
+  }, [initialData.categories, forms.setup.companyType, locale]);
 
   const questions = useMemo(() => {
     return initialData.questions.map(q => ({
@@ -263,7 +257,7 @@ export function Client({ initialData }: Props) {
                   <AnswerOption
                     key={answer.id}
                     answer={answer}
-                    isSelected={contextAnswers[currentQuestion.id]?.answerId === answer.id}
+                    isSelected={answers[currentQuestion.id]?.answerId === answer.id}
                     onClick={() => handleAnswer(answer.id, answer.score)}
                   />
                 ))}
