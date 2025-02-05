@@ -96,13 +96,18 @@
       "error": "Salvestamine ebaõnnestus"
     },
     "nextStepsList": {
+      "title": "Järgmised sammud",
       "details": "Täitke oma ettevõtte andmed",
       "required": "Kõik väljad on kohustuslikud",
       "confidential": "Teie andmeid käsitletakse konfidentsiaalselt",
       "proceed": "Pärast andmete sisestamist saate jätkata hindamisega"
     },
     "goal": {
+      "title": "Teie eesmärk",
       "empty": "Eesmärk pole veel määratud"
+    },
+    "form": {
+      "submitting": "Andmete salvestamine..."
     }
   },
   "assessment": {

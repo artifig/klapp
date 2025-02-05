@@ -13,6 +13,7 @@ export interface NavigationState {
 export interface GoalFormData {
   goal: string;
   responseId?: string;
+  recordId?: string;
 }
 
 export interface SetupFormData {

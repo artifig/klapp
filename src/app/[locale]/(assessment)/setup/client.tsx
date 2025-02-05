@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import type { CompanyType, LocalizedText } from '@/lib/airtable/types';
 import { useAssessment } from '@/state';
@@ -92,11 +92,11 @@ export function Client({ initialCompanyTypes }: Props) {
     setSubmitError(null);
 
     try {
-      if (!goal.responseId) {
+      if (!goal.responseId || !goal.recordId) {
         throw new Error('No response ID found');
       }
 
-      const result = await updateCompanyDetails(goal.responseId, {
+      const result = await updateCompanyDetails(goal.recordId, {
         contactName: formData.name,
         contactEmail: formData.email,
         companyName: formData.companyName,
@@ -122,12 +122,30 @@ export function Client({ initialCompanyTypes }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="max-w-3xl mx-auto p-4">
       <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{t('interactiveCard.title')}</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6 p-6">
+          {/* Header */}
+          <div className="space-y-4">
+            <h1 className="text-2xl font-bold text-gray-900">
+              {t('title')}
+            </h1>
+            <p className="text-gray-600">
+              {t('contextCard.description')}
+            </p>
+          </div>
+
+          {/* Current Goal */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h2 className="font-medium text-gray-900">
+              {t('goal.title')}
+            </h2>
+            <p className="mt-1 text-gray-600">
+              {goal.goal || t('goal.empty')}
+            </p>
+          </div>
+
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -139,12 +157,11 @@ export function Client({ initialCompanyTypes }: Props) {
                 value={formData.name}
                 onChange={(e) => {
                   setFormData({ ...formData, name: e.target.value });
-                  if (errors.name) {
-                    setErrors({ ...errors, name: undefined });
-                  }
+                  if (errors.name) setErrors({ ...errors, name: undefined });
                 }}
                 required
-                className={`w-full p-2 border rounded ${errors.name ? 'border-red-500' : ''}`}
+                className={`mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary ${errors.name ? 'border-red-500' : ''
+                  }`}
                 disabled={isSubmitting}
               />
               {errors.name && (
@@ -162,12 +179,11 @@ export function Client({ initialCompanyTypes }: Props) {
                 value={formData.email}
                 onChange={(e) => {
                   setFormData({ ...formData, email: e.target.value });
-                  if (errors.email) {
-                    setErrors({ ...errors, email: undefined });
-                  }
+                  if (errors.email) setErrors({ ...errors, email: undefined });
                 }}
                 required
-                className={`w-full p-2 border rounded ${errors.email ? 'border-red-500' : ''}`}
+                className={`mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary ${errors.email ? 'border-red-500' : ''
+                  }`}
                 disabled={isSubmitting}
               />
               {errors.email && (
@@ -185,12 +201,11 @@ export function Client({ initialCompanyTypes }: Props) {
                 value={formData.companyName}
                 onChange={(e) => {
                   setFormData({ ...formData, companyName: e.target.value });
-                  if (errors.companyName) {
-                    setErrors({ ...errors, companyName: undefined });
-                  }
+                  if (errors.companyName) setErrors({ ...errors, companyName: undefined });
                 }}
                 required
-                className={`w-full p-2 border rounded ${errors.companyName ? 'border-red-500' : ''}`}
+                className={`mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary ${errors.companyName ? 'border-red-500' : ''
+                  }`}
                 disabled={isSubmitting}
               />
               {errors.companyName && (
@@ -207,12 +222,11 @@ export function Client({ initialCompanyTypes }: Props) {
                 value={formData.companyType}
                 onChange={(e) => {
                   setFormData({ ...formData, companyType: e.target.value });
-                  if (errors.companyType) {
-                    setErrors({ ...errors, companyType: undefined });
-                  }
+                  if (errors.companyType) setErrors({ ...errors, companyType: undefined });
                 }}
                 required
-                className={`w-full p-2 border rounded ${errors.companyType ? 'border-red-500' : ''}`}
+                className={`mt-1 w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary ${errors.companyType ? 'border-red-500' : ''
+                  }`}
                 disabled={isSubmitting}
               >
                 <option value="">{t('interactiveCard.companyTypeSelect')}</option>
@@ -228,61 +242,31 @@ export function Client({ initialCompanyTypes }: Props) {
             </div>
 
             {submitError && (
-              <div className="text-red-500 text-sm">
+              <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg">
                 {submitError}
               </div>
             )}
 
+            {/* Next Steps List */}
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-center">
+                <span className="mr-2">•</span>
+                {t('nextStepsList.required')}
+              </li>
+              <li className="flex items-center">
+                <span className="mr-2">•</span>
+                {t('nextStepsList.confidential')}
+              </li>
+            </ul>
+
             <Button
               type="submit"
-              className="w-full"
+              className="w-full py-3 text-lg font-semibold"
               disabled={isSubmitting}
             >
               {isSubmitting ? t('form.submitting') : t('interactiveCard.submitButton')}
             </Button>
           </form>
-        </CardContent>
-      </Card>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{t('contextCard.title')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p>{t('contextCard.description')}</p>
-
-            {/* Current Goal */}
-            <div className="mt-4">
-              <h3 className="font-medium text-gray-900">{t('goal.title')}</h3>
-              <p className="mt-1 text-gray-600">
-                {goal.goal || t('goal.empty')}
-              </p>
-            </div>
-
-            {/* Next Steps */}
-            <div className="mt-6">
-              <h3 className="font-medium text-gray-900">{t('nextStepsList.title')}</h3>
-              <ul className="mt-2 space-y-2">
-                <li className="flex items-center text-sm text-gray-600">
-                  <span className="mr-2">•</span>
-                  {t('nextStepsList.details')}
-                </li>
-                <li className="flex items-center text-sm text-gray-600">
-                  <span className="mr-2">•</span>
-                  {t('nextStepsList.required')}
-                </li>
-                <li className="flex items-center text-sm text-gray-600">
-                  <span className="mr-2">•</span>
-                  {t('nextStepsList.confidential')}
-                </li>
-                <li className="flex items-center text-sm text-gray-600">
-                  <span className="mr-2">•</span>
-                  {t('nextStepsList.proceed')}
-                </li>
-              </ul>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

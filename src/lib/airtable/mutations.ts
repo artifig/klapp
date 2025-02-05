@@ -44,7 +44,7 @@ export interface AssessmentResponse {
 
 const CURRENT_CONTENT_VERSION = '1.0';
 
-export async function createResponse(input: CreateResponseInput): Promise<MutationResult<{ responseId: string }>> {
+export async function createResponse(input: CreateResponseInput): Promise<MutationResult<{ responseId: string; recordId: string }>> {
   try {
     const fullInput = {
       ...input,
@@ -80,7 +80,8 @@ export async function createResponse(input: CreateResponseInput): Promise<Mutati
     return {
       success: true,
       data: {
-        responseId: responseId as string
+        responseId: responseId as string,
+        recordId: record.id
       }
     };
   } catch (error: unknown) {
@@ -110,7 +111,7 @@ export async function updateCompanyDetails(
       contactName: input.contactName,
       contactEmail: input.contactEmail,
       companyName: input.companyName,
-      MethodCompanyTypes: input.companyType,
+      MethodCompanyTypes: [input.companyType],
       responseStatus: 'In Progress'
     } as Partial<FieldSet>);
 

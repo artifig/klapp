@@ -42,7 +42,11 @@ export function HomeClient() {
         return;
       }
 
-      setGoal({ goal, responseId: result.data.responseId });
+      setGoal({
+        goal,
+        responseId: result.data.responseId,
+        recordId: result.data.recordId
+      });
       router.push('/setup');
     } catch (error) {
       console.error('Error submitting goal:', error);

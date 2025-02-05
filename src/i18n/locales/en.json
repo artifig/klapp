@@ -96,18 +96,25 @@
       "error": "Failed to save"
     },
     "nextStepsList": {
+      "title": "Next Steps",
       "details": "Fill in your company details",
       "required": "All fields are required",
       "confidential": "Your data will be treated confidentially",
       "proceed": "After entering your data, you can proceed with the assessment"
     },
     "goal": {
+      "title": "Your Goal",
       "empty": "Goal not yet set"
+    },
+    "form": {
+      "submitting": "Saving data..."
     }
   },
   "assessment": {
     "title": "AI Readiness Assessment",
-    "progress": "Progress",
+    "progress": {
+      "title": "Progress"
+    },
     "previousQuestion": "Previous Question",
     "nextQuestion": "Next Question",
     "completeAllQuestions": "Please answer all questions before proceeding",
@@ -153,6 +160,7 @@
       "yellow": "Medium",
       "green": "High"
     },
+    "questions": "questions",
     "downloadReport": "Download Report",
     "exportPDF": "Export PDF",
     "exporting": "Exporting...",
