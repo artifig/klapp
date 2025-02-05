@@ -11,7 +11,13 @@ export default function LanguageSwitcher() {
 
   const switchLocale = () => {
     const newLocale = locale === 'et' ? 'en' : 'et';
-    router.replace(pathname, { locale: newLocale });
+    let newPathname;
+    if (pathname.startsWith('/et') || pathname.startsWith('/en')) {
+      newPathname = pathname.replace(`/${locale}`, `/${newLocale}`);
+    } else {
+      newPathname = `/${newLocale}${pathname}`;
+    }
+    router.replace(newPathname, { locale: newLocale });
   };
 
   return (

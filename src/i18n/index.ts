@@ -1,6 +1,6 @@
-import {notFound} from 'next/navigation';
-import {getRequestConfig} from 'next-intl/server';
-import {locales, defaultLocale, type Locale} from './config';
+import { notFound } from 'next/navigation';
+import { getRequestConfig } from 'next-intl/server';
+import { locales, defaultLocale, type Locale } from './config';
 
 export async function getMessages(locale: string) {
   try {
@@ -10,11 +10,8 @@ export async function getMessages(locale: string) {
   }
 }
 
-export default getRequestConfig(async ({requestLocale}) => {
-  // Get the locale from the request
+export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale;
-
-  // Ensure that the incoming locale is valid
   if (!locale || !locales.includes(locale as Locale)) {
     locale = defaultLocale;
   }

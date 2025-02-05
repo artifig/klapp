@@ -32,11 +32,9 @@ export default async function LocaleLayout({
   children,
   params
 }: LocaleLayoutProps) {
-  // Await the params object before destructuring
   const resolvedParams = await params;
   const { locale } = resolvedParams;
 
-  // Enable static rendering
   unstable_setRequestLocale(locale);
 
   // Get messages for the current locale
