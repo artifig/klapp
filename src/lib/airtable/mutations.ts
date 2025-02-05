@@ -1,43 +1,76 @@
+'use server';
+
 import { airtableBase, TABLES } from './config';
 import { AirtableError } from './types';
-import type { AssessmentResponse } from './types';
+import type { FieldSet } from 'airtable';
 
+// Only the fields we need for initial creation
 export interface CreateResponseInput {
+  initialGoal: string;
+  responseContent: string;
+  responseStatus: 'New' | 'In Progress' | 'Completed';
+  isActive: boolean;
+}
+
+// Fields for updating company details
+export interface UpdateCompanyDetailsInput {
   contactName: string;
   contactEmail: string;
   companyName: string;
   companyType: string;
-  initialGoal: string;
-  content: string;
 }
 
-export async function createResponse(input: CreateResponseInput): Promise<AssessmentResponse> {
+// Response type with only the fields we need
+export interface AssessmentResponse {
+  id: string;
+  responseId: string;
+  initialGoal: string;
+  status: 'New' | 'In Progress' | 'Completed';
+  isActive: boolean;
+}
+
+export async function createResponse(input: CreateResponseInput): Promise<{ success: boolean; responseId?: string; error?: string }> {
   try {
-    // For initial creation, we only send the goal and content
+    console.log('Creating Airtable record with input:', input);
+
     const record = await airtableBase(TABLES.RESPONSES).create({
-      initialGoal: input.initialGoal,
-      responseContent: input.content,
-      responseStatus: 'New',
-      isActive: true
-    });
+      ...input
+    } as Partial<FieldSet>);
+
+    console.log('Airtable record created:', record);
+
+    if (!record || typeof record.get !== 'function') {
+      throw new Error('Invalid response from Airtable');
+    }
 
     return {
-      id: record.id,
-      responseId: record.get('responseId') as string,
-      contactName: record.get('contactName') as string,
-      contactEmail: record.get('contactEmail') as string,
-      companyName: record.get('companyName') as string,
-      companyType: record.get('MethodCompanyTypes') as string,
-      initialGoal: record.get('initialGoal') as string,
-      status: record.get('responseStatus') as 'New' | 'In Progress' | 'Completed',
-      content: record.get('responseContent') as string,
-      createdAt: record.get('Created time') as string,
-      updatedAt: record.get('Last modified time') as string,
-      isActive: record.get('isActive') as boolean
+      success: true,
+      responseId: record.get('responseId') as string
     };
   } catch (error: unknown) {
-    console.error('Error creating response:', error);
-    throw new AirtableError('Failed to create response', 'CREATE_RESPONSE_ERROR');
+    console.error('Error creating response in Airtable:', error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: 'Failed to create response' };
+  }
+}
+
+export async function updateCompanyDetails(
+  responseId: string,
+  input: UpdateCompanyDetailsInput
+): Promise<void> {
+  try {
+    await airtableBase(TABLES.RESPONSES).update(responseId, {
+      contactName: input.contactName,
+      contactEmail: input.contactEmail,
+      companyName: input.companyName,
+      MethodCompanyTypes: input.companyType,
+      responseStatus: 'In Progress'
+    } as Partial<FieldSet>);
+  } catch (error: unknown) {
+    console.error('Error updating company details:', error);
+    throw new AirtableError('Failed to update company details', 'UPDATE_COMPANY_DETAILS_ERROR');
   }
 }
 
@@ -48,8 +81,7 @@ export async function updateResponseStatus(
   try {
     await airtableBase(TABLES.RESPONSES).update(responseId, {
       responseStatus: status,
-      // Last modified time is updated automatically by Airtable
-    });
+    } as Partial<FieldSet>);
   } catch (error: unknown) {
     console.error('Error updating response status:', error);
     throw new AirtableError('Failed to update response status', 'UPDATE_RESPONSE_STATUS_ERROR');

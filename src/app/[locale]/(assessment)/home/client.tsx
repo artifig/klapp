@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useAssessment } from '@/state';
 import { useState, useEffect } from 'react';
-import { createInitialResponse } from '@/lib/actions';
+import { createResponse } from '@/lib/airtable/mutations';
 import { useSearchParams } from 'next/navigation';
 
 export function HomeClient() {
@@ -31,7 +31,15 @@ export function HomeClient() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const result = await createInitialResponse(goal);
+      console.log('Creating initial response with goal:', goal);
+      const result = await createResponse({
+        initialGoal: goal,
+        responseContent: JSON.stringify({ answers: {} }),
+        responseStatus: 'New',
+        isActive: true
+      });
+      console.log('Create response result:', result);
+
       if (!result.success || !result.responseId) {
         setError(result.error || 'Failed to create assessment');
         return;
@@ -41,7 +49,7 @@ export function HomeClient() {
       router.push('/setup');
     } catch (error) {
       console.error('Error submitting goal:', error);
-      setError('An unexpected error occurred');
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }

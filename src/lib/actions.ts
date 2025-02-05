@@ -1,8 +1,8 @@
 'use server';
 
 import { getCompanyTypes, getCategories, getAnswers, getQuestions } from './airtable/queries';
-import { createResponse, updateResponseStatus } from './airtable/mutations';
-import type { CreateResponseInput } from './airtable/mutations';
+import { updateCompanyDetails, updateResponseStatus } from './airtable/mutations';
+import type { UpdateCompanyDetailsInput } from './airtable/mutations';
 
 export async function fetchInitialData() {
   try {
@@ -32,43 +32,28 @@ export async function fetchAssessmentData(companyTypeId: string) {
   }
 }
 
-export async function submitAssessment(input: CreateResponseInput) {
+export async function updateCompanyInfo(responseId: string, input: UpdateCompanyDetailsInput) {
   try {
-    const response = await createResponse(input);
-    return response;
-  } catch (error: unknown) {
-    console.error('Error submitting assessment:', error);
-    throw new Error('Failed to submit assessment');
-  }
-}
-
-export async function updateAssessmentStatus(
-  responseId: string,
-  status: 'In Progress' | 'Completed'
-) {
-  try {
-    await updateResponseStatus(responseId, status);
-  } catch (error: unknown) {
-    console.error('Error updating assessment status:', error);
-    throw new Error('Failed to update assessment status');
-  }
-}
-
-export async function createInitialResponse(goal: string) {
-  try {
-    const input: CreateResponseInput = {
-      contactName: '', // Will be updated in setup
-      contactEmail: '', // Will be updated in setup
-      companyName: '', // Will be updated in setup
-      companyType: '', // Will be updated in setup
-      initialGoal: goal,
-      content: JSON.stringify({ answers: {} }) // Initial empty answers
-    };
-
-    const response = await createResponse(input);
-    return { success: true, responseId: response.responseId };
+    await updateCompanyDetails(responseId, input);
+    return { success: true };
   } catch (error) {
-    console.error('Error creating initial response:', error);
-    return { success: false, error: 'Failed to create assessment response' };
+    console.error('Error updating company details:', error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: 'Failed to update company details' };
+  }
+}
+
+export async function completeAssessment(responseId: string) {
+  try {
+    await updateResponseStatus(responseId, 'Completed');
+    return { success: true };
+  } catch (error) {
+    console.error('Error completing assessment:', error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: 'Failed to complete assessment' };
   }
 } 
