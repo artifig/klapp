@@ -1,4 +1,5 @@
 import Airtable from 'airtable';
+import { FieldSet } from 'airtable/lib/field_set';
 
 // Initialize Airtable with Personal Access Token
 const base = new Airtable({
@@ -68,6 +69,67 @@ export interface MethodExampleSolution {
   exampleSolutionText_et: string;
   exampleSolutionDescription_et: string;
   isActive: boolean;
+}
+
+// Cache for active records
+let recommendationsCache: {
+  timestamp: number;
+  records: Airtable.Records<FieldSet>;
+} | null = null;
+
+let solutionsCache: {
+  timestamp: number;
+  records: Airtable.Records<FieldSet>;
+} | null = null;
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+async function getActiveRecommendations(): Promise<Airtable.Records<FieldSet>> {
+  // Return cached data if it's fresh
+  if (recommendationsCache && (Date.now() - recommendationsCache.timestamp) < CACHE_TTL) {
+    console.log('Using cached recommendations');
+    return recommendationsCache.records;
+  }
+
+  console.log('Fetching fresh recommendations from Airtable');
+  const records = await base('MethodRecommendations')
+    .select({
+      filterByFormula: '{isActive} = 1',
+      fields: ['recommendationText_et', 'recommendationDescription_et', 'isActive', 'MethodCategories', 'MethodMaturityLevels', 'MethodCompanyTypes']
+    })
+    .all();
+
+  // Update cache
+  recommendationsCache = {
+    timestamp: Date.now(),
+    records
+  };
+
+  return records;
+}
+
+async function getActiveSolutions(): Promise<Airtable.Records<FieldSet>> {
+  // Return cached data if it's fresh
+  if (solutionsCache && (Date.now() - solutionsCache.timestamp) < CACHE_TTL) {
+    console.log('Using cached solutions');
+    return solutionsCache.records;
+  }
+
+  console.log('Fetching fresh solutions from Airtable');
+  const records = await base('MethodExampleSolutions')
+    .select({
+      filterByFormula: '{isActive} = 1',
+      fields: ['exampleSolutionText_et', 'exampleSolutionDescription_et', 'isActive', 'MethodCategories', 'MethodMaturityLevels', 'MethodCompanyTypes']
+    })
+    .all();
+
+  // Update cache
+  solutionsCache = {
+    timestamp: Date.now(),
+    records
+  };
+
+  return records;
 }
 
 // Utility functions
@@ -408,18 +470,13 @@ export async function getRecommendationsForCategory(categoryId: string, scoreLev
 
     console.log('Using maturity level ID:', levelId);
 
-    // First get all active recommendations
-    const allRecords = await base('MethodRecommendations')
-      .select({
-        filterByFormula: '{isActive} = 1',
-        fields: ['recommendationText_et', 'recommendationDescription_et', 'isActive', 'MethodCategories', 'MethodMaturityLevels', 'MethodCompanyTypes']
-      })
-      .all();
+    // Get records from cache or Airtable
+    const allRecords = await getActiveRecommendations();
 
     console.log('Total active recommendations:', allRecords.length);
 
-    // Filter records manually to debug the matching logic
-    const filteredRecords = allRecords.filter(record => {
+    // Filter records manually
+    const filteredRecords = allRecords.filter((record: Airtable.Record<FieldSet>) => {
       const categories = record.get('MethodCategories') as string[] || [];
       const maturityLevels = record.get('MethodMaturityLevels') as string[] || [];
       const companyTypes = record.get('MethodCompanyTypes') as string[] || [];
@@ -428,37 +485,12 @@ export async function getRecommendationsForCategory(categoryId: string, scoreLev
       const hasLevel = maturityLevels.includes(levelId);
       const hasCompanyType = companyTypes.length === 0 || companyTypes.includes(companyTypeId);
 
-      // Log details for the first few records to understand the matching
-      if (record.id.startsWith('rec0')) {
-        console.log('Checking record:', {
-          id: record.id,
-          text: record.get('recommendationText_et'),
-          categories,
-          maturityLevels,
-          companyTypes,
-          matches: {
-            category: hasCategory,
-            level: hasLevel,
-            companyType: hasCompanyType
-          }
-        });
-      }
-
       return hasCategory && hasLevel && hasCompanyType;
     });
 
     console.log('Found recommendations after filtering:', filteredRecords.length);
-    if (filteredRecords.length > 0) {
-      console.log('First matching recommendation:', {
-        id: filteredRecords[0].id,
-        text: filteredRecords[0].get('recommendationText_et'),
-        categories: filteredRecords[0].get('MethodCategories'),
-        maturityLevels: filteredRecords[0].get('MethodMaturityLevels'),
-        companyTypes: filteredRecords[0].get('MethodCompanyTypes')
-      });
-    }
 
-    return filteredRecords.map(record => ({
+    return filteredRecords.map((record: Airtable.Record<FieldSet>) => ({
       id: record.id,
       recommendationText_et: record.get('recommendationText_et') as string,
       recommendationDescription_et: record.get('recommendationDescription_et') as string,
@@ -484,18 +516,13 @@ export async function getExampleSolutionsForCategory(categoryId: string, scoreLe
 
     console.log('Using maturity level ID:', levelId);
 
-    // First get all active solutions
-    const allRecords = await base('MethodExampleSolutions')
-      .select({
-        filterByFormula: '{isActive} = 1',
-        fields: ['exampleSolutionText_et', 'exampleSolutionDescription_et', 'isActive', 'MethodCategories', 'MethodMaturityLevels', 'MethodCompanyTypes']
-      })
-      .all();
+    // Get records from cache or Airtable
+    const allRecords = await getActiveSolutions();
 
     console.log('Total active solutions:', allRecords.length);
 
-    // Filter records manually to debug the matching logic
-    const filteredRecords = allRecords.filter(record => {
+    // Filter records manually
+    const filteredRecords = allRecords.filter((record: Airtable.Record<FieldSet>) => {
       const categories = record.get('MethodCategories') as string[] || [];
       const maturityLevels = record.get('MethodMaturityLevels') as string[] || [];
       const companyTypes = record.get('MethodCompanyTypes') as string[] || [];
@@ -504,37 +531,12 @@ export async function getExampleSolutionsForCategory(categoryId: string, scoreLe
       const hasLevel = maturityLevels.includes(levelId);
       const hasCompanyType = companyTypes.length === 0 || companyTypes.includes(companyTypeId);
 
-      // Log details for the first few records to understand the matching
-      if (record.id.startsWith('rec0')) {
-        console.log('Checking solution:', {
-          id: record.id,
-          text: record.get('exampleSolutionText_et'),
-          categories,
-          maturityLevels,
-          companyTypes,
-          matches: {
-            category: hasCategory,
-            level: hasLevel,
-            companyType: hasCompanyType
-          }
-        });
-      }
-
       return hasCategory && hasLevel && hasCompanyType;
     });
 
     console.log('Found solutions after filtering:', filteredRecords.length);
-    if (filteredRecords.length > 0) {
-      console.log('First matching solution:', {
-        id: filteredRecords[0].id,
-        text: filteredRecords[0].get('exampleSolutionText_et'),
-        categories: filteredRecords[0].get('MethodCategories'),
-        maturityLevels: filteredRecords[0].get('MethodMaturityLevels'),
-        companyTypes: filteredRecords[0].get('MethodCompanyTypes')
-      });
-    }
 
-    return filteredRecords.map(record => ({
+    return filteredRecords.map((record: Airtable.Record<FieldSet>) => ({
       id: record.id,
       exampleSolutionText_et: record.get('exampleSolutionText_et') as string,
       exampleSolutionDescription_et: record.get('exampleSolutionDescription_et') as string,
