@@ -549,3 +549,160 @@ export async function getExampleSolutionsForCategory(categoryId: string, scoreLe
     throw error;
   }
 }
+
+// New interfaces for SolutionProviders
+interface AirtableThumbnail {
+  url: string;
+  width: number;
+  height: number;
+}
+
+interface AirtableAttachment {
+  id: string;
+  width: number;
+  height: number;
+  url: string;
+  filename: string;
+  size: number;
+  type: string;
+  thumbnails: {
+    small: AirtableThumbnail;
+    large: AirtableThumbnail;
+    full: AirtableThumbnail;
+  };
+}
+
+export interface SolutionProvider {
+  id: string;
+  providerId: string;
+  providerName_et: string;
+  providerName_en: string;
+  providerDescription_et: string;
+  providerDescription_en: string;
+  providerContactName: string;
+  providerContactEmail: string;
+  providerUrl: string;
+  providerLogo?: AirtableAttachment[];
+  isActive: boolean;
+}
+
+// Utility function for handling provider logos
+const providerLogoToArray = (logo: unknown): AirtableAttachment[] => {
+  if (!logo || !Array.isArray(logo)) return [];
+  return logo.map((item) => ({
+    id: item.id,
+    width: item.width,
+    height: item.height,
+    url: item.url,
+    filename: item.filename,
+    size: item.size,
+    type: item.type,
+    thumbnails: {
+      small: {
+        url: item.thumbnails.small.url,
+        width: item.thumbnails.small.width,
+        height: item.thumbnails.small.height
+      },
+      large: {
+        url: item.thumbnails.large.url,
+        width: item.thumbnails.large.width,
+        height: item.thumbnails.large.height
+      },
+      full: {
+        url: item.thumbnails.full.url,
+        width: item.thumbnails.full.width,
+        height: item.thumbnails.full.height
+      }
+    }
+  }));
+};
+
+// New function to get providers for a recommendation
+export async function getProvidersForRecommendation(recommendationId: string): Promise<SolutionProvider[]> {
+  try {
+    console.log('Fetching providers for recommendation:', recommendationId);
+
+    // First get the recommendation to get its provider IDs
+    const recommendation = await base('MethodRecommendations').find(recommendationId);
+    const providerIds = recommendation.get('SolutionProviders') as string[] || [];
+
+    if (!providerIds.length) {
+      console.log('No providers found for recommendation');
+      return [];
+    }
+
+    // Then fetch those specific providers
+    const providers = await base('SolutionProviders')
+      .select({
+        filterByFormula: `AND(
+          OR(${providerIds.map(id => `RECORD_ID() = '${id}'`).join(',')}),
+          isActive = 1
+        )`
+      })
+      .all();
+
+    console.log('Found providers for recommendation:', providers.length);
+
+    return providers.map(provider => ({
+      id: provider.id,
+      providerId: provider.get('providerId') as string,
+      providerName_et: provider.get('providerName_et') as string,
+      providerName_en: provider.get('providerName_en') as string,
+      providerDescription_et: provider.get('providerDescription_et') as string,
+      providerDescription_en: provider.get('providerDescription_en') as string,
+      providerContactName: provider.get('providerContactName') as string,
+      providerContactEmail: provider.get('providerContactEmail') as string,
+      providerUrl: provider.get('providerUrl') as string,
+      providerLogo: providerLogoToArray(provider.get('providerLogo')),
+      isActive: provider.get('isActive') as boolean
+    }));
+  } catch (error) {
+    console.error('Error fetching providers for recommendation:', error);
+    throw error;
+  }
+}
+
+// New function to get providers for an example solution
+export async function getProvidersForExampleSolution(solutionId: string): Promise<SolutionProvider[]> {
+  try {
+    console.log('Fetching providers for example solution:', solutionId);
+
+    // First get the solution to get its provider IDs
+    const solution = await base('MethodExampleSolutions').find(solutionId);
+    const providerIds = solution.get('SolutionProviders') as string[] || [];
+
+    if (!providerIds.length) {
+      console.log('No providers found for example solution');
+      return [];
+    }
+
+    // Then fetch those specific providers
+    const providers = await base('SolutionProviders')
+      .select({
+        filterByFormula: `AND(
+          OR(${providerIds.map(id => `RECORD_ID() = '${id}'`).join(',')}),
+          isActive = 1
+        )`
+      })
+      .all();
+
+    console.log('Found providers for example solution:', providers.length);
+
+    return providers.map(provider => ({
+      id: provider.id,
+      providerId: provider.get('providerId') as string,
+      providerName_et: provider.get('providerName_et') as string,
+      providerName_en: provider.get('providerName_en') as string,
+      providerDescription_et: provider.get('providerDescription_et') as string,
+      providerDescription_en: provider.get('providerDescription_en') as string,
+      providerContactName: provider.get('providerContactName') as string,
+      providerContactEmail: provider.get('providerContactEmail') as string,
+      providerUrl: provider.get('providerUrl') as string,
+      providerLogo: providerLogoToArray(provider.get('providerLogo')),
+      isActive: provider.get('isActive') as boolean
+    }));
+  } catch (error) {
+    console.error('Error fetching providers for example solution:', error);
+    throw error;
+  }
+}

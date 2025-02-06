@@ -5,13 +5,17 @@ import {
   getAnswers,
   getRecommendationsForCategory,
   getExampleSolutionsForCategory,
+  getProvidersForRecommendation,
+  getProvidersForExampleSolution,
   type MethodCategory,
   type MethodQuestion,
   type MethodAnswer,
   type MethodRecommendation,
-  type MethodExampleSolution
+  type MethodExampleSolution,
+  type SolutionProvider
 } from "@/lib/airtable";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 
 interface AssessmentResponse {
   questionId: string;
@@ -24,8 +28,8 @@ interface CategoryScore extends MethodCategory {
   answeredCount: number;
   maturityLevel: string;
   maturityColor: 'red' | 'yellow' | 'green';
-  recommendations: MethodRecommendation[];
-  solutions: MethodExampleSolution[];
+  recommendations: (MethodRecommendation & { providers: SolutionProvider[] })[];
+  solutions: (MethodExampleSolution & { providers: SolutionProvider[] })[];
 }
 
 export default async function ResultsPage({
@@ -96,11 +100,40 @@ export default async function ResultsPage({
         scoreLevel = 'green';
       }
 
-      // Fetch recommendations and solutions
+      // Fetch recommendations and solutions with their providers
       const [recommendations, solutions] = await Promise.all([
         getRecommendationsForCategory(category.id, scoreLevel, companyType),
         getExampleSolutionsForCategory(category.id, scoreLevel, companyType)
       ]);
+
+      console.log('Fetching providers for recommendations and solutions in category:', category.categoryText_et);
+
+      // Fetch providers for each recommendation and solution
+      const recommendationsWithProviders = await Promise.all(
+        recommendations.map(async (rec) => {
+          console.log('Fetching providers for recommendation:', rec.recommendationText_et);
+          const providers = await getProvidersForRecommendation(rec.id);
+          console.log('Found providers for recommendation:', providers.length);
+          return {
+            ...rec,
+            providers
+          };
+        })
+      );
+
+      const solutionsWithProviders = await Promise.all(
+        solutions.map(async (sol) => {
+          console.log('Fetching providers for solution:', sol.exampleSolutionText_et);
+          const providers = await getProvidersForExampleSolution(sol.id);
+          console.log('Found providers for solution:', providers.length);
+          return {
+            ...sol,
+            providers
+          };
+        })
+      );
+
+      console.log('Finished fetching all providers for category:', category.categoryText_et);
 
       return {
         ...category,
@@ -109,8 +142,8 @@ export default async function ResultsPage({
         answeredCount: categoryResponses.length,
         maturityLevel,
         maturityColor,
-        recommendations,
-        solutions
+        recommendations: recommendationsWithProviders,
+        solutions: solutionsWithProviders
       };
     }));
 
@@ -171,12 +204,50 @@ export default async function ResultsPage({
               <div className="mt-6">
                 <h4 className="text-lg font-semibold mb-3">Soovitused</h4>
                 <div className="space-y-4">
-                  {category.recommendations.map((recommendation: MethodRecommendation) => (
+                  {category.recommendations.map((recommendation) => (
                     <div key={recommendation.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                       <h5 className="font-medium mb-2">{recommendation.recommendationText_et}</h5>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
                         {recommendation.recommendationDescription_et}
                       </p>
+                      {recommendation.providers.length > 0 && (
+                        <div className="mt-4 border-t pt-4">
+                          <h6 className="font-medium mb-2">Teenusepakkujad:</h6>
+                          <div className="grid gap-4 md:grid-cols-2">
+                            {recommendation.providers.map((provider) => (
+                              <div key={provider.id} className="flex items-start space-x-3 p-3 bg-white dark:bg-gray-700 rounded-lg">
+                                {provider.providerLogo?.[0] && (
+                                  <div className="flex-shrink-0">
+                                    <Image
+                                      src={provider.providerLogo[0].thumbnails.small.url}
+                                      alt={provider.providerName_et}
+                                      width={provider.providerLogo[0].thumbnails.small.width}
+                                      height={provider.providerLogo[0].thumbnails.small.height}
+                                      className="rounded-lg"
+                                    />
+                                  </div>
+                                )}
+                                <div>
+                                  <h6 className="font-medium">{provider.providerName_et}</h6>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    {provider.providerDescription_et}
+                                  </p>
+                                  <div className="text-sm">
+                                    <a
+                                      href={provider.providerUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                    >
+                                      Külasta veebilehte
+                                    </a>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -186,12 +257,50 @@ export default async function ResultsPage({
               <div className="mt-6">
                 <h4 className="text-lg font-semibold mb-3">Näidislahendused</h4>
                 <div className="grid gap-4 md:grid-cols-2">
-                  {category.solutions.map((solution: MethodExampleSolution) => (
+                  {category.solutions.map((solution) => (
                     <div key={solution.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                       <h5 className="font-medium mb-2">{solution.exampleSolutionText_et}</h5>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
                         {solution.exampleSolutionDescription_et}
                       </p>
+                      {solution.providers.length > 0 && (
+                        <div className="mt-4 border-t pt-4">
+                          <h6 className="font-medium mb-2">Teenusepakkujad:</h6>
+                          <div className="space-y-3">
+                            {solution.providers.map((provider) => (
+                              <div key={provider.id} className="flex items-start space-x-3 p-3 bg-white dark:bg-gray-700 rounded-lg">
+                                {provider.providerLogo?.[0] && (
+                                  <div className="flex-shrink-0">
+                                    <Image
+                                      src={provider.providerLogo[0].thumbnails.small.url}
+                                      alt={provider.providerName_et}
+                                      width={provider.providerLogo[0].thumbnails.small.width}
+                                      height={provider.providerLogo[0].thumbnails.small.height}
+                                      className="rounded-lg"
+                                    />
+                                  </div>
+                                )}
+                                <div>
+                                  <h6 className="font-medium">{provider.providerName_et}</h6>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    {provider.providerDescription_et}
+                                  </p>
+                                  <div className="text-sm">
+                                    <a
+                                      href={provider.providerUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                    >
+                                      Külasta veebilehte
+                                    </a>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
