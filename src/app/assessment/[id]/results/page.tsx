@@ -1,4 +1,11 @@
-import { getAssessmentResponse, getCategories, getQuestions, getAnswers } from "@/lib/airtable";
+import { 
+  getAssessmentResponse, 
+  getCategories, 
+  getQuestions, 
+  getAnswers,
+  getRecommendationsForCategory,
+  getExampleSolutionsForCategory
+} from "@/lib/airtable";
 import { redirect } from "next/navigation";
 
 interface PageProps {
@@ -33,8 +40,8 @@ export default async function ResultsPage({ params }: PageProps) {
     // Fetch all possible answers
     const answers = await getAnswers(questions.map(q => q.id));
 
-    // Calculate scores by category
-    const categoryScores = categories.map(category => {
+    // Calculate scores and fetch recommendations/solutions for each category
+    const categoryScores = await Promise.all(categories.map(async category => {
       // Get questions for this category
       const categoryQuestions = questions.filter(q => 
         q.MethodCategories.includes(category.id)
@@ -55,13 +62,42 @@ export default async function ResultsPage({ params }: PageProps) {
         ? Math.round(categoryResponses.reduce((a, b) => a + b, 0) / categoryResponses.length)
         : 0;
 
+      // Determine maturity level based on score
+      let maturityLevel = '';
+      let maturityColor = '';
+      let scoreLevel: 'red' | 'yellow' | 'green';
+      
+      if (averageScore < 40) {
+        maturityLevel = 'Punane';
+        maturityColor = 'red';
+        scoreLevel = 'red';
+      } else if (averageScore < 70) {
+        maturityLevel = 'Kollane';
+        maturityColor = 'yellow';
+        scoreLevel = 'yellow';
+      } else {
+        maturityLevel = 'Roheline';
+        maturityColor = 'green';
+        scoreLevel = 'green';
+      }
+
+      // Fetch recommendations and solutions
+      const [recommendations, solutions] = await Promise.all([
+        getRecommendationsForCategory(category.id, scoreLevel, companyType),
+        getExampleSolutionsForCategory(category.id, scoreLevel, companyType)
+      ]);
+
       return {
         ...category,
         score: averageScore,
         questionCount: categoryQuestions.length,
-        answeredCount: categoryResponses.length
+        answeredCount: categoryResponses.length,
+        maturityLevel,
+        maturityColor,
+        recommendations,
+        solutions
       };
-    });
+    }));
 
     return (
       <main className="container mx-auto px-4 py-8">
@@ -76,9 +112,10 @@ export default async function ResultsPage({ params }: PageProps) {
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-12">
           {categoryScores.map(category => (
             <div key={category.id} className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow">
+              {/* Category header */}
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-semibold">{category.categoryText_et}</h3>
@@ -93,14 +130,56 @@ export default async function ResultsPage({ params }: PageProps) {
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     Vastatud: {category.answeredCount}/{category.questionCount}
                   </div>
+                  <div className={`text-sm mt-1 font-medium ${
+                    category.maturityColor === 'red' ? 'text-red-600' :
+                    category.maturityColor === 'yellow' ? 'text-yellow-600' :
+                    'text-green-600'
+                  }`}>
+                    {category.maturityLevel} tase
+                  </div>
                 </div>
               </div>
               
-              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+              {/* Progress bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-6">
                 <div
-                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                  className={`h-2.5 rounded-full transition-all duration-500 ${
+                    category.maturityColor === 'red' ? 'bg-red-600' :
+                    category.maturityColor === 'yellow' ? 'bg-yellow-600' :
+                    'bg-green-600'
+                  }`}
                   style={{ width: `${category.score}%` }}
                 />
+              </div>
+
+              {/* Recommendations section */}
+              <div className="mt-6">
+                <h4 className="text-lg font-semibold mb-3">Soovitused</h4>
+                <div className="space-y-4">
+                  {category.recommendations.map(recommendation => (
+                    <div key={recommendation.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <h5 className="font-medium mb-2">{recommendation.recommendationText_et}</h5>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">
+                        {recommendation.recommendationDescription_et}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Example solutions section */}
+              <div className="mt-6">
+                <h4 className="text-lg font-semibold mb-3">Näidislahendused</h4>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {category.solutions.map(solution => (
+                    <div key={solution.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <h5 className="font-medium mb-2">{solution.exampleSolutionText_et}</h5>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">
+                        {solution.exampleSolutionDescription_et}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ))}

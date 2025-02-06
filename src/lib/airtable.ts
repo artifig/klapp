@@ -56,6 +56,20 @@ export interface AssessmentResponse {
   MethodCompanyTypes: string[];
 }
 
+export interface MethodRecommendation {
+  id: string;
+  recommendationText_et: string;
+  recommendationDescription_et: string;
+  isActive: boolean;
+}
+
+export interface MethodExampleSolution {
+  id: string;
+  exampleSolutionText_et: string;
+  exampleSolutionDescription_et: string;
+  isActive: boolean;
+}
+
 // Utility functions
 export async function getActiveCompanyTypes(): Promise<MethodCompanyType[]> {
   try {
@@ -274,16 +288,100 @@ export async function createAssessmentResponse(data: {
   }
 }
 
-export async function getAssessmentResponse(id: string): Promise<AssessmentResponse | null> {
+export async function getRecommendations(categoryScores: { [categoryId: string]: number }): Promise<MethodRecommendation[]> {
   try {
-    const record = await base('AssessmentResponses').find(id);
+    // Convert scores to levels
+    const categoryLevels = Object.entries(categoryScores).map(([categoryId, score]) => {
+      const level = score < 0.4 ? 'rec44BVnTt9fg41wM' : // red
+                   score < 0.7 ? 'reckoGCddbcKvlJx5' : // yellow
+                   'recLcsenKbLdVL4Ku'; // green
+      return { categoryId, levelId: level };
+    });
+
+    // Create a formula to match any category-level combination
+    const formula = `
+      AND(
+        {isActive} = 1,
+        OR(${categoryLevels.map(({ categoryId, levelId }) => `
+          AND(
+            FIND('${categoryId}', ARRAYJOIN({MethodCategories})) > 0,
+            FIND('${levelId}', ARRAYJOIN({MethodSolutionLevels})) > 0
+          )
+        `).join(',')})
+      )
+    `;
+
+    const records = await base('MethodRecommendations')
+      .select({
+        filterByFormula: formula,
+        fields: ['recommendationText_et', 'recommendationDescription_et', 'isActive', 'MethodCategories', 'MethodSolutionLevels']
+      })
+      .all();
+
+    return records.map(record => ({
+      id: record.id,
+      recommendationText_et: record.get('recommendationText_et') as string,
+      recommendationDescription_et: record.get('recommendationDescription_et') as string,
+      isActive: record.get('isActive') as boolean
+    }));
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    throw error;
+  }
+}
+
+export async function getExampleSolutions(categoryScores: { [categoryId: string]: number }): Promise<MethodExampleSolution[]> {
+  try {
+    // Convert scores to levels
+    const categoryLevels = Object.entries(categoryScores).map(([categoryId, score]) => {
+      const level = score < 0.4 ? 'rec44BVnTt9fg41wM' : // red
+                   score < 0.7 ? 'reckoGCddbcKvlJx5' : // yellow
+                   'recLcsenKbLdVL4Ku'; // green
+      return { categoryId, levelId: level };
+    });
+
+    // Create a formula to match any category-level combination
+    const formula = `
+      AND(
+        {isActive} = 1,
+        OR(${categoryLevels.map(({ categoryId, levelId }) => `
+          AND(
+            FIND('${categoryId}', ARRAYJOIN({MethodCategories})) > 0,
+            FIND('${levelId}', ARRAYJOIN({MethodSolutionLevels})) > 0
+          )
+        `).join(',')})
+      )
+    `;
+
+    const records = await base('MethodExampleSolutions')
+      .select({
+        filterByFormula: formula,
+        fields: ['exampleSolutionText_et', 'exampleSolutionDescription_et', 'isActive', 'MethodCategories', 'MethodSolutionLevels']
+      })
+      .all();
+
+    return records.map(record => ({
+      id: record.id,
+      exampleSolutionText_et: record.get('exampleSolutionText_et') as string,
+      exampleSolutionDescription_et: record.get('exampleSolutionDescription_et') as string,
+      isActive: record.get('isActive') as boolean
+    }));
+  } catch (error) {
+    console.error('Error fetching example solutions:', error);
+    throw error;
+  }
+}
+
+export async function getAssessmentResponse(responseId: string): Promise<AssessmentResponse | null> {
+  try {
+    const record = await base('AssessmentResponses').find(responseId);
     
     return {
       id: record.id,
       responseId: record.get('responseId') as string,
-      companyName: record.get('companyName') as string | undefined,
-      contactName: record.get('contactName') as string | undefined,
-      contactEmail: record.get('contactEmail') as string | undefined,
+      companyName: record.get('companyName') as string,
+      contactName: record.get('contactName') as string,
+      contactEmail: record.get('contactEmail') as string,
       initialGoal: record.get('initialGoal') as string,
       responseContent: record.get('responseContent') as string,
       responseStatus: record.get('responseStatus') as 'New' | 'In Progress' | 'Completed',
@@ -294,4 +392,156 @@ export async function getAssessmentResponse(id: string): Promise<AssessmentRespo
     console.error('Error fetching assessment response:', error);
     return null;
   }
-} 
+}
+
+export async function getRecommendationsForCategory(categoryId: string, scoreLevel: 'red' | 'yellow' | 'green', companyTypeId: string): Promise<MethodRecommendation[]> {
+  try {
+    console.log('Fetching recommendations with params:', {
+      categoryId,
+      scoreLevel,
+      companyTypeId
+    });
+
+    const levelId = scoreLevel === 'red' ? 'rec44BVnTt9fg41wM' : 
+                   scoreLevel === 'yellow' ? 'reckoGCddbcKvlJx5' : 
+                   'recLcsenKbLdVL4Ku';
+
+    console.log('Using maturity level ID:', levelId);
+
+    // First get all active recommendations
+    const allRecords = await base('MethodRecommendations')
+      .select({
+        filterByFormula: '{isActive} = 1',
+        fields: ['recommendationText_et', 'recommendationDescription_et', 'isActive', 'MethodCategories', 'MethodMaturityLevels', 'MethodCompanyTypes']
+      })
+      .all();
+
+    console.log('Total active recommendations:', allRecords.length);
+
+    // Filter records manually to debug the matching logic
+    const filteredRecords = allRecords.filter(record => {
+      const categories = record.get('MethodCategories') as string[] || [];
+      const maturityLevels = record.get('MethodMaturityLevels') as string[] || [];
+      const companyTypes = record.get('MethodCompanyTypes') as string[] || [];
+
+      const hasCategory = categories.includes(categoryId);
+      const hasLevel = maturityLevels.includes(levelId);
+      const hasCompanyType = companyTypes.length === 0 || companyTypes.includes(companyTypeId);
+
+      // Log details for the first few records to understand the matching
+      if (record.id.startsWith('rec0')) {
+        console.log('Checking record:', {
+          id: record.id,
+          text: record.get('recommendationText_et'),
+          categories,
+          maturityLevels,
+          companyTypes,
+          matches: {
+            category: hasCategory,
+            level: hasLevel,
+            companyType: hasCompanyType
+          }
+        });
+      }
+
+      return hasCategory && hasLevel && hasCompanyType;
+    });
+
+    console.log('Found recommendations after filtering:', filteredRecords.length);
+    if (filteredRecords.length > 0) {
+      console.log('First matching recommendation:', {
+        id: filteredRecords[0].id,
+        text: filteredRecords[0].get('recommendationText_et'),
+        categories: filteredRecords[0].get('MethodCategories'),
+        maturityLevels: filteredRecords[0].get('MethodMaturityLevels'),
+        companyTypes: filteredRecords[0].get('MethodCompanyTypes')
+      });
+    }
+
+    return filteredRecords.map(record => ({
+      id: record.id,
+      recommendationText_et: record.get('recommendationText_et') as string,
+      recommendationDescription_et: record.get('recommendationDescription_et') as string,
+      isActive: record.get('isActive') as boolean
+    }));
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    throw error;
+  }
+}
+
+export async function getExampleSolutionsForCategory(categoryId: string, scoreLevel: 'red' | 'yellow' | 'green', companyTypeId: string): Promise<MethodExampleSolution[]> {
+  try {
+    console.log('Fetching solutions with params:', {
+      categoryId,
+      scoreLevel,
+      companyTypeId
+    });
+
+    const levelId = scoreLevel === 'red' ? 'rec44BVnTt9fg41wM' : 
+                   scoreLevel === 'yellow' ? 'reckoGCddbcKvlJx5' : 
+                   'recLcsenKbLdVL4Ku';
+
+    console.log('Using maturity level ID:', levelId);
+
+    // First get all active solutions
+    const allRecords = await base('MethodExampleSolutions')
+      .select({
+        filterByFormula: '{isActive} = 1',
+        fields: ['exampleSolutionText_et', 'exampleSolutionDescription_et', 'isActive', 'MethodCategories', 'MethodMaturityLevels', 'MethodCompanyTypes']
+      })
+      .all();
+
+    console.log('Total active solutions:', allRecords.length);
+
+    // Filter records manually to debug the matching logic
+    const filteredRecords = allRecords.filter(record => {
+      const categories = record.get('MethodCategories') as string[] || [];
+      const maturityLevels = record.get('MethodMaturityLevels') as string[] || [];
+      const companyTypes = record.get('MethodCompanyTypes') as string[] || [];
+
+      const hasCategory = categories.includes(categoryId);
+      const hasLevel = maturityLevels.includes(levelId);
+      const hasCompanyType = companyTypes.length === 0 || companyTypes.includes(companyTypeId);
+
+      // Log details for the first few records to understand the matching
+      if (record.id.startsWith('rec0')) {
+        console.log('Checking solution:', {
+          id: record.id,
+          text: record.get('exampleSolutionText_et'),
+          categories,
+          maturityLevels,
+          companyTypes,
+          matches: {
+            category: hasCategory,
+            level: hasLevel,
+            companyType: hasCompanyType
+          }
+        });
+      }
+
+      return hasCategory && hasLevel && hasCompanyType;
+    });
+
+    console.log('Found solutions after filtering:', filteredRecords.length);
+    if (filteredRecords.length > 0) {
+      console.log('First matching solution:', {
+        id: filteredRecords[0].id,
+        text: filteredRecords[0].get('exampleSolutionText_et'),
+        categories: filteredRecords[0].get('MethodCategories'),
+        maturityLevels: filteredRecords[0].get('MethodMaturityLevels'),
+        companyTypes: filteredRecords[0].get('MethodCompanyTypes')
+      });
+    }
+
+    return filteredRecords.map(record => ({
+      id: record.id,
+      exampleSolutionText_et: record.get('exampleSolutionText_et') as string,
+      exampleSolutionDescription_et: record.get('exampleSolutionDescription_et') as string,
+      isActive: record.get('isActive') as boolean
+    }));
+  } catch (error) {
+    console.error('Error fetching example solutions:', error);
+    throw error;
+  }
+}
