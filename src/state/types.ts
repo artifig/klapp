@@ -75,6 +75,17 @@ export interface ReferenceDataState {
   methodAnswers: Answer[];
 }
 
+// Add validation types
+export interface ValidationError {
+  field: string;
+  message: string;
+}
+
+export interface StateValidation {
+  isValid: boolean;
+  errors: ValidationError[];
+}
+
 // Combined State
 export interface AssessmentState {
   navigation: NavigationState;
@@ -82,6 +93,8 @@ export interface AssessmentState {
   assessment: AssessmentProgressState;
   reference: ReferenceDataState;
   version: string;
+  validation?: StateValidation;
+  lastValidated?: string;
 }
 
 // Action Types
@@ -100,4 +113,6 @@ export type AssessmentAction =
   | { type: 'RESET_FORMS' }
   | { type: 'RESET_PROGRESS' }
   | { type: 'LOAD_STATE'; payload: AssessmentState }
-  | { type: 'SET_REFERENCE'; payload: Partial<ReferenceDataState> }; 
+  | { type: 'SET_REFERENCE'; payload: Partial<ReferenceDataState> }
+  | { type: 'VALIDATE_STATE'; payload: StateValidation }
+  | { type: 'RECOVER_STATE'; payload: Partial<AssessmentState> }; 

@@ -55,6 +55,55 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   );
 }
 
+function useSyncedState() {
+  const { state, dispatch } = useContext(AssessmentContext)!;
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
+
+  // Debounced save to localStorage
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!isSyncing) {
+        persistenceManager.save(state);
+        setLastSynced(new Date());
+      }
+    }, 1000); // Debounce for 1 second
+
+    return () => clearTimeout(timeoutId);
+  }, [state, isSyncing]);
+
+  // Load state from localStorage
+  const loadState = useCallback(() => {
+    setIsSyncing(true);
+    try {
+      const savedState = persistenceManager.load();
+      if (savedState) {
+        dispatch({ type: 'LOAD_STATE', payload: savedState });
+      }
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [dispatch]);
+
+  // Reset both in-memory and persisted state
+  const resetState = useCallback(() => {
+    setIsSyncing(true);
+    try {
+      persistenceManager.clear();
+      dispatch({ type: 'RESET_STATE' });
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [dispatch]);
+
+  return {
+    isSyncing,
+    lastSynced,
+    loadState,
+    resetState
+  };
+}
+
 export function useAssessment() {
   const context = useContext(AssessmentContext);
   if (!context) {
@@ -62,6 +111,7 @@ export function useAssessment() {
   }
 
   const { state, dispatch } = context;
+  const { isSyncing, lastSynced, loadState, resetState } = useSyncedState();
 
   const setGoal = useCallback((payload: { goal: string; responseId: string }) => {
     dispatch({ type: 'SET_GOAL', payload });
@@ -94,10 +144,6 @@ export function useAssessment() {
     dispatch({ type: 'NEXT_CATEGORY' });
   }, [dispatch]);
 
-  const resetState = useCallback(() => {
-    dispatch({ type: 'RESET_STATE' });
-  }, [dispatch]);
-
   const resetForms = useCallback(() => {
     dispatch({ type: 'RESET_FORMS' });
   }, [dispatch]);
@@ -108,6 +154,10 @@ export function useAssessment() {
 
   return {
     ...state,
+    isSyncing,
+    lastSynced,
+    loadState,
+    resetState,
     setGoal,
     setSetupForm,
     setEmailUpdate,
@@ -115,7 +165,6 @@ export function useAssessment() {
     setCurrentCategory,
     nextQuestion,
     nextCategory,
-    resetState,
     resetForms,
     resetProgress,
     dispatch

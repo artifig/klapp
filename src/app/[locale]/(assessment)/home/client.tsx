@@ -10,6 +10,7 @@ import { createResponse } from '@/lib/airtable/mutations';
 import { useSearchParams } from 'next/navigation';
 import type { CompanyType } from '@/lib/airtable/types';
 import { getLocalizedText } from '@/lib/utils';
+import { persistenceManager } from '@/state/persistence';
 
 interface Props {
   initialCompanyTypes: CompanyType[];
@@ -29,6 +30,7 @@ export function HomeClient({ initialCompanyTypes }: Props) {
   // Reset state when home page is mounted
   useEffect(() => {
     console.log('🏠 Home: Resetting entire state');
+    persistenceManager.clear(); // Clear localStorage first
     dispatch({ type: 'RESET_STATE' });
   }, [dispatch]);
 
