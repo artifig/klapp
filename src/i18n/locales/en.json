@@ -42,6 +42,10 @@
       "submitting": "Creating Assessment...",
       "validation": {
         "required": "Please fill in all required fields"
+      },
+      "progress": {
+        "title": "Form Progress",
+        "description": "Complete both fields to continue"
       }
     }
   },

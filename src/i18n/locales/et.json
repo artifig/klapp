@@ -42,6 +42,10 @@
       "submitting": "Hindamise loomine...",
       "validation": {
         "required": "Palun täitke kõik kohustuslikud väljad"
+      },
+      "progress": {
+        "title": "Vormi täitmine",
+        "description": "Jätkamiseks täitke mõlemad väljad"
       }
     }
   },
@@ -123,5 +127,15 @@
     "title": "Airtable'i struktuuri valideerimine",
     "loading": "Laadimine...",
     "validating": "Airtable'i struktuuri valideerimine..."
+  },
+  "Error": {
+    "title": "Midagi läks valesti",
+    "message": "Teie päringu töötlemisel tekkis viga.",
+    "tryAgain": "Proovi uuesti"
+  },
+  "NotFound": {
+    "title": "Lehte ei leitud",
+    "message": "Otsitud lehte ei leitud või see on teisaldatud.",
+    "backHome": "Tagasi avalehele"
   }
 }
