@@ -1,13 +1,18 @@
 import { getRecommendations, getExampleSolutions } from '@/lib/airtable';
 
+type SearchParams = { [key: string]: string | string[] | undefined };
+
 export default async function ResultsPage({
-  searchParams
+  searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<SearchParams>;
 }) {
+  // Await and resolve the search params
+  const resolvedSearchParams = await searchParams;
+
   // Get the assessment scores from the URL parameters
   const categoryScores: { [key: string]: number } = {};
-  Object.entries(searchParams).forEach(([key, value]) => {
+  Object.entries(resolvedSearchParams).forEach(([key, value]) => {
     if (key.startsWith('category_') && typeof value === 'string') {
       const categoryId = key.replace('category_', '');
       categoryScores[categoryId] = parseFloat(value);

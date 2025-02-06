@@ -3,10 +3,10 @@
 import { Form } from "@radix-ui/react-form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CompanyType } from "@/lib/airtable";
+import { type MethodCompanyType } from "@/lib/airtable";
 
 interface AssessmentFormProps {
-  companyTypes: CompanyType[];
+  companyTypes: MethodCompanyType[];
 }
 
 export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {

@@ -28,6 +28,7 @@ export interface MethodCategory {
 export interface MethodQuestion {
   id: string;
   questionText_et: string;
+  questionDescription_et?: string;
   isActive: boolean;
   // Linked fields
   MethodCategories: string[];
@@ -247,6 +248,7 @@ export async function getQuestions(categoryIds: string[]): Promise<MethodQuestio
     return records.map(record => ({
       id: record.id,
       questionText_et: record.get('questionText_et') as string,
+      questionDescription_et: record.get('questionDescription_et') as string,
       MethodCategories: record.get('MethodCategories') as string[],
       MethodAnswers: record.get('MethodAnswers') as string[],
       isActive: record.get('isActive') as boolean

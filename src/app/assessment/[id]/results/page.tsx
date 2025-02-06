@@ -4,21 +4,36 @@ import {
   getQuestions, 
   getAnswers,
   getRecommendationsForCategory,
-  getExampleSolutionsForCategory
+  getExampleSolutionsForCategory,
+  type MethodCategory,
+  type MethodQuestion,
+  type MethodAnswer,
+  type MethodRecommendation,
+  type MethodExampleSolution
 } from "@/lib/airtable";
 import { redirect } from "next/navigation";
-
-interface PageProps {
-  params: { id: string };
-}
 
 interface AssessmentResponse {
   questionId: string;
   answerId: string;
 }
 
-export default async function ResultsPage({ params }: PageProps) {
-  const { id } = params;
+interface CategoryScore extends MethodCategory {
+  score: number;
+  questionCount: number;
+  answeredCount: number;
+  maturityLevel: string;
+  maturityColor: 'red' | 'yellow' | 'green';
+  recommendations: MethodRecommendation[];
+  solutions: MethodExampleSolution[];
+}
+
+export default async function ResultsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   
   try {
     // Fetch the assessment response
@@ -35,25 +50,25 @@ export default async function ResultsPage({ params }: PageProps) {
     const categories = await getCategories(companyType);
     
     // Fetch questions for all categories
-    const questions = await getQuestions(categories.map(c => c.id));
+    const questions = await getQuestions(categories.map((category: MethodCategory) => category.id));
     
     // Fetch all possible answers
-    const answers = await getAnswers(questions.map(q => q.id));
+    const answers = await getAnswers(questions.map((question: MethodQuestion) => question.id));
 
     // Calculate scores and fetch recommendations/solutions for each category
-    const categoryScores = await Promise.all(categories.map(async category => {
+    const categoryScores = await Promise.all(categories.map(async (category: MethodCategory) => {
       // Get questions for this category
-      const categoryQuestions = questions.filter(q => 
-        q.MethodCategories.includes(category.id)
+      const categoryQuestions = questions.filter((question: MethodQuestion) =>
+        question.MethodCategories.includes(category.id)
       );
 
       // Calculate average score for the category
       const categoryResponses = categoryQuestions
-        .map(question => {
+        .map((question: MethodQuestion) => {
           const response = responses.find((r: AssessmentResponse) => r.questionId === question.id);
           if (!response) return null;
           
-          const answer = answers.find(a => a.id === response.answerId);
+          const answer = answers.find((answer: MethodAnswer) => answer.id === response.answerId);
           return answer ? answer.answerScore : null;
         })
         .filter((score): score is number => score !== null);
@@ -64,7 +79,7 @@ export default async function ResultsPage({ params }: PageProps) {
 
       // Determine maturity level based on score
       let maturityLevel = '';
-      let maturityColor = '';
+      let maturityColor: 'red' | 'yellow' | 'green';
       let scoreLevel: 'red' | 'yellow' | 'green';
       
       if (averageScore < 40) {
@@ -113,7 +128,7 @@ export default async function ResultsPage({ params }: PageProps) {
         </div>
 
         <div className="space-y-12">
-          {categoryScores.map(category => (
+          {categoryScores.map((category: CategoryScore) => (
             <div key={category.id} className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow">
               {/* Category header */}
               <div className="flex justify-between items-start mb-4">
@@ -156,7 +171,7 @@ export default async function ResultsPage({ params }: PageProps) {
               <div className="mt-6">
                 <h4 className="text-lg font-semibold mb-3">Soovitused</h4>
                 <div className="space-y-4">
-                  {category.recommendations.map(recommendation => (
+                  {category.recommendations.map((recommendation: MethodRecommendation) => (
                     <div key={recommendation.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                       <h5 className="font-medium mb-2">{recommendation.recommendationText_et}</h5>
                       <p className="text-gray-600 dark:text-gray-400 text-sm">
@@ -171,7 +186,7 @@ export default async function ResultsPage({ params }: PageProps) {
               <div className="mt-6">
                 <h4 className="text-lg font-semibold mb-3">Näidislahendused</h4>
                 <div className="grid gap-4 md:grid-cols-2">
-                  {category.solutions.map(solution => (
+                  {category.solutions.map((solution: MethodExampleSolution) => (
                     <div key={solution.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                       <h5 className="font-medium mb-2">{solution.exampleSolutionText_et}</h5>
                       <p className="text-gray-600 dark:text-gray-400 text-sm">
