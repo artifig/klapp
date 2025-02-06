@@ -221,20 +221,28 @@ export async function getAnswers(questionIds: string[]): Promise<MethodAnswer[]>
     const records = await base('MethodAnswers')
       .select({
         filterByFormula: formula,
-        fields: ['answerText_et', 'answerScore', 'MethodQuestions', 'isActive'],
-        sort: [{ field: 'answerScore', direction: 'asc' }]
+        fields: ['answerText_et', 'answerScore', 'MethodQuestions', 'isActive']
       })
       .all();
 
     console.log('Found answers:', records.length);
 
-    return records.map(record => ({
+    // Convert records to our type and randomize the order
+    const answers = records.map(record => ({
       id: record.id,
       answerText_et: record.get('answerText_et') as string,
       answerScore: record.get('answerScore') as number,
       MethodQuestions: record.get('MethodQuestions') as string[],
       isActive: record.get('isActive') as boolean
     }));
+
+    // Shuffle the answers array
+    for (let i = answers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [answers[i], answers[j]] = [answers[j], answers[i]];
+    }
+
+    return answers;
   } catch (error) {
     console.error('Error fetching answers:', error);
     throw error;
