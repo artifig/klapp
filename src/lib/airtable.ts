@@ -339,9 +339,7 @@ export async function createAssessmentResponse(data: {
       MethodCompanyTypes: [data.companyType],
       responseContent: JSON.stringify({
         companyType: data.companyType,
-        responses: [],
-        scores: {},
-        levels: {}
+        responses: []
       })
     });
 
