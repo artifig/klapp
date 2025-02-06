@@ -123,15 +123,46 @@ export async function getQuestions(categoryIds: string[]): Promise<MethodQuestio
   try {
     console.log('Fetching questions for categories:', categoryIds);
 
+    // Get all questions where the category is in our list
     const formula = `AND(
       {isActive} = 1,
-      OR(${categoryIds.map(id => `RECORD_ID() = '${id}'`).join(',')})
+      OR(${categoryIds.map(id => 
+        `RECORD_ID() = '${id}'`
+      ).join(',')})
+    )`;
+
+    console.log('Questions formula:', formula);
+
+    // First get the categories to get their linked questions
+    const categoryRecords = await base('MethodCategories')
+      .select({
+        filterByFormula: formula,
+        fields: ['MethodQuestions']
+      })
+      .all();
+
+    // Get all question IDs from the categories
+    const questionIds = Array.from(new Set(
+      categoryRecords.flatMap(record => record.get('MethodQuestions') as string[] || [])
+    ));
+
+    console.log('Question IDs from categories:', questionIds);
+
+    if (!questionIds.length) {
+      console.log('No questions found in categories');
+      return [];
+    }
+
+    // Now fetch those specific questions
+    const questionFormula = `AND(
+      {isActive} = 1,
+      OR(${questionIds.map(id => `RECORD_ID() = '${id}'`).join(',')})
     )`;
 
     const records = await base('MethodQuestions')
       .select({
-        filterByFormula: formula,
-        fields: ['questionText_et', 'MethodCategories', 'isActive']
+        filterByFormula: questionFormula,
+        fields: ['questionText_et', 'MethodCategories', 'MethodAnswers', 'isActive']
       })
       .all();
 
@@ -141,6 +172,7 @@ export async function getQuestions(categoryIds: string[]): Promise<MethodQuestio
       id: record.id,
       questionText_et: record.get('questionText_et') as string,
       MethodCategories: record.get('MethodCategories') as string[],
+      MethodAnswers: record.get('MethodAnswers') as string[],
       isActive: record.get('isActive') as boolean
     }));
   } catch (error) {
@@ -151,17 +183,46 @@ export async function getQuestions(categoryIds: string[]): Promise<MethodQuestio
 
 export async function getAnswers(questionIds: string[]): Promise<MethodAnswer[]> {
   try {
+    if (!questionIds || questionIds.length === 0) {
+      console.log('No question IDs provided for answers');
+      return [];
+    }
+
     console.log('Fetching answers for questions:', questionIds);
 
+    // First get the questions to get their linked answers
+    const questionRecords = await base('MethodQuestions')
+      .select({
+        filterByFormula: `OR(${questionIds.map(id => `RECORD_ID() = '${id}'`).join(',')})`,
+        fields: ['MethodAnswers']
+      })
+      .all();
+
+    // Get all answer IDs from the questions
+    const answerIds = Array.from(new Set(
+      questionRecords.flatMap(record => record.get('MethodAnswers') as string[] || [])
+    ));
+
+    console.log('Answer IDs from questions:', answerIds);
+
+    if (!answerIds.length) {
+      console.log('No answers found in questions');
+      return [];
+    }
+
+    // Now fetch those specific answers
     const formula = `AND(
       {isActive} = 1,
-      OR(${questionIds.map(id => `RECORD_ID() = '${id}'`).join(',')})
+      OR(${answerIds.map(id => `RECORD_ID() = '${id}'`).join(',')})
     )`;
+
+    console.log('Answers formula:', formula);
 
     const records = await base('MethodAnswers')
       .select({
         filterByFormula: formula,
-        fields: ['answerText_et', 'answerDescription_et', 'answerScore', 'MethodQuestions', 'isActive']
+        fields: ['answerText_et', 'answerScore', 'MethodQuestions', 'isActive'],
+        sort: [{ field: 'answerScore', direction: 'asc' }]
       })
       .all();
 
