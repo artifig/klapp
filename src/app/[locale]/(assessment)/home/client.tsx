@@ -10,7 +10,6 @@ import { createResponse } from '@/lib/airtable/mutations';
 import { useSearchParams } from 'next/navigation';
 import type { CompanyType } from '@/lib/airtable/types';
 import { getLocalizedText } from '@/lib/utils';
-import { persistenceManager } from '@/state/persistence';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Progress } from '@/components/ui/Progress';
 import { motion } from 'framer-motion';
@@ -57,14 +56,13 @@ export function HomeClient({ initialCompanyTypes }: Props) {
   // Reset state when home page is mounted
   useEffect(() => {
     console.log('🏠 Home: Resetting entire state');
-    persistenceManager.clear();
     dispatch({ type: 'RESET_STATE' });
   }, [dispatch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!goal.trim() || !companyType || isSubmitting) {
-      setError(t('validation.required'));
+      setError(t('form.validation.required'));
       return;
     }
 
@@ -120,7 +118,7 @@ export function HomeClient({ initialCompanyTypes }: Props) {
 
         {/* Main Card */}
         <motion.div variants={item}>
-          <Card>
+          <Card className="backdrop-blur-sm bg-card/95 shadow-lg border-2">
             <CardHeader>
               <CardTitle>{t('whatToExpect')}</CardTitle>
               <CardDescription>{t('timeEstimate')}</CardDescription>
@@ -160,18 +158,6 @@ export function HomeClient({ initialCompanyTypes }: Props) {
                   </motion.div>
                 ))}
               </motion.div>
-
-              {/* Form Progress */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{t('form.progress.title')}</span>
-                  <span>{formProgress}%</span>
-                </div>
-                <Progress value={formProgress} className="h-2" />
-                <p className="text-xs text-muted-foreground">
-                  {t('form.progress.description')}
-                </p>
-              </div>
 
               {/* Assessment Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -229,11 +215,22 @@ export function HomeClient({ initialCompanyTypes }: Props) {
                   </Alert>
                 )}
 
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>{t('form.progress.title')}</span>
+                    <span>{formProgress}%</span>
+                  </div>
+                  <Progress value={formProgress} className="h-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {t('form.progress.description')}
+                  </p>
+                </div>
+
                 <Button
                   type="submit"
-                  className="w-full"
-                  size="lg"
-                  disabled={isSubmitting}
+                  className="w-full gradient-primary hover:opacity-90 transition-opacity"
+                  disabled={isSubmitting || formProgress !== 100}
+                  loading={isSubmitting}
                 >
                   {isSubmitting ? t('form.submitting') : t('form.submit')}
                 </Button>
