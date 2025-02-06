@@ -25,76 +25,100 @@
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Base Colors */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 244.8 64.8% 59%;
+  --secondary-foreground: 210 40% 98%;
+  --accent: 35.5 91.7% 32.9%;
+  --accent-foreground: 210 40% 98%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221.2 83.2% 53.3%;
+  --radius: 0.75rem;
 }
 
-/* Font Face Declarations */
-@font-face {
-  font-family: 'Helvetica Neue';
-  src: local('Helvetica Neue Regular'), local('HelveticaNeue-Regular');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Helvetica Neue Bold';
-  src: local('Helvetica Neue Bold'), local('HelveticaNeue-Bold');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Fluid Typography Mixins */
-@function fluid-size($min-size, $max-size) {
-  $min-vw: var(--fluid-min-width) * 1px;
-  $max-vw: var(--fluid-max-width) * 1px;
-  $min-size: $min-size * 1px;
-  $max-size: $max-size * 1px;
-  
-  @return clamp(#{$min-size}, #{$min-size} + (#{$max-size} - #{$min-size}) * var(--fluid-bp), #{$max-size});
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --accent: 35.5 91.7% 32.9%;
+  --accent-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 224.3 76.3% 48%;
 }
 
 @layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
   /* Base Typography with Fluid Sizes */
   body {
-    @apply text-foreground bg-background font-helvetica-neue antialiased;
+    @apply text-foreground bg-background antialiased;
     font-size: fluid-size(var(--fluid-min-size), var(--fluid-max-size));
     line-height: 1.5;
   }
 
   /* Fluid Heading Styles */
   h1 {
-    @apply font-helvetica-neue-bold mb-6;
+    @apply font-bold mb-6;
     font-size: fluid-size(32, 48);
     line-height: 1.1;
   }
 
   h2 {
-    @apply font-helvetica-neue-bold mb-5;
+    @apply font-bold mb-5;
     font-size: fluid-size(24, 36);
     line-height: 1.2;
   }
 
   h3 {
-    @apply font-helvetica-neue-bold mb-4;
+    @apply font-bold mb-4;
     font-size: fluid-size(20, 30);
     line-height: 1.3;
   }
 
   h4 {
-    @apply font-helvetica-neue-bold mb-4;
+    @apply font-bold mb-4;
     font-size: fluid-size(18, 24);
     line-height: 1.4;
   }
 
   h5 {
-    @apply font-helvetica-neue-bold mb-3;
+    @apply font-bold mb-3;
     font-size: fluid-size(16, 20);
     line-height: 1.4;
   }
 
   h6 {
-    @apply font-helvetica-neue-bold mb-3;
+    @apply font-bold mb-3;
     font-size: fluid-size(14, 18);
     line-height: 1.4;
   }
@@ -123,7 +147,7 @@
            text-white 
            border-none 
            px-6 py-3 
-           font-helvetica-neue-bold 
+           font-bold 
            uppercase 
            rounded-md
            transition-all
@@ -144,7 +168,7 @@
            text-white 
            border-none 
            px-6 py-3 
-           font-helvetica-neue-bold 
+           font-bold 
            uppercase 
            rounded-md
            transition-all
@@ -163,7 +187,6 @@
   .input-field {
     @apply border border-[#4D4D4D] 
            px-3 py-2.5
-           font-helvetica-neue
            bg-gray-800/80
            text-white
            rounded-md
@@ -216,12 +239,11 @@
 
   /* Progress Bar */
   .progress-bar {
-    @apply h-2 bg-gray-800 rounded-full overflow-hidden;
+    @apply relative h-2 w-full overflow-hidden rounded-full bg-muted;
   }
 
   .progress-bar-fill {
-    @apply h-full bg-gradient-to-r from-[#FF6600] to-[#FFCC00]
-           transition-all duration-500 ease-out;
+    @apply h-full bg-primary transition-all duration-500 ease-out;
   }
 
   /* Card Responsive Styles */
@@ -299,6 +321,64 @@
   .hover-glow {
     @apply transition-standard
            hover:shadow-[0_0_15px_rgba(255,102,0,0.3)];
+  }
+
+  /* Cards */
+  .card {
+    @apply relative overflow-hidden rounded-lg border bg-card p-6 shadow-lg transition-all hover:shadow-xl;
+  }
+
+  .card-interactive {
+    @apply cursor-pointer hover:-translate-y-1;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground shadow hover:bg-primary/90;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-accent-foreground shadow-sm hover:bg-accent/80;
+  }
+
+  /* Form Elements */
+  .input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm
+           ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium
+           placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed
+           disabled:opacity-50;
+  }
+
+  .select {
+    @apply flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2
+           text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none
+           focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .checkbox {
+    @apply h-4 w-4 rounded border border-primary text-primary ring-offset-background
+           focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Interactive Elements */
+  .hover-card {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  .ripple {
+    @apply absolute rounded-full bg-white/30 animate-ripple;
   }
 }
 
@@ -467,5 +547,58 @@
 
   .print-break-before-page {
     break-before: page;
+  }
+}
+
+/* Animations */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 1s linear;
+}
+
+/* Typography */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Loading States */
+.loading {
+  @apply animate-pulse bg-muted;
+}
+
+/* Scrollbar Styling */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-muted-foreground/50 hover:bg-muted-foreground;
   }
 }
