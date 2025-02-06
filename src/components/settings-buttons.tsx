@@ -13,7 +13,7 @@ export function SettingsButtons() {
     const pathname = usePathname()
 
     return (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-full bg-background/50 backdrop-blur-sm p-2 shadow-sm border">
+        <div className="flex items-center gap-2 rounded-full bg-background/50 backdrop-blur-sm p-2 shadow-sm border">
             {/* Theme Toggle */}
             <Button
                 variant="ghost"
@@ -33,16 +33,14 @@ export function SettingsButtons() {
                 <Link
                     href={pathname}
                     locale="et"
-                    className={`rounded-full p-2 transition-colors hover:bg-muted ${pathname.startsWith('/et') ? 'text-primary font-medium' : 'text-muted-foreground'
-                        }`}
+                    className={`rounded-full p-2 transition-colors hover:bg-muted ${pathname.startsWith('/et') ? 'text-primary font-medium' : 'text-muted-foreground'}`}
                 >
                     ET
                 </Link>
                 <Link
                     href={pathname}
                     locale="en"
-                    className={`rounded-full p-2 transition-colors hover:bg-muted ${pathname.startsWith('/en') ? 'text-primary font-medium' : 'text-muted-foreground'
-                        }`}
+                    className={`rounded-full p-2 transition-colors hover:bg-muted ${pathname.startsWith('/en') ? 'text-primary font-medium' : 'text-muted-foreground'}`}
                 >
                     EN
                 </Link>

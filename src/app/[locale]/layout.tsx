@@ -41,10 +41,12 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-background text-foreground relative">
         <LoadingScreen />
-        <SettingsButtons />
-        <main className="py-8">
+        <div className="absolute top-4 right-4 z-50">
+          <SettingsButtons />
+        </div>
+        <main>
           {children}
         </main>
       </div>

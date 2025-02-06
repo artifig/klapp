@@ -99,34 +99,38 @@ export function HomeClient({ initialCompanyTypes }: Props) {
   };
 
   return (
-    <div className={`max-w-3xl mx-auto ${isEmbedded ? 'p-0' : 'p-6'}`}>
+    <div className={`min-h-[100dvh] ${isEmbedded ? 'p-0' : 'p-4 sm:p-6'}`}>
       <motion.div
-        className="space-y-6"
+        className="w-full max-w-3xl mx-auto"
         initial="hidden"
         animate="show"
         variants={container}
       >
         {/* Header */}
-        <motion.div className="space-y-2" variants={item}>
-          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary-600 bg-clip-text text-transparent">
+        <motion.div className="space-y-1.5 text-center mb-4" variants={item}>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight brand-gradient-text">
             {t('interactiveCard.title')}
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground font-primary max-w-2xl mx-auto">
             {t('contextCard.description')}
           </p>
         </motion.div>
 
         {/* Main Card */}
         <motion.div variants={item}>
-          <Card className="backdrop-blur-sm bg-card/95 shadow-lg border-2">
-            <CardHeader>
-              <CardTitle>{t('whatToExpect')}</CardTitle>
-              <CardDescription>{t('timeEstimate')}</CardDescription>
+          <Card className="backdrop-blur-sm bg-card/95 shadow-lg border border-border dark:border-border/20">
+            <CardHeader className="space-y-1.5 py-3">
+              <CardTitle className="text-lg sm:text-xl font-bold text-foreground">
+                {t('whatToExpect')}
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                {t('timeEstimate')}
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 py-3 max-h-[calc(100dvh-12rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
               {/* What to Expect */}
               <motion.div
-                className="grid gap-4"
+                className="grid gap-2"
                 variants={container}
                 initial="hidden"
                 animate="show"
@@ -134,12 +138,12 @@ export function HomeClient({ initialCompanyTypes }: Props) {
                 {['evaluation', 'areas', 'recommendations', 'insights'].map((key) => (
                   <motion.div
                     key={key}
-                    className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors"
+                    className="flex items-center space-x-2 p-2 rounded-lg bg-secondary/50 hover:bg-secondary/80 transition-colors"
                     variants={item}
                   >
-                    <div className="mt-1">
+                    <div className="shrink-0">
                       <svg
-                        className="h-5 w-5 text-primary"
+                        className="h-4 w-4 text-brand-primary"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -152,7 +156,7 @@ export function HomeClient({ initialCompanyTypes }: Props) {
                         />
                       </svg>
                     </div>
-                    <p className="text-sm leading-relaxed">
+                    <p className="text-sm leading-snug text-foreground">
                       {t(`expectationsList.${key}`)}
                     </p>
                   </motion.div>
@@ -161,14 +165,14 @@ export function HomeClient({ initialCompanyTypes }: Props) {
 
               {/* Assessment Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label
                     htmlFor="goal"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="text-sm font-medium text-foreground"
                   >
                     {t('form.goal')}
                   </label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {t('form.goalDescription')}
                   </p>
                   <textarea
@@ -177,19 +181,19 @@ export function HomeClient({ initialCompanyTypes }: Props) {
                     onChange={(e) => setLocalGoal(e.target.value)}
                     placeholder={t('form.goalPlaceholder')}
                     required
-                    className="flex min-h-[120px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+                    className="flex min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors resize-none"
                     disabled={isSubmitting}
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label
                     htmlFor="companyType"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="text-sm font-medium text-foreground"
                   >
                     {t('form.companyType')}
                   </label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {t('form.companyTypeDescription')}
                   </p>
                   <select
@@ -197,7 +201,7 @@ export function HomeClient({ initialCompanyTypes }: Props) {
                     value={companyType}
                     onChange={(e) => setCompanyType(e.target.value)}
                     required
-                    className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+                    className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
                     disabled={isSubmitting}
                   >
                     <option value="">{t('form.companyTypeSelect')}</option>
@@ -210,17 +214,23 @@ export function HomeClient({ initialCompanyTypes }: Props) {
                 </div>
 
                 {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                  <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 py-2">
+                    <AlertDescription className="text-destructive text-xs">
+                      {error}
+                    </AlertDescription>
                   </Alert>
                 )}
 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-muted-foreground">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs text-muted-foreground">
                     <span>{t('form.progress.title')}</span>
                     <span>{formProgress}%</span>
                   </div>
-                  <Progress value={formProgress} className="h-2" />
+                  <Progress
+                    value={formProgress}
+                    className="h-1.5 bg-secondary"
+                    indicatorClassName="bg-brand-primary"
+                  />
                   <p className="text-xs text-muted-foreground">
                     {t('form.progress.description')}
                   </p>
@@ -228,7 +238,7 @@ export function HomeClient({ initialCompanyTypes }: Props) {
 
                 <Button
                   type="submit"
-                  className="w-full gradient-primary hover:opacity-90 transition-opacity"
+                  className="w-full brand-gradient hover:opacity-90 transition-opacity text-white font-medium h-9 text-sm"
                   disabled={isSubmitting || formProgress !== 100}
                   loading={isSubmitting}
                 >
