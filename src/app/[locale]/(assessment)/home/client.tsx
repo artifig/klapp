@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter, usePathname } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useAssessment } from '@/state/assessment-state';
@@ -14,7 +14,6 @@ import { persistenceManager } from '@/state/persistence';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Progress } from '@/components/ui/Progress';
 import { motion } from 'framer-motion';
-import { Link } from '@/i18n/navigation';
 
 interface Props {
   initialCompanyTypes: CompanyType[];
@@ -38,7 +37,6 @@ const item = {
 export function HomeClient({ initialCompanyTypes }: Props) {
   const t = useTranslations('home');
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const isEmbedded = searchParams?.get('embedded') === 'true';
   const { dispatch } = useAssessment();
@@ -104,29 +102,6 @@ export function HomeClient({ initialCompanyTypes }: Props) {
 
   return (
     <div className={`max-w-3xl mx-auto ${isEmbedded ? 'p-0' : 'p-6'}`}>
-      {/* Language Switcher */}
-      <div className="flex justify-end mb-6">
-        <div className="flex items-center gap-2">
-          <Link
-            href={pathname}
-            locale="et"
-            className={`text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith('/et') ? 'text-primary' : 'text-muted-foreground'
-              }`}
-          >
-            ET
-          </Link>
-          <span className="text-muted-foreground">/</span>
-          <Link
-            href={pathname}
-            locale="en"
-            className={`text-sm font-medium transition-colors hover:text-primary ${pathname.startsWith('/en') ? 'text-primary' : 'text-muted-foreground'
-              }`}
-          >
-            EN
-          </Link>
-        </div>
-      </div>
-
       <motion.div
         className="space-y-6"
         initial="hidden"
