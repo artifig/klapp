@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
@@ -40,8 +41,11 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background text-foreground">
         <LoadingScreen />
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
         <main className="py-8">
           {children}
         </main>
