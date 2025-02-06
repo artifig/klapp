@@ -14,6 +14,6 @@ export default async function AssessmentPage() {
     return <Client initialData={{ categories, questions, answers }} />;
   } catch (error) {
     console.error('Error in AssessmentPage:', error);
-    redirect('/setup');
+    redirect('/home');
   }
 } 

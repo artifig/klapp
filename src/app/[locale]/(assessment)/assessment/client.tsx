@@ -32,7 +32,7 @@ export default function Client({ initialData }: Props) {
   const router = useRouter();
   const {
     assessment: { answers: savedAnswers },
-    forms,
+    forms: { initial },
     reference,
     dispatch
   } = useAssessment();
@@ -49,8 +49,8 @@ export default function Client({ initialData }: Props) {
     console.log('Reference data check:', {
       hasCategories: initialData.categories.length > 0,
       referenceCategories: reference.categories.length,
-      sampleCategory: initialData.categories[0], // Log a sample category
-      locale // Log the current locale
+      sampleCategory: initialData.categories[0],
+      locale
     });
     if (initialData.categories.length > 0 && !reference.categories.length) {
       console.log('Initializing reference data with categories:', initialData.categories.length);
@@ -81,10 +81,10 @@ export default function Client({ initialData }: Props) {
 
   // Redirect if no company type is selected
   useEffect(() => {
-    if (!forms.setup.companyType) {
-      router.push('/setup');
+    if (!initial.companyType) {
+      router.push('/home');
     }
-  }, [forms.setup.companyType, router]);
+  }, [initial.companyType, router]);
 
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -92,16 +92,16 @@ export default function Client({ initialData }: Props) {
 
   // Transform and organize data with company type filtering - memoized
   const categoriesData = useMemo(() => {
-    console.log('Filtering categories for company type:', forms.setup.companyType);
+    console.log('Filtering categories for company type:', initial.companyType);
     return initialData.categories
-      .filter(cat => Array.isArray(cat.companyType) && cat.companyType.includes(forms.setup.companyType))
+      .filter(cat => Array.isArray(cat.companyType) && cat.companyType.includes(initial.companyType))
       .map(category => ({
         ...category,
         name: getLocalizedText(category.text, locale),
         description: category.description ? getLocalizedText(category.description, locale) : undefined,
         isActive: false
       }));
-  }, [initialData.categories, forms.setup.companyType, locale]);
+  }, [initialData.categories, initial.companyType, locale]);
 
   const questions = useMemo(() => {
     return initialData.questions.map(q => ({

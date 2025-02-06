@@ -56,24 +56,14 @@ export function HomeClient({ initialCompanyTypes }: Props) {
         return;
       }
 
-      // Set both goal and company type in state
+      // Set initial form data
       dispatch({
-        type: 'SET_GOAL',
+        type: 'SET_INITIAL_FORM',
         payload: {
           goal,
+          companyType,
           responseId: result.data.responseId,
           recordId: result.data.recordId
-        }
-      });
-
-      // Set only company type in state
-      dispatch({
-        type: 'SET_SETUP_FORM',
-        payload: {
-          name: '',
-          email: '',
-          companyName: '',
-          companyType
         }
       });
 

@@ -1,20 +1,14 @@
 'use client';
 
 import { createContext, useContext, useReducer, useEffect, useMemo, useCallback, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-import { usePathname, useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
+import { usePathname } from '@/i18n/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import type { AssessmentState, SetupFormData, Category, AssessmentAction } from './types';
+import type { AssessmentState, Category, AssessmentAction, InitialFormData, UserDetailsFormData } from './types';
 import { assessmentReducer, defaultState } from './reducer';
 import { persistenceManager } from './persistence';
 
 // Types
-export interface FormData {
-  name: string;
-  email: string;
-  companyName: string;
-  companyType: string;
-}
 
 interface AssessmentContextType {
   state: AssessmentState;
@@ -113,16 +107,12 @@ export function useAssessment() {
   const { state, dispatch } = context;
   const { isSyncing, lastSynced, loadState, resetState } = useSyncedState();
 
-  const setGoal = useCallback((payload: { goal: string; responseId: string }) => {
-    dispatch({ type: 'SET_GOAL', payload });
+  const setInitialForm = useCallback((data: InitialFormData) => {
+    dispatch({ type: 'SET_INITIAL_FORM', payload: data });
   }, [dispatch]);
 
-  const setSetupForm = useCallback((data: SetupFormData) => {
-    dispatch({ type: 'SET_SETUP_FORM', payload: data });
-  }, [dispatch]);
-
-  const setEmailUpdate = useCallback((email: string) => {
-    dispatch({ type: 'SET_EMAIL', payload: email });
+  const setUserDetails = useCallback((data: UserDetailsFormData) => {
+    dispatch({ type: 'SET_USER_DETAILS', payload: data });
   }, [dispatch]);
 
   const setAnswer = useCallback((questionId: string, answerId: string, score: number) => {
@@ -158,9 +148,8 @@ export function useAssessment() {
     lastSynced,
     loadState,
     resetState,
-    setGoal,
-    setSetupForm,
-    setEmailUpdate,
+    setInitialForm,
+    setUserDetails,
     setAnswer,
     setCurrentCategory,
     nextQuestion,
@@ -229,60 +218,7 @@ export const AssessmentProgress = () => {
   );
 };
 
-// Form-specific hooks
-export function useGoalForm() {
-  const { forms: { goal }, setGoal } = useAssessment();
-  const router = useRouter();
-  const locale = useLocale();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!goal) return;
-
-    setGoal({ goal: goal.goal, responseId: '' });
-    router.push(`/${locale}/assessment`);
-  };
-
-  return {
-    goal,
-    handleSubmit,
-    setGoal
-  };
-}
-
-export function useEmailUpdateForm() {
-  const { forms, setEmailUpdate } = useAssessment();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const { emailUpdate } = forms;
-
-    if (!emailUpdate.email) return;
-
-    try {
-      setIsSubmitting(true);
-      setEmailUpdate(emailUpdate.email);
-      // Here you would typically call an API to send results
-      // await sendResultsToEmail(emailUpdate.email);
-    } catch {
-      setError('Failed to update email');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return {
-    email: forms.emailUpdate.email,
-    isSubmitting,
-    error,
-    handleSubmit,
-    setEmailUpdate
-  };
-}
-
-// Export a simpler provider component
+// Export the AssessmentStateProvider
 export function AssessmentStateProvider({ children }: { children: React.ReactNode }) {
   return (
     <AssessmentProvider>

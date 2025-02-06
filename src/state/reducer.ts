@@ -8,9 +8,15 @@ export const defaultState: AssessmentState = {
     error: null
   },
   forms: {
-    goal: { goal: '' },
-    setup: { name: '', email: '', companyName: '', companyType: '' },
-    emailUpdate: { email: '' }
+    initial: {
+      goal: '',
+      companyType: '',
+    },
+    userDetails: {
+      name: '',
+      email: '',
+      companyName: ''
+    }
   },
   assessment: {
     currentCategory: null,
@@ -57,30 +63,21 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
         }
       };
 
-    case 'SET_GOAL':
+    case 'SET_INITIAL_FORM':
       return {
         ...state,
         forms: {
           ...state.forms,
-          goal: action.payload
+          initial: action.payload
         }
       };
 
-    case 'SET_SETUP_FORM':
+    case 'SET_USER_DETAILS':
       return {
         ...state,
         forms: {
           ...state.forms,
-          setup: action.payload
-        }
-      };
-
-    case 'SET_EMAIL':
-      return {
-        ...state,
-        forms: {
-          ...state.forms,
-          emailUpdate: { email: action.payload }
+          userDetails: action.payload
         }
       };
 
@@ -102,14 +99,11 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
         answerId,
         score,
         categoryId: category.id,
-        companyType: state.forms.setup.companyType,
+        companyType: state.forms.initial.companyType,
         timestamp: new Date().toISOString()
       };
 
-      console.log('Saving answer to state:', answer);
-      console.log('Previous answers:', state.assessment.answers);
-
-      const newState = {
+      return {
         ...state,
         assessment: {
           ...state.assessment,
@@ -119,46 +113,32 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
           }
         }
       };
-
-      console.log('New state answers:', newState.assessment.answers);
-      return newState;
     }
 
-    case 'SET_CATEGORY': {
-      const category = action.payload;
-      const firstUnansweredQuestion = category.questions.find(
-        questionId => !state.assessment.answers[questionId]
-      );
-
+    case 'SET_CATEGORY':
       return {
         ...state,
         assessment: {
           ...state.assessment,
-          currentCategory: category,
-          currentQuestion: firstUnansweredQuestion || category.questions[0] || null
+          currentCategory: action.payload,
+          currentQuestion: action.payload.questions[0] || null
         }
       };
-    }
 
     case 'NEXT_QUESTION': {
-      if (!state.assessment.currentCategory) {
+      if (!state.assessment.currentCategory || !state.assessment.currentQuestion) {
         return state;
       }
 
-      const currentQuestionId = state.assessment.currentQuestion;
-      if (!currentQuestionId) {
-        return state;
-      }
-
-      const currentCategory = state.assessment.currentCategory;
-      const currentIndex = currentCategory.questions.indexOf(currentQuestionId);
-      const nextQuestionId = currentCategory.questions[currentIndex + 1];
+      const currentQuestions = state.assessment.currentCategory.questions;
+      const currentIndex = currentQuestions.indexOf(state.assessment.currentQuestion);
+      const nextQuestion = currentQuestions[currentIndex + 1];
 
       return {
         ...state,
         assessment: {
           ...state.assessment,
-          currentQuestion: nextQuestionId || null
+          currentQuestion: nextQuestion || null
         }
       };
     }
@@ -172,21 +152,17 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
         c => c.id === state.assessment.currentCategory?.id
       );
       const nextCategory = state.reference.categories[currentIndex + 1];
-      const firstUnansweredQuestion = nextCategory?.questions.find(
-        questionId => !state.assessment.answers[questionId]
-      );
 
       return {
         ...state,
         assessment: {
           ...state.assessment,
           currentCategory: nextCategory || null,
-          currentQuestion: nextCategory
-            ? firstUnansweredQuestion || nextCategory.questions[0] || null
-            : null,
-          completedCategories: state.assessment.currentCategory
-            ? [...state.assessment.completedCategories, state.assessment.currentCategory.id]
-            : state.assessment.completedCategories
+          currentQuestion: nextCategory?.questions[0] || null,
+          completedCategories: [
+            ...state.assessment.completedCategories,
+            state.assessment.currentCategory.id
+          ]
         }
       };
     }
@@ -198,6 +174,13 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
           ...state.reference,
           ...action.payload
         }
+      };
+
+    case 'VALIDATE_STATE':
+      return {
+        ...state,
+        validation: action.payload,
+        lastValidated: new Date().toISOString()
       };
 
     case 'RESET_STATE':

@@ -7,6 +7,7 @@ import { useMemo, useEffect, useCallback, useState } from 'react';
 import { updateAssessmentResults } from '@/lib/airtable/mutations';
 import type { Category } from '@/state/types';
 import type { MethodSolutionLevel } from '@/lib/airtable/types';
+import type { UserDetailsFormData } from '@/state/types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import {
@@ -164,7 +165,7 @@ export function ResultsClient({ initialData }: Props) {
   const {
     assessment: { answers },
     reference: { categories, methodAnswers },
-    forms: { setup, goal },
+    forms: { initial },
     dispatch
   } = useAssessment();
   const [showUserDetailsForm, setShowUserDetailsForm] = useState(false);
@@ -173,9 +174,9 @@ export function ResultsClient({ initialData }: Props) {
   // All hooks must be called before any conditional returns
   const filteredCategories = useMemo(() => {
     return categories.filter(category =>
-      category.companyType.includes(setup.companyType)
+      category.companyType.includes(initial.companyType)
     );
-  }, [categories, setup.companyType]);
+  }, [categories, initial.companyType]);
 
   const categoryScores = useMemo(() => {
     return filteredCategories.map(category => {
@@ -280,14 +281,14 @@ export function ResultsClient({ initialData }: Props) {
   }, [filteredCategories, answers]);
 
   const saveResults = useCallback(async () => {
-    if (!goal.recordId) {
+    if (!initial.recordId) {
       console.error('No record ID found');
       return;
     }
 
     try {
       const response = await updateAssessmentResults({
-        recordId: goal.recordId,
+        recordId: initial.recordId,
         responseContent: {
           metadata: {
             overallScore,
@@ -306,16 +307,16 @@ export function ResultsClient({ initialData }: Props) {
     } catch (error) {
       console.error('Error saving results:', error);
     }
-  }, [goal.recordId, overallScore, questionCounts, categoryScores]);
+  }, [initial.recordId, overallScore, questionCounts, categoryScores]);
 
-  // Redirect if no goal record ID is found
+  // Redirect if no record ID is found
   useEffect(() => {
-    if (!goal.recordId) {
+    if (!initial.recordId) {
       console.log('No record ID found, redirecting to assessment');
       router.push('/assessment');
       return;
     }
-  }, [goal.recordId, router]);
+  }, [initial.recordId, router]);
 
   // Use initialData to set up reference data if needed
   useEffect(() => {
@@ -335,16 +336,13 @@ export function ResultsClient({ initialData }: Props) {
     saveResults();
   }, [saveResults]);
 
-  const handleUserDetailsSubmit = async (data: { name: string; email: string; companyName: string }) => {
+  const handleUserDetailsSubmit = async (data: UserDetailsFormData) => {
     setIsSubmittingDetails(true);
     try {
-      // Update the setup form data in state
+      // Update the user details in state
       dispatch({
-        type: 'SET_SETUP_FORM',
-        payload: {
-          ...data,
-          companyType: setup.companyType
-        }
+        type: 'SET_USER_DETAILS',
+        payload: data
       });
 
       // Save results again with the updated user details
@@ -362,7 +360,7 @@ export function ResultsClient({ initialData }: Props) {
   };
 
   // If no record ID, don't render anything while redirecting
-  if (!goal.recordId) {
+  if (!initial.recordId) {
     return null;
   }
 

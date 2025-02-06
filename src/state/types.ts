@@ -1,7 +1,7 @@
 import type { Answer, CompanyType, LocalizedText } from '@/lib/airtable/types';
 
 // Navigation
-export type AssessmentStep = 'home' | 'setup' | 'assessment' | 'results';
+export type AssessmentStep = 'home' | 'assessment' | 'results';
 
 export interface NavigationState {
   currentStep: AssessmentStep;
@@ -10,27 +10,22 @@ export interface NavigationState {
 }
 
 // Forms
-export interface GoalFormData {
+export interface InitialFormData {
   goal: string;
+  companyType: string;
   responseId?: string;
   recordId?: string;
 }
 
-export interface SetupFormData {
+export interface UserDetailsFormData {
   name: string;
   email: string;
   companyName: string;
-  companyType: string;
-}
-
-export interface EmailUpdateFormData {
-  email: string;
 }
 
 export interface FormsState {
-  goal: GoalFormData;
-  setup: SetupFormData;
-  emailUpdate: EmailUpdateFormData;
+  initial: InitialFormData;
+  userDetails: UserDetailsFormData;
 }
 
 // Assessment
@@ -102,9 +97,8 @@ export type AssessmentAction =
   | { type: 'SET_STEP'; payload: AssessmentStep }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'SET_GOAL'; payload: { goal: string; responseId: string; recordId?: string } }
-  | { type: 'SET_SETUP_FORM'; payload: SetupFormData }
-  | { type: 'SET_EMAIL'; payload: string }
+  | { type: 'SET_INITIAL_FORM'; payload: InitialFormData }
+  | { type: 'SET_USER_DETAILS'; payload: UserDetailsFormData }
   | { type: 'SET_ANSWER'; payload: { questionId: string; answerId: string; score: number } }
   | { type: 'SET_CATEGORY'; payload: Category }
   | { type: 'NEXT_QUESTION' }

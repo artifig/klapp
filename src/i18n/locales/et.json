@@ -1,36 +1,34 @@
 {
-  "Navigation": "Navigeerimine",
+  "Navigation": "Navigatsioon",
   "app": {
     "title": "Tehisaru valmisoleku hindamine",
-    "description": "Hinda oma ettevõtte valmisolekut tehisaru rakendamiseks ja saa meie ekspertidelt nõu"
+    "description": "Hinda oma ettevõtte tehisaru valmisolekut ja saa ekspertide nõuandeid juurutamiseks"
   },
   "nav": {
     "home": "Avaleht",
-    "setup": "Seadistus",
     "assessment": "Hindamine",
     "results": "Tulemused",
     "back": "Tagasi",
-    "goal": "Eesmärk",
     "next": "Edasi"
   },
   "home": {
     "whatToExpect": "Mida oodata",
     "expectationsList": {
-      "evaluation": "Põhjalik enesehindamine tehisaru valmisolekule",
-      "areas": "Analüüs põhilistes ärivaldkondades",
-      "recommendations": "Personaalsed soovitused ja sobivad lahenduspakkujad",
-      "insights": "Ekspertide tagasiside teie eesmärkidele ja juurutamisteele"
+      "evaluation": "Põhjalik enesehindamine tehisaru valmisoleku kohta",
+      "areas": "Analüüs põhiliste ärivaldkondade lõikes",
+      "recommendations": "Personaalsed soovitused ja sobivate lahenduspakkujate sobitamine",
+      "insights": "Ekspertide tagasiside teie eesmärkide ja juurutamise teekonna kohta"
     },
     "timeRequired": "Ajakulu",
     "timeEstimate": "Hindamine võtab aega umbes 15-20 minutit",
     "stepsTitle": "Kuidas see toimib",
     "interactiveCard": {
-      "title": "Alusta oma teekonda",
+      "title": "Alusta teekonda",
       "description": "Hinda oma tehisaru valmisolekut ja saa ekspertide tuge juurutamiseks",
       "startButton": "Alusta hindamist"
     },
     "contextCard": {
-      "title": "Hindamisest",
+      "title": "Hindamise kohta",
       "description": "See tööriist aitab teil mõista, kus te tehisaru kasutuselevõtuga olete, ning ühendab teid meie ekspertide ja usaldusväärse lahenduspakkujatega, kes aitavad teie eesmärgid ellu viia."
     },
     "form": {
@@ -47,75 +45,6 @@
       }
     }
   },
-  "setup": {
-    "title": "Alustame",
-    "interactiveCard": {
-      "title": "Ettevõtte informatsioon",
-      "nameLabel": "Teie nimi",
-      "emailLabel": "E-posti aadress",
-      "companyNameLabel": "Ettevõtte nimi",
-      "companyTypeLabel": "Ettevõtte tüüp",
-      "companyTypePlaceholder": "Valige ettevõtte tüüp",
-      "companyTypeSelect": "Valige ettevõtte tüüp",
-      "submitButton": "Jätka hindamisega"
-    },
-    "contextCard": {
-      "title": "Seadistuse info",
-      "description": "Palun sisestage oma ettevõtte andmed hindamise alustamiseks."
-    },
-    "loading": {
-      "fetchingData": "Hindamisandmete laadimine...",
-      "preparingAssessment": "Hindamise ettevalmistamine..."
-    },
-    "errors": {
-      "fetchingCompanyTypes": "Ettevõtte tüüpide laadimine ebaõnnestus. Palun proovige uuesti.",
-      "fetchingData": "Hindamisandmete laadimine ebaõnnestus. Palun proovige uuesti."
-    },
-    "categories": "kategooriat",
-    "questions": "küsimust",
-    "companyTypes": {
-      "startup": "Iduettevõte",
-      "scaleup": "Kasvuettevõte",
-      "sme": "VKE",
-      "enterprise": "Suurettevõte"
-    },
-    "validation": {
-      "name": {
-        "required": "Palun sisestage oma nimi",
-        "tooShort": "Nimi on liiga lühike"
-      },
-      "company": {
-        "required": "Palun sisestage ettevõtte nimi",
-        "tooShort": "Ettevõtte nimi on liiga lühike"
-      },
-      "email": {
-        "required": "Palun sisestage e-posti aadress",
-        "invalid": "Palun sisestage kehtiv e-posti aadress"
-      },
-      "companyType": {
-        "required": "Palun valige ettevõtte tüüp"
-      }
-    },
-    "autosave": {
-      "saving": "Salvestamine...",
-      "saved": "Salvestatud",
-      "error": "Salvestamine ebaõnnestus"
-    },
-    "nextStepsList": {
-      "title": "Järgmised sammud",
-      "details": "Täitke oma ettevõtte andmed",
-      "required": "Kõik väljad on kohustuslikud",
-      "confidential": "Teie andmeid käsitletakse konfidentsiaalselt",
-      "proceed": "Pärast andmete sisestamist saate jätkata hindamisega"
-    },
-    "goal": {
-      "title": "Teie eesmärk",
-      "empty": "Eesmärk pole veel määratud"
-    },
-    "form": {
-      "submitting": "Andmete salvestamine..."
-    }
-  },
   "assessment": {
     "title": "Tehisaru valmisoleku hindamine",
     "progress": "Progress",
@@ -123,74 +52,9 @@
     "completed": "Lõpetatud",
     "previousQuestion": "Eelmine küsimus",
     "nextQuestion": "Järgmine küsimus",
-    "completeAllQuestions": "Palun vastake kõikidele küsimustele enne jätkamist",
+    "completeAllQuestions": "Palun vastake kõigile küsimustele enne jätkamist",
     "notAnswered": "Veel vastamata",
     "yourAnswers": "Teie vastused",
-    "loadingQuestions": "Hindamisküsimuste laadimine...",
-    "noQuestionSelected": "Palun valige hindamise alustamiseks kategooria",
-    "selectCategory": "Valige kategooria hindamise alustamiseks",
-    "allQuestionsCompleted": "Olete kõik küsimused vastanud! Vaadake tulemusi.",
-    "viewResults": "Vaata tulemusi",
-    "questionProgress": "Küsimus {current}/{total}",
-    "categories": {
-      "title": "Hindamise kategooriad"
-    },
-    "answers": {
-      "1": "Alustamata",
-      "2": "Algusjärgus",
-      "3": "Töös",
-      "4": "Edasijõudnud",
-      "5": "Optimeeritud"
-    },
-    "interactiveCard": {
-      "title": "Praegune küsimus",
-      "selectCategory": "Valige alustamiseks kategooria"
-    },
-    "contextCard": {
-      "title": "Hindamise progress",
-      "description": "Jälgige oma progressi erinevates hindamiskategooriates"
-    }
-  },
-  "results": {
-    "title": "Hindamise Tulemused",
-    "categoryLevels": "Kategooriate Küpsustasemed",
-    "categoryDetails": "Detailne Hinnang",
-    "overallScore": "Üldine Skoor",
-    "questionsAnswered": "Vastatud Küsimused",
-    "categoriesAssessed": "Hinnatud Kategooriad",
-    "averageScore": "Keskmine Skoor",
-    "score": "Skoor",
-    "areasForImprovement": "Parendamist Vajavad Valdkonnad",
-    "currentScore": "Praegune Skoor",
-    "downloadReport": "Laadi alla detailne raport",
-    "downloadReportDescription": "Sisesta oma andmed, et laadida alla detailne PDF-raport ja saada ekspertide nõuandeid oma AI-teekonnaks",
-    "summary": "Teie ettevõtte AI-valmiduse analüüs",
-    "userDetails": {
-      "title": "Teie Andmed",
-      "description": "Palun sisestage oma kontaktandmed, et saada detailne hindamisraport ja ühenduda meie AI-ekspertidega.",
-      "nameLabel": "Teie Nimi",
-      "emailLabel": "E-posti Aadress",
-      "companyNameLabel": "Ettevõtte Nimi",
-      "submit": "Laadi Raport Alla",
-      "submitting": "Raporti Ettevalmistamine..."
-    },
-    "validation": {
-      "name": {
-        "required": "Palun sisestage oma nimi",
-        "tooShort": "Nimi on liiga lühike"
-      },
-      "email": {
-        "required": "Palun sisestage e-posti aadress",
-        "invalid": "Palun sisestage korrektne e-posti aadress"
-      },
-      "company": {
-        "required": "Palun sisestage ettevõtte nimi",
-        "tooShort": "Ettevõtte nimi on liiga lühike"
-      }
-    },
-    "completion": {
-      "title": "Hindamise lõpetatus"
-    },
     "categories": {
       "title": "Kategooriate ülevaade"
     },
@@ -203,9 +67,9 @@
     "questions": "küsimust",
     "exportPDF": "Ekspordi PDF",
     "exporting": "Eksportimine...",
-    "emailResults": "Saada tulemused e-postiga",
-    "matchedProviders": "Sobivad teenusepakkujad",
-    "contactProvider": "Võta ühendust",
+    "emailResults": "Saada tulemused e-postile",
+    "matchedProviders": "Sobivad pakkujad",
+    "contactProvider": "Võta ühendust pakkujaga",
     "interactiveCard": {
       "title": "Hindamise tulemused"
     },
@@ -213,6 +77,34 @@
       "title": "Tulemuste ülevaade",
       "description": "Siin on kokkuvõte teie tehisaru valmisoleku hindamisest.",
       "backButton": "Tagasi hindamisele"
+    }
+  },
+  "results": {
+    "title": "Hindamise tulemused",
+    "categoryLevels": "Kategooriate tasemed",
+    "categoryDetails": "Kategooriate detailid",
+    "downloadReport": "Laadi alla raport",
+    "downloadReportDescription": "Sisesta oma andmed, et saada detailne hindamisraport",
+    "userDetails": {
+      "title": "Teie andmed",
+      "description": "Palun sisestage oma kontaktandmed, et saada detailne hindamisraport.",
+      "nameLabel": "Teie nimi",
+      "emailLabel": "E-posti aadress",
+      "companyNameLabel": "Ettevõtte nimi",
+      "submit": "Laadi alla raport",
+      "submitting": "Raporti ettevalmistamine..."
+    },
+    "validation": {
+      "name": {
+        "required": "Palun sisestage oma nimi"
+      },
+      "email": {
+        "required": "Palun sisestage e-posti aadress",
+        "invalid": "Palun sisestage korrektne e-posti aadress"
+      },
+      "company": {
+        "required": "Palun sisestage ettevõtte nimi"
+      }
     }
   },
   "common": {
@@ -225,27 +117,11 @@
     "cancel": "Tühista",
     "continue": "Jätka",
     "languageSwitch": "Vaheta keelt",
-    "switchTo": "Lülitu"
+    "switchTo": "Vaheta"
   },
   "validate": {
-    "title": "Airtable struktuuri valideerimine",
+    "title": "Airtable'i struktuuri valideerimine",
     "loading": "Laadimine...",
-    "validating": "Airtable struktuuri valideerimine...",
-    "error": "Viga",
-    "valid": "Kehtiv",
-    "invalid": "Vigane",
-    "missingFields": "Puuduvad väljad",
-    "extraFields": "Lisaväljad",
-    "fieldTypes": "Välja tüübid"
-  },
-  "Error": {
-    "title": "Midagi läks valesti",
-    "message": "Teie päringu töötlemisel tekkis viga.",
-    "tryAgain": "Proovi uuesti"
-  },
-  "NotFound": {
-    "title": "Lehte ei leitud",
-    "message": "Otsitavat lehte ei eksisteeri või see on teisaldatud.",
-    "backHome": "Tagasi avalehele"
+    "validating": "Airtable'i struktuuri valideerimine..."
   }
 }

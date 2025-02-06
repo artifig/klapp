@@ -6,11 +6,9 @@
   },
   "nav": {
     "home": "Home",
-    "setup": "Setup",
     "assessment": "Assessment",
     "results": "Results",
     "back": "Back",
-    "goal": "Goal",
     "next": "Next"
   },
   "home": {
@@ -47,75 +45,6 @@
       }
     }
   },
-  "setup": {
-    "title": "Let's Get Started",
-    "interactiveCard": {
-      "title": "Company Information",
-      "nameLabel": "Your Name",
-      "emailLabel": "Email Address",
-      "companyNameLabel": "Company Name",
-      "companyTypeLabel": "Company Type",
-      "companyTypePlaceholder": "Select company type",
-      "companyTypeSelect": "Select company type",
-      "submitButton": "Continue to Assessment"
-    },
-    "contextCard": {
-      "title": "Setup Information",
-      "description": "Please provide your company details to begin the assessment."
-    },
-    "loading": {
-      "fetchingData": "Loading assessment data...",
-      "preparingAssessment": "Preparing assessment..."
-    },
-    "errors": {
-      "fetchingCompanyTypes": "Failed to load company types. Please try again.",
-      "fetchingData": "Failed to load assessment data. Please try again."
-    },
-    "categories": "categories",
-    "questions": "questions",
-    "companyTypes": {
-      "startup": "Startup",
-      "scaleup": "Scaleup",
-      "sme": "SME",
-      "enterprise": "Enterprise"
-    },
-    "validation": {
-      "name": {
-        "required": "Please enter your name",
-        "tooShort": "Name is too short"
-      },
-      "company": {
-        "required": "Please enter company name",
-        "tooShort": "Company name is too short"
-      },
-      "email": {
-        "required": "Please enter email address",
-        "invalid": "Please enter a valid email address"
-      },
-      "companyType": {
-        "required": "Please select company type"
-      }
-    },
-    "autosave": {
-      "saving": "Saving...",
-      "saved": "Saved",
-      "error": "Failed to save"
-    },
-    "nextStepsList": {
-      "title": "Next Steps",
-      "details": "Fill in your company details",
-      "required": "All fields are required",
-      "confidential": "Your data will be treated confidentially",
-      "proceed": "After entering your data, you can proceed with the assessment"
-    },
-    "goal": {
-      "title": "Your Goal",
-      "empty": "Goal not yet set"
-    },
-    "form": {
-      "submitting": "Saving data..."
-    }
-  },
   "assessment": {
     "title": "AI Readiness Assessment",
     "progress": "Progress",
@@ -126,71 +55,6 @@
     "completeAllQuestions": "Please answer all questions before proceeding",
     "notAnswered": "Not answered yet",
     "yourAnswers": "Your Answers",
-    "loadingQuestions": "Loading assessment questions...",
-    "noQuestionSelected": "Please select a category to start the assessment",
-    "selectCategory": "Select a category to begin the assessment",
-    "allQuestionsCompleted": "You've completed all questions! View your results.",
-    "viewResults": "View Your Results",
-    "questionProgress": "Question {current}/{total}",
-    "categories": {
-      "title": "Assessment Categories"
-    },
-    "answers": {
-      "1": "Not Started",
-      "2": "Initial",
-      "3": "In Progress",
-      "4": "Advanced",
-      "5": "Optimized"
-    },
-    "interactiveCard": {
-      "title": "Current Question",
-      "selectCategory": "Select a category to begin"
-    },
-    "contextCard": {
-      "title": "Assessment Progress",
-      "description": "Track your progress through different assessment categories"
-    }
-  },
-  "results": {
-    "title": "Assessment Results",
-    "categoryLevels": "Category Maturity Levels",
-    "categoryDetails": "Detailed Assessment",
-    "overallScore": "Overall Score",
-    "questionsAnswered": "Questions Answered",
-    "categoriesAssessed": "Categories Assessed",
-    "averageScore": "Average Score",
-    "score": "Score",
-    "areasForImprovement": "Areas for Improvement",
-    "currentScore": "Current Score",
-    "downloadReport": "Download Detailed Report",
-    "downloadReportDescription": "Enter your details to download a detailed PDF report and get expert guidance for your AI journey",
-    "summary": "Analysis of your company's AI readiness",
-    "userDetails": {
-      "title": "Your Details",
-      "description": "Please provide your contact information to receive your detailed assessment report and connect with our AI experts.",
-      "nameLabel": "Your Name",
-      "emailLabel": "Email Address",
-      "companyNameLabel": "Company Name",
-      "submit": "Download Report",
-      "submitting": "Preparing Report..."
-    },
-    "validation": {
-      "name": {
-        "required": "Please enter your name",
-        "tooShort": "Name is too short"
-      },
-      "email": {
-        "required": "Please enter email address",
-        "invalid": "Please enter a valid email address"
-      },
-      "company": {
-        "required": "Please enter company name",
-        "tooShort": "Company name is too short"
-      }
-    },
-    "completion": {
-      "title": "Assessment Completion"
-    },
     "categories": {
       "title": "Categories Overview"
     },
@@ -215,6 +79,34 @@
       "backButton": "Back to Assessment"
     }
   },
+  "results": {
+    "title": "Assessment Results",
+    "categoryLevels": "Category Levels",
+    "categoryDetails": "Category Details",
+    "downloadReport": "Download Report",
+    "downloadReportDescription": "Enter your details to receive a detailed report of your assessment",
+    "userDetails": {
+      "title": "Your Details",
+      "description": "Please provide your contact information to receive your detailed assessment report.",
+      "nameLabel": "Your Name",
+      "emailLabel": "Email Address",
+      "companyNameLabel": "Company Name",
+      "submit": "Download Report",
+      "submitting": "Preparing Report..."
+    },
+    "validation": {
+      "name": {
+        "required": "Please enter your name"
+      },
+      "email": {
+        "required": "Please enter email address",
+        "invalid": "Please enter a valid email address"
+      },
+      "company": {
+        "required": "Please enter company name"
+      }
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",
@@ -230,13 +122,7 @@
   "validate": {
     "title": "Airtable Structure Validation",
     "loading": "Loading...",
-    "validating": "Validating Airtable structure...",
-    "error": "Error",
-    "valid": "Valid",
-    "invalid": "Invalid",
-    "missingFields": "Missing Fields",
-    "extraFields": "Extra Fields",
-    "fieldTypes": "Field Types"
+    "validating": "Validating Airtable structure..."
   },
   "Error": {
     "title": "Something went wrong",
