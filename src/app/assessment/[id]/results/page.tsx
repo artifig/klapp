@@ -160,6 +160,63 @@ export default async function ResultsPage({
           </p>
         </div>
 
+        {/* Overall Score and AI Feedback Section */}
+        <div className="mb-12 bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+            <div className="text-center md:text-left mb-6 md:mb-0">
+              <h2 className="text-2xl font-bold mb-2">Üldine tulemus</h2>
+              <p className="text-gray-600 dark:text-gray-400">Teie ettevõtte üldine küpsustase</p>
+            </div>
+            <div className="relative">
+              <div className="w-40 h-40 rounded-full border-8 border-blue-500 flex items-center justify-center bg-white dark:bg-gray-800">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-500">75%</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Küpsustase</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <div className="flex items-start space-x-3 mb-4">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">AI Assistendi tagasiside</h3>
+                <div className="prose dark:prose-invert max-w-none">
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Teie ettevõte näitab tugevat potentsiaali mitmes valdkonnas. Eriti silmapaistev on teie sooritus kvaliteedijuhtimise ja innovatsiooni valdkonnas. Siiski on mõned võimalused edasisteks parandusteks, eriti seoses digitaliseerimise ja andmepõhise otsustamisega.
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Peamised tugevused:
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 dark:text-gray-400 mb-4">
+                    <li>Tugev strateegiline planeerimine</li>
+                    <li>Efektiivne meeskonnatöö</li>
+                    <li>Kliendikeskne lähenemine</li>
+                  </ul>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Arendamist vajavad valdkonnad:
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 dark:text-gray-400">
+                    <li>Digitaalsete lahenduste integreerimine</li>
+                    <li>Andmepõhine otsustusprotsess</li>
+                    <li>Automatiseerimine ja protsesside optimeerimine</li>
+                  </ul>
+                </div>
+                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 italic">
+                  * See tagasiside on genereeritud tehisintellekti poolt, põhinedes teie vastustel hindamisküsimustele.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-12">
           {categoryScores.map((category: CategoryScore) => (
             <div key={category.id} className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow">
