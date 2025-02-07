@@ -187,7 +187,7 @@ export default async function ResultsPage({
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">AI Assistendi tagasiside</h3>
+                <h3 className="text-lg font-semibold mb-2">Tagasiside Tehnopoli tehisarult</h3>
                 <div className="prose dark:prose-invert max-w-none">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     Teie ettevõte näitab tugevat potentsiaali mitmes valdkonnas. Eriti silmapaistev on teie sooritus kvaliteedijuhtimise ja innovatsiooni valdkonnas. Siiski on mõned võimalused edasisteks parandusteks, eriti seoses digitaliseerimise ja andmepõhise otsustamisega.
