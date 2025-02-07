@@ -41,17 +41,14 @@ export default async function QuestionsPage({
     if (!categories.length) {
       console.error('No categories found for company type:', companyType);
       return (
-        <main className="tehnopol-container-md">
-          <div className="tehnopol-stack">
-            <h1 className="tehnopol-heading text-3xl text-red-600">
-              Küsimusi ei leitud
-            </h1>
-            <p className="tehnopol-text text-lg">
+        <main>
+          <h1>AI-valmiduse hindamine</h1>
+          <div className="category-section">
+            <h2>Küsimusi ei leitud</h2>
+            <p>
               Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
             </p>
-            <a href="/assessment" className="tehnopol-btn tehnopol-primary">
-              Tagasi hindamise algusesse
-            </a>
+            <a href="/assessment">Tagasi hindamise algusesse</a>
           </div>
         </main>
       );
@@ -80,50 +77,41 @@ export default async function QuestionsPage({
 
     if (!questionsByCategory.length) {
       return (
-        <main className="tehnopol-container-md">
-          <div className="tehnopol-stack">
-            <h1 className="tehnopol-heading text-3xl text-red-600">
-              Küsimusi ei leitud
-            </h1>
-            <p className="tehnopol-text text-lg">
+        <main>
+          <h1>AI-valmiduse hindamine</h1>
+          <div className="category-section">
+            <h2>Küsimusi ei leitud</h2>
+            <p>
               Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
             </p>
-            <a href="/assessment" className="tehnopol-btn tehnopol-primary">
-              Tagasi hindamise algusesse
-            </a>
+            <a href="/assessment">Tagasi hindamise algusesse</a>
           </div>
         </main>
       );
     }
 
     return (
-      <main className="tehnopol-container-md">
-        <div className="tehnopol-stack">
-          <h1 className="tehnopol-gradient-text text-3xl font-bold">
-            AI-valmiduse hindamine
-          </h1>
-          <QuestionForm 
-            assessmentId={id}
-            categories={questionsByCategory}
-            existingResponses={responses}
-          />
-        </div>
+      <main>
+        <h1>AI-valmiduse hindamine</h1>
+        <p className="intro-text">
+          Vastake järgnevatele küsimustele, et hinnata oma ettevõtte valmisolekut.
+        </p>
+        <QuestionForm 
+          assessmentId={id}
+          categories={questionsByCategory}
+          existingResponses={responses}
+        />
       </main>
     );
   } catch (error) {
     console.error('Error loading questions page:', error);
     return (
-      <main className="tehnopol-container-md">
-        <div className="tehnopol-stack">
-          <h1 className="tehnopol-heading text-3xl text-red-600">
-            Viga küsimuste laadimisel
-          </h1>
-          <p className="tehnopol-text text-lg">
-            Kahjuks tekkis küsimuste laadimisel viga. Palun proovige uuesti.
-          </p>
-          <a href="/assessment" className="tehnopol-btn tehnopol-primary">
-            Tagasi algusesse
-          </a>
+      <main>
+        <h1>AI-valmiduse hindamine</h1>
+        <div className="category-section">
+          <h2>Viga küsimuste laadimisel</h2>
+          <p>Kahjuks tekkis küsimuste laadimisel viga. Palun proovige uuesti.</p>
+          <a href="/assessment">Tagasi algusesse</a>
         </div>
       </main>
     );

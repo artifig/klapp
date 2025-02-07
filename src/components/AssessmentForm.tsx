@@ -1,6 +1,5 @@
 'use client';
 
-import { Form } from "@radix-ui/react-form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { type MethodCompanyType } from "@/lib/airtable";
@@ -36,7 +35,6 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
         const result = await response.json();
         router.push(`/assessment/questions?id=${result.id}`);
       } else {
-        // Handle error
         console.error("Failed to create assessment");
       }
     } catch (error) {
@@ -47,29 +45,27 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
   };
 
   return (
-    <Form className="tehnopol-content-group" onSubmit={handleSubmit}>
-      <div className="tehnopol-form-group">
-        <label className="tehnopol-form-label" htmlFor="initialGoal">
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="initialGoal">
           Mis on teie peamine äriline eesmärk seoses AI-ga?
         </label>
         <textarea
           id="initialGoal"
           name="initialGoal"
           required
-          className="tehnopol-textarea"
           rows={4}
         />
       </div>
 
-      <div className="tehnopol-form-group">
-        <label className="tehnopol-form-label" htmlFor="companyType">
+      <div>
+        <label htmlFor="companyType">
           Ettevõtte tüüp
         </label>
         <select
           id="companyType"
           name="companyType"
           required
-          className="tehnopol-select"
         >
           <option value="">Vali ettevõtte tüüp...</option>
           {companyTypes.map((type) => (
@@ -80,15 +76,14 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
         </select>
       </div>
 
-      <div className="tehnopol-flex-end">
+      <div className="nav-buttons">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="tehnopol-btn tehnopol-btn-primary"
         >
           {isSubmitting ? "Saadan..." : "Alusta hindamist"}
         </button>
       </div>
-    </Form>
+    </form>
   );
 } 
