@@ -1,0 +1,119 @@
+/* Tehnopol specific components */
+.tehnopol-btn {
+  @apply inline-flex items-center justify-center rounded px-4 py-2 text-sm font-medium 
+         transition-colors focus-visible:outline-none focus-visible:ring-2 
+         focus-visible:ring-tehnopol focus-visible:ring-offset-2 
+         disabled:pointer-events-none disabled:opacity-50;
+}
+
+.tehnopol-btn-primary {
+  @apply bg-tehnopol text-white hover:bg-tehnopol-dark;
+}
+
+.tehnopol-btn-secondary {
+  @apply bg-tehnopol/10 text-tehnopol hover:bg-tehnopol/20;
+}
+
+.tehnopol-btn-outline {
+  @apply border border-tehnopol text-tehnopol hover:bg-tehnopol/10;
+}
+
+/* Typography */
+.tehnopol-heading {
+  @apply font-condensed text-tehnopol-gray dark:text-gray-100;
+}
+
+.tehnopol-text {
+  @apply text-tehnopol-gray dark:text-gray-300;
+}
+
+.tehnopol-text-sm {
+  @apply text-sm text-tehnopol-gray dark:text-gray-300;
+}
+
+.tehnopol-link {
+  @apply text-tehnopol hover:text-tehnopol-dark transition-colors;
+}
+
+/* Cards */
+.tehnopol-card {
+  @apply relative bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg overflow-hidden;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%);
+}
+
+.tehnopol-card-muted {
+  @apply tehnopol-card bg-muted/30;
+}
+
+/* Progress */
+.tehnopol-progress-bar {
+  @apply w-full bg-muted rounded h-2.5 dark:bg-muted/30;
+}
+
+.tehnopol-progress-indicator {
+  @apply h-2.5 rounded transition-all duration-500;
+}
+
+/* Status colors */
+.tehnopol-status-red {
+  @apply text-red-600 dark:text-red-400;
+}
+
+.tehnopol-status-yellow {
+  @apply text-yellow-600 dark:text-yellow-400;
+}
+
+.tehnopol-status-green {
+  @apply text-green-600 dark:text-green-400;
+}
+
+/* Lists */
+.tehnopol-list {
+  @apply list-disc list-inside text-tehnopol-gray dark:text-gray-300;
+}
+
+/* Forms */
+.tehnopol-input {
+  @apply w-full rounded border border-input bg-background px-3 py-2 text-sm 
+         ring-offset-background placeholder:text-muted-foreground 
+         focus-visible:outline-none focus-visible:ring-2 
+         focus-visible:ring-tehnopol focus-visible:ring-offset-2;
+}
+
+.tehnopol-select {
+  @apply tehnopol-input;
+}
+
+.tehnopol-textarea {
+  @apply tehnopol-input;
+}
+
+/* Progress steps */
+.tehnopol-steps {
+  @apply flex items-center justify-center space-x-4;
+}
+
+.tehnopol-step {
+  @apply flex items-center text-sm font-medium;
+}
+
+.tehnopol-step-active {
+  @apply text-tehnopol;
+}
+
+.tehnopol-step-completed {
+  @apply text-tehnopol-green;
+}
+
+.tehnopol-step-pending {
+  @apply text-tehnopol-gray;
+}
+
+/* Utilities */
+.tehnopol-diagonal-corner {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%);
+}
+
+.tehnopol-gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-tehnopol-dark via-tehnopol to-tehnopol-light;
+} 

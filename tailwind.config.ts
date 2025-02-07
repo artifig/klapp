@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { tehnopolTheme } from "./src/styles/tehnopol-theme";
 
 const config: Config = {
   darkMode: ["class"],
@@ -16,6 +17,7 @@ const config: Config = {
       },
     },
     extend: {
+      ...tehnopolTheme.extend,
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -50,6 +52,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        ...tehnopolTheme.extend.colors,
       },
       borderRadius: {
         lg: "var(--radius)",
