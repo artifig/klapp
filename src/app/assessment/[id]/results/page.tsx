@@ -149,29 +149,29 @@ export default async function ResultsPage({
 
     return (
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">
+        <h1 className="tehnopol-gradient-text text-3xl font-bold mb-6">
           Hindamise tulemused
         </h1>
         
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Teie eesmärk:</h2>
-          <p className="text-lg bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+          <h2 className="tehnopol-heading text-xl mb-2">Teie eesmärk:</h2>
+          <p className="tehnopol-text bg-muted/30 p-4 rounded">
             {assessment.initialGoal}
           </p>
         </div>
 
         {/* Overall Score and AI Feedback Section */}
-        <div className="mb-12 bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg">
+        <div className="tehnopol-card mb-12">
           <div className="flex flex-col md:flex-row items-center justify-between mb-8">
             <div className="text-center md:text-left mb-6 md:mb-0">
-              <h2 className="text-2xl font-bold mb-2">Üldine tulemus</h2>
-              <p className="text-gray-600 dark:text-gray-400">Teie ettevõtte üldine küpsustase</p>
+              <h2 className="tehnopol-heading text-2xl mb-2">Üldine tulemus</h2>
+              <p className="tehnopol-text">Teie ettevõtte üldine küpsustase</p>
             </div>
             <div className="relative">
-              <div className="w-40 h-40 rounded-full border-8 border-blue-500 flex items-center justify-center bg-white dark:bg-gray-800">
+              <div className="w-40 h-40 rounded-full border-8 border-tehnopol flex items-center justify-center bg-white dark:bg-gray-800">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-blue-500">75%</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Küpsustase</div>
+                  <div className="text-4xl font-bold text-tehnopol">75%</div>
+                  <div className="tehnopol-text-sm">Küpsustase</div>
                 </div>
               </div>
             </div>
@@ -180,36 +180,36 @@ export default async function ResultsPage({
           <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
             <div className="flex items-start space-x-3 mb-4">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                <div className="w-8 h-8 rounded-full bg-tehnopol/10 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-tehnopol" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">Tagasiside Tehnopoli tehisarult</h3>
+                <h3 className="tehnopol-heading text-lg mb-2">Tagasiside Tehnopoli tehisarult</h3>
                 <div className="prose dark:prose-invert max-w-none">
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  <p className="tehnopol-text mb-4">
                     Teie ettevõte näitab tugevat potentsiaali mitmes valdkonnas. Eriti silmapaistev on teie sooritus kvaliteedijuhtimise ja innovatsiooni valdkonnas. Siiski on mõned võimalused edasisteks parandusteks, eriti seoses digitaliseerimise ja andmepõhise otsustamisega.
                   </p>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  <p className="tehnopol-text mb-4">
                     Peamised tugevused:
                   </p>
-                  <ul className="list-disc list-inside text-gray-600 dark:text-gray-400 mb-4">
+                  <ul className="tehnopol-list mb-4">
                     <li>Tugev strateegiline planeerimine</li>
                     <li>Efektiivne meeskonnatöö</li>
                     <li>Kliendikeskne lähenemine</li>
                   </ul>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  <p className="tehnopol-text mb-4">
                     Arendamist vajavad valdkonnad:
                   </p>
-                  <ul className="list-disc list-inside text-gray-600 dark:text-gray-400">
+                  <ul className="tehnopol-list">
                     <li>Digitaalsete lahenduste integreerimine</li>
                     <li>Andmepõhine otsustusprotsess</li>
                     <li>Automatiseerimine ja protsesside optimeerimine</li>
                   </ul>
                 </div>
-                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 italic">
+                <div className="mt-4 tehnopol-text-sm italic">
                   * See tagasiside on genereeritud tehisintellekti poolt, põhinedes teie vastustel hindamisküsimustele.
                 </div>
               </div>
@@ -219,26 +219,26 @@ export default async function ResultsPage({
 
         <div className="space-y-12">
           {categoryScores.map((category: CategoryScore) => (
-            <div key={category.id} className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow">
+            <div key={category.id} className="tehnopol-card">
               {/* Category header */}
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-xl font-semibold">{category.categoryText_et}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  <h3 className="tehnopol-heading text-xl">{category.categoryText_et}</h3>
+                  <p className="tehnopol-text mt-1">
                     {category.categoryDescription_et}
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold">
+                  <div className="text-2xl font-bold text-tehnopol">
                     {category.score}%
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="tehnopol-text-sm">
                     Vastatud: {category.answeredCount}/{category.questionCount}
                   </div>
-                  <div className={`text-sm mt-1 font-medium ${
-                    category.maturityColor === 'red' ? 'text-red-600' :
-                    category.maturityColor === 'yellow' ? 'text-yellow-600' :
-                    'text-green-600'
+                  <div className={`tehnopol-text-sm mt-1 font-medium ${
+                    category.maturityColor === 'red' ? 'tehnopol-status-red' :
+                    category.maturityColor === 'yellow' ? 'tehnopol-status-yellow' :
+                    'tehnopol-status-green'
                   }`}>
                     {category.maturityLevel} tase
                   </div>
@@ -246,9 +246,9 @@ export default async function ResultsPage({
               </div>
               
               {/* Progress bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-6">
+              <div className="tehnopol-progress-bar mb-6">
                 <div
-                  className={`h-2.5 rounded-full transition-all duration-500 ${
+                  className={`tehnopol-progress-indicator ${
                     category.maturityColor === 'red' ? 'bg-red-600' :
                     category.maturityColor === 'yellow' ? 'bg-yellow-600' :
                     'bg-green-600'
@@ -259,20 +259,20 @@ export default async function ResultsPage({
 
               {/* Recommendations section */}
               <div className="mt-6">
-                <h4 className="text-lg font-semibold mb-3">Soovitused</h4>
+                <h4 className="tehnopol-heading text-lg mb-3">Soovitused</h4>
                 <div className="space-y-4">
                   {category.recommendations.map((recommendation) => (
-                    <div key={recommendation.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                      <h5 className="font-medium mb-2">{recommendation.recommendationText_et}</h5>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                    <div key={recommendation.id} className="tehnopol-card-muted">
+                      <h5 className="tehnopol-heading mb-2">{recommendation.recommendationText_et}</h5>
+                      <p className="tehnopol-text mb-4">
                         {recommendation.recommendationDescription_et}
                       </p>
                       {recommendation.providers.length > 0 && (
                         <div className="mt-4 border-t pt-4">
-                          <h6 className="font-medium mb-2">Teenusepakkujad:</h6>
+                          <h6 className="tehnopol-heading mb-2">Teenusepakkujad:</h6>
                           <div className="grid gap-4 md:grid-cols-2">
                             {recommendation.providers.map((provider) => (
-                              <div key={provider.id} className="flex items-start space-x-3 p-3 bg-white dark:bg-gray-700 rounded-lg">
+                              <div key={provider.id} className="tehnopol-card">
                                 {provider.providerLogo?.[0] && (
                                   <div className="flex-shrink-0">
                                     <Image
@@ -285,16 +285,16 @@ export default async function ResultsPage({
                                   </div>
                                 )}
                                 <div>
-                                  <h6 className="font-medium">{provider.providerName_et}</h6>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                  <h6 className="tehnopol-heading">{provider.providerName_et}</h6>
+                                  <p className="tehnopol-text-sm">
                                     {provider.providerDescription_et}
                                   </p>
-                                  <div className="text-sm">
+                                  <div className="text-sm mt-2">
                                     <a
                                       href={provider.providerUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                      className="tehnopol-link"
                                     >
                                       Külasta veebilehte
                                     </a>
@@ -312,20 +312,20 @@ export default async function ResultsPage({
 
               {/* Example solutions section */}
               <div className="mt-6">
-                <h4 className="text-lg font-semibold mb-3">Näidislahendused</h4>
+                <h4 className="tehnopol-heading text-lg mb-3">Näidislahendused</h4>
                 <div className="grid gap-4 md:grid-cols-2">
                   {category.solutions.map((solution) => (
-                    <div key={solution.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                      <h5 className="font-medium mb-2">{solution.exampleSolutionText_et}</h5>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                    <div key={solution.id} className="tehnopol-card-muted">
+                      <h5 className="tehnopol-heading mb-2">{solution.exampleSolutionText_et}</h5>
+                      <p className="tehnopol-text mb-4">
                         {solution.exampleSolutionDescription_et}
                       </p>
                       {solution.providers.length > 0 && (
                         <div className="mt-4 border-t pt-4">
-                          <h6 className="font-medium mb-2">Teenusepakkujad:</h6>
+                          <h6 className="tehnopol-heading mb-2">Teenusepakkujad:</h6>
                           <div className="space-y-3">
                             {solution.providers.map((provider) => (
-                              <div key={provider.id} className="flex items-start space-x-3 p-3 bg-white dark:bg-gray-700 rounded-lg">
+                              <div key={provider.id} className="tehnopol-card">
                                 {provider.providerLogo?.[0] && (
                                   <div className="flex-shrink-0">
                                     <Image
@@ -338,16 +338,16 @@ export default async function ResultsPage({
                                   </div>
                                 )}
                                 <div>
-                                  <h6 className="font-medium">{provider.providerName_et}</h6>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                  <h6 className="tehnopol-heading">{provider.providerName_et}</h6>
+                                  <p className="tehnopol-text-sm">
                                     {provider.providerDescription_et}
                                   </p>
-                                  <div className="text-sm">
+                                  <div className="text-sm mt-2">
                                     <a
                                       href={provider.providerUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                      className="tehnopol-link"
                                     >
                                       Külasta veebilehte
                                     </a>
@@ -369,7 +369,7 @@ export default async function ResultsPage({
         <div className="mt-8 flex justify-center">
           <a
             href="/assessment"
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="tehnopol-btn tehnopol-btn-primary"
           >
             Alusta uut hindamist
           </a>

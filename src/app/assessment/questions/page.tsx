@@ -42,15 +42,15 @@ export default async function QuestionsPage({
       console.error('No categories found for company type:', companyType);
       return (
         <main className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-6 text-red-600">
+          <h1 className="tehnopol-heading text-3xl mb-6 text-red-600">
             Küsimusi ei leitud
           </h1>
-          <p className="text-lg mb-4">
+          <p className="tehnopol-text text-lg mb-4">
             Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
           </p>
           <a
             href="/assessment"
-            className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="tehnopol-btn tehnopol-btn-primary"
           >
             Tagasi hindamise algusesse
           </a>
@@ -82,15 +82,15 @@ export default async function QuestionsPage({
     if (!questionsByCategory.length) {
       return (
         <main className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-6 text-red-600">
+          <h1 className="tehnopol-heading text-3xl mb-6 text-red-600">
             Küsimusi ei leitud
           </h1>
-          <p className="text-lg mb-4">
+          <p className="tehnopol-text text-lg mb-4">
             Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
           </p>
           <a
             href="/assessment"
-            className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="tehnopol-btn tehnopol-btn-primary"
           >
             Tagasi hindamise algusesse
           </a>
@@ -100,13 +100,13 @@ export default async function QuestionsPage({
 
     return (
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">
+        <h1 className="tehnopol-gradient-text text-3xl font-bold mb-6">
           Hindamise küsimused
         </h1>
         
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Teie eesmärk:</h2>
-          <p className="text-lg bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+          <h2 className="tehnopol-heading text-xl mb-2">Teie eesmärk:</h2>
+          <p className="tehnopol-text bg-muted/30 p-4 rounded">
             {assessment.initialGoal}
           </p>
         </div>
@@ -122,15 +122,15 @@ export default async function QuestionsPage({
     console.error('Error loading questions page:', error);
     return (
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-red-600">
+        <h1 className="tehnopol-heading text-3xl mb-6 text-red-600">
           Viga küsimuste laadimisel
         </h1>
-        <p className="text-lg mb-4">
+        <p className="tehnopol-text text-lg mb-4">
           Kahjuks tekkis küsimuste laadimisel viga. Palun proovige uuesti.
         </p>
         <a
           href="/assessment"
-          className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="tehnopol-btn tehnopol-btn-primary"
         >
           Tagasi hindamise algusesse
         </a>

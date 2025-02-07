@@ -6,15 +6,17 @@ export default async function AssessmentPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">
+      <h1 className="tehnopol-gradient-text text-3xl font-bold mb-6">
         Ettevõtte AI-valmiduse hindamine
       </h1>
       
-      <p className="mb-8 text-lg">
+      <p className="tehnopol-text text-lg mb-8">
         Tere tulemast AI-valmiduse hindamise tööriista! See hindamine aitab teil mõista oma ettevõtte praegust valmisolekut tehisintellekti rakendamiseks.
       </p>
 
-      <AssessmentForm companyTypes={companyTypes} />
+      <div className="tehnopol-card">
+        <AssessmentForm companyTypes={companyTypes} />
+      </div>
     </main>
   );
 }
