@@ -47,7 +47,7 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
   };
 
   return (
-    <Form className="space-y-6" onSubmit={handleSubmit}>
+    <Form className="tehnopol-content-group" onSubmit={handleSubmit}>
       <div className="tehnopol-form-group">
         <label className="tehnopol-form-label" htmlFor="initialGoal">
           Mis on teie peamine äriline eesmärk seoses AI-ga?
@@ -80,13 +80,15 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
         </select>
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="tehnopol-btn tehnopol-btn-primary"
-      >
-        {isSubmitting ? "Saadan..." : "Alusta hindamist"}
-      </button>
+      <div className="tehnopol-flex-end">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="tehnopol-btn tehnopol-btn-primary"
+        >
+          {isSubmitting ? "Saadan..." : "Alusta hindamist"}
+        </button>
+      </div>
     </Form>
   );
 } 

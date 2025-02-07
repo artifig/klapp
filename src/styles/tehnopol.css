@@ -173,7 +173,15 @@
 
 /* White space utilities */
 .tehnopol-section {
-  @apply py-12 px-6 md:py-16 md:px-8;
+  @apply py-8 sm:py-12 md:py-16;
+}
+
+.tehnopol-section-sm {
+  @apply py-6 sm:py-8;
+}
+
+.tehnopol-section-lg {
+  @apply py-12 sm:py-16 md:py-20;
 }
 
 /* Layout Components */
@@ -205,33 +213,88 @@
   transform: skewY(-3deg) translateY(50%);
 }
 
-/* Container Layouts */
+/* Container Layouts - Enhanced */
 .tehnopol-container {
-  @apply max-w-4xl mx-auto;
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
 .tehnopol-container-sm {
-  @apply max-w-2xl mx-auto;
+  @apply max-w-3xl mx-auto px-4 sm:px-6;
+}
+
+.tehnopol-container-md {
+  @apply max-w-4xl mx-auto px-4 sm:px-6;
 }
 
 .tehnopol-container-lg {
-  @apply max-w-6xl mx-auto;
+  @apply max-w-6xl mx-auto px-4 sm:px-6;
 }
 
-/* Grid Layouts */
+/* Grid Layouts - Enhanced */
 .tehnopol-grid {
-  @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+  @apply grid gap-6;
 }
 
-.tehnopol-grid-2 {
-  @apply grid gap-6 md:grid-cols-2;
+.tehnopol-grid-cols-1 {
+  @apply grid gap-6 sm:grid-cols-2 lg:grid-cols-3;
 }
 
-/* Flex Layouts */
+.tehnopol-grid-cols-2 {
+  @apply grid gap-6 sm:grid-cols-2;
+}
+
+.tehnopol-grid-cols-3 {
+  @apply grid gap-6 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.tehnopol-grid-cols-4 {
+  @apply grid gap-6 sm:grid-cols-2 lg:grid-cols-4;
+}
+
+/* Grid Items */
+.tehnopol-grid-item {
+  @apply flex flex-col h-full;
+}
+
+/* Content Spacing */
+.tehnopol-stack {
+  @apply space-y-4;
+}
+
+.tehnopol-stack-sm {
+  @apply space-y-2;
+}
+
+.tehnopol-stack-lg {
+  @apply space-y-6;
+}
+
+/* Flex Layouts - Enhanced */
 .tehnopol-flex-between {
-  @apply flex flex-col md:flex-row md:items-center justify-between gap-6;
+  @apply flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6;
 }
 
 .tehnopol-flex-center {
   @apply flex items-center justify-center;
+}
+
+.tehnopol-flex-start {
+  @apply flex items-start justify-start;
+}
+
+.tehnopol-flex-end {
+  @apply flex items-center justify-end;
+}
+
+/* Content Groups */
+.tehnopol-content-group {
+  @apply space-y-4 sm:space-y-6;
+}
+
+.tehnopol-content-group-sm {
+  @apply space-y-2 sm:space-y-4;
+}
+
+.tehnopol-content-group-lg {
+  @apply space-y-6 sm:space-y-8;
 } 

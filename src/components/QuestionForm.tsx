@@ -109,73 +109,70 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
   };
 
   return (
-    <div className="space-y-8">
+    <div className="tehnopol-content-group-lg">
       {/* Progress indicator */}
-      <div className="mb-6">
-        <div className="flex justify-between mb-2">
+      <div className="tehnopol-content-group">
+        <div className="tehnopol-flex-between">
+          <h2 className="tehnopol-heading text-xl">
+            {currentCategory.categoryText_et}
+          </h2>
           <span className="tehnopol-text-sm">
             Kategooria {currentCategoryIndex + 1} / {categories.length}
           </span>
-          <span className="tehnopol-text-sm">
-            {Math.round(((currentCategoryIndex + 1) / categories.length) * 100)}%
-          </span>
         </div>
+
         <div className="tehnopol-progress-bar">
           <div
             className="tehnopol-progress-indicator"
-            style={{ width: `${((currentCategoryIndex + 1) / categories.length) * 100}%` }}
+            style={{
+              width: `${((currentCategoryIndex + 1) / categories.length) * 100}%`,
+            }}
           />
         </div>
       </div>
 
-      {/* Category header */}
-      <div className="tehnopol-card">
-        <h2 className="tehnopol-heading text-2xl mb-2">{currentCategory.categoryText_et}</h2>
-        <p className="tehnopol-text">
-          {currentCategory.categoryDescription_et}
-        </p>
-      </div>
-
       {/* Questions */}
-      <div className="space-y-8">
+      <div className="tehnopol-stack-lg">
         {currentCategory.questions.map((question) => (
           <div key={question.id} className="tehnopol-card">
-            <h3 className="tehnopol-heading text-xl mb-4">{question.questionText_et}</h3>
-            {question.questionDescription_et && (
-              <p className="tehnopol-text mb-4">
-                {question.questionDescription_et}
-              </p>
-            )}
-            <div className="tehnopol-radio-group">
-              {question.answers.map((answer) => (
-                <label
-                  key={answer.id}
-                  className={`tehnopol-radio-label ${
-                    responses.some(r => r.questionId === question.id && r.answerId === answer.id)
-                      ? 'tehnopol-radio-label-selected'
-                      : 'tehnopol-radio-label-unselected'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name={`question-${question.id}`}
-                    value={answer.id}
-                    checked={responses.some(
-                      r => r.questionId === question.id && r.answerId === answer.id
-                    )}
-                    onChange={() => handleAnswerSelect(question.id, answer.id)}
-                    className="sr-only"
-                  />
-                  <span className="tehnopol-text">{answer.answerText_et}</span>
-                </label>
-              ))}
+            <div className="tehnopol-content-group">
+              <h3 className="tehnopol-heading text-xl">{question.questionText_et}</h3>
+              {question.questionDescription_et && (
+                <p className="tehnopol-text">
+                  {question.questionDescription_et}
+                </p>
+              )}
+              <div className="tehnopol-radio-group">
+                {question.answers.map((answer) => (
+                  <label
+                    key={answer.id}
+                    className={`tehnopol-radio-label ${
+                      responses.some(r => r.questionId === question.id && r.answerId === answer.id)
+                        ? 'tehnopol-radio-label-selected'
+                        : 'tehnopol-radio-label-unselected'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`question-${question.id}`}
+                      value={answer.id}
+                      checked={responses.some(
+                        r => r.questionId === question.id && r.answerId === answer.id
+                      )}
+                      onChange={() => handleAnswerSelect(question.id, answer.id)}
+                      className="sr-only"
+                    />
+                    <span className="tehnopol-text">{answer.answerText_et}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
         ))}
       </div>
 
       {/* Navigation buttons */}
-      <div className="flex justify-between mt-8">
+      <div className="tehnopol-flex-between">
         <button
           onClick={() => setCurrentCategoryIndex(prev => prev - 1)}
           disabled={currentCategoryIndex === 0}
