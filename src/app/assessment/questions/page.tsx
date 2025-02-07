@@ -1,6 +1,7 @@
 import { getAssessmentResponse, getCategories, getQuestions, getAnswers } from "@/lib/airtable";
 import { QuestionForm } from "@/components/QuestionForm";
 import { redirect } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -41,15 +42,21 @@ export default async function QuestionsPage({
     if (!categories.length) {
       console.error('No categories found for company type:', companyType);
       return (
-        <main>
-          <h1>AI-valmiduse hindamine</h1>
-          <div className="category-section">
-            <h2>Küsimusi ei leitud</h2>
-            <p>
-              Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
-            </p>
-            <a href="/assessment">Tagasi hindamise algusesse</a>
-          </div>
+        <main className="max-w-6xl mx-auto px-6">
+          <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamine</h1>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base text-tehnopol">Küsimusi ei leitud</CardTitle>
+              <CardDescription className="mt-1 text-xs">
+                Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <a href="/assessment" className="text-tehnopol hover:text-tehnopol-dark">
+                Tagasi hindamise algusesse
+              </a>
+            </CardContent>
+          </Card>
         </main>
       );
     }
@@ -77,42 +84,63 @@ export default async function QuestionsPage({
 
     if (!questionsByCategory.length) {
       return (
-        <main>
-          <h1>AI-valmiduse hindamine</h1>
-          <div className="category-section">
-            <h2>Küsimusi ei leitud</h2>
-            <p>
-              Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
-            </p>
-            <a href="/assessment">Tagasi hindamise algusesse</a>
-          </div>
+        <main className="max-w-6xl mx-auto px-6">
+          <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamine</h1>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base text-tehnopol">Küsimusi ei leitud</CardTitle>
+              <CardDescription className="mt-1 text-xs">
+                Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <a href="/assessment" className="text-tehnopol hover:text-tehnopol-dark">
+                Tagasi hindamise algusesse
+              </a>
+            </CardContent>
+          </Card>
         </main>
       );
     }
 
     return (
-      <main>
-        <h1>AI-valmiduse hindamine</h1>
-        <p className="intro-text">
-          Vastake järgnevatele küsimustele, et hinnata oma ettevõtte valmisolekut.
-        </p>
-        <QuestionForm 
-          assessmentId={id}
-          categories={questionsByCategory}
-          existingResponses={responses}
-        />
+      <main className="max-w-6xl mx-auto px-6">
+        <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamine</h1>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base text-tehnopol">Vastake küsimustele</CardTitle>
+            <CardDescription className="mt-1 text-xs">
+              Palun vastake järgnevatele küsimustele, et hinnata oma ettevõtte valmisolekut.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <QuestionForm 
+              assessmentId={id}
+              categories={questionsByCategory}
+              existingResponses={responses}
+            />
+          </CardContent>
+        </Card>
       </main>
     );
   } catch (error) {
     console.error('Error loading questions page:', error);
     return (
-      <main>
-        <h1>AI-valmiduse hindamine</h1>
-        <div className="category-section">
-          <h2>Viga küsimuste laadimisel</h2>
-          <p>Kahjuks tekkis küsimuste laadimisel viga. Palun proovige uuesti.</p>
-          <a href="/assessment">Tagasi algusesse</a>
-        </div>
+      <main className="max-w-6xl mx-auto px-6">
+        <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamine</h1>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base text-tehnopol">Viga küsimuste laadimisel</CardTitle>
+            <CardDescription className="mt-1 text-xs">
+              Kahjuks tekkis küsimuste laadimisel viga. Palun proovige uuesti.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <a href="/assessment" className="text-tehnopol hover:text-tehnopol-dark">
+              Tagasi algusesse
+            </a>
+          </CardContent>
+        </Card>
       </main>
     );
   }

@@ -419,20 +419,35 @@ textarea {
 
 /* Radio buttons */
 .radio-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
   margin: 1.5rem 0;
+  width: 100%;
 }
 
 label.radio-label {
+  width: 160px;
   display: flex;
   align-items: center;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
+  justify-content: center;
+  padding: 1rem;
   border: 2px solid #eee;
   background: white;
   cursor: pointer;
   transition: all 0.2s;
   /* Brand angle for radio labels */
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+
+label.radio-label input[type="radio"] {
+  display: none;
+}
+
+label.radio-label span {
+  font-size: 0.9rem;
+  text-align: center;
+  width: 100%;
 }
 
 label.radio-label:hover {
@@ -442,6 +457,30 @@ label.radio-label:hover {
 label.radio-label.selected {
   border-color: #EB8B00;
   background: linear-gradient(135deg, rgba(255, 102, 0, 0.1), rgba(255, 204, 0, 0.1));
+}
+
+@media (max-width: 840px) {
+  .radio-group {
+    grid-template-columns: 1fr;
+  }
+
+  label.radio-label {
+    width: 100%;
+  }
+}
+
+/* Single question display */
+.single-question {
+  opacity: 0;
+  transform: translateX(20px);
+  animation: slideIn 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Buttons */
@@ -494,30 +533,97 @@ button.secondary:hover:not(:disabled) {
 }
 
 /* Sections */
-.question-section,
 .category-section {
-  margin-bottom: 2rem;
-  padding: 2rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
   background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   /* Brand angle for sections */
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 0.5rem), calc(100% - 0.5rem) 100%, 0 100%);
 }
 
-.category-section {
-  margin-bottom: 3rem;
+/* Question sections within accordion */
+.question-section {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 1px solid #eee;
+  /* Brand angle for sections */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 0.5rem), calc(100% - 0.5rem) 100%, 0 100%);
+}
+
+.question-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Accordion specific styles */
+.accordion-section {
+  padding: 0.25rem 0.5rem !important;
+  min-height: 1.75rem !important;
+  height: 1.75rem !important;
+  margin-bottom: 0 !important;
+  border-width: 1px !important;
+  display: flex;
+  align-items: center;
+  overflow: visible !important;
+}
+
+.accordion-trigger {
+  padding: 0 !important;
+  height: 100% !important;
+  width: 100%;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  overflow: visible !important;
+}
+
+.accordion-trigger:hover {
+  text-decoration: none !important;
+}
+
+.accordion-trigger h3 {
+  font-size: 0.625rem; /* 10px */
+  margin: 0;
+  line-height: 1.2;
+  font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0;
+  flex: 1;
+  display: block !important;
+}
+
+.accordion-trigger svg {
+  width: 0.625rem !important;
+  height: 0.625rem !important;
+  margin-left: 0.25rem !important;
+  flex-shrink: 0;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.accordion-content {
+  padding: 0.5rem;
+  background: white;
+  margin-top: 0.25rem;
+  max-height: calc(100vh - 8rem);
+  overflow-y: auto;
 }
 
 /* Score displays */
 .score-indicator {
   font-family: "Helvetica Neue Condensed", "Helvetica Neue", Arial, sans-serif;
-  font-size: 3rem;
+  font-size: 1.5rem;
   font-weight: bold;
   background: linear-gradient(135deg, #FF6600, #EB8B00);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  margin: 1.5rem 0;
+  margin: 0;
   line-height: 1;
 }
 
@@ -542,10 +648,13 @@ button.secondary:hover:not(:disabled) {
     color: #ddd;
   }
 
-  .question-section,
   .category-section {
     background-color: rgba(42, 42, 42, 0.9);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .question-section {
+    background-color: rgba(42, 42, 42, 0.5);
+    border-color: #333;
   }
 
   input[type="text"],
@@ -597,7 +706,7 @@ button.secondary:hover:not(:disabled) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  margin-top: 1rem;
+  margin: 1.5rem 0 2.5rem 0;
 }
 
 .provider-card {
@@ -636,5 +745,130 @@ button.secondary:hover:not(:disabled) {
   .provider-card {
     background: rgba(42, 42, 42, 0.9);
     border-color: #444;
+  }
+}
+
+/* Recommendation and solution sections */
+article.question-section {
+  margin-bottom: 3rem;
+  padding-bottom: 3rem;
+}
+
+article.question-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Headings in recommendation sections */
+.category-section h3 {
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.category-section h3:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .category-section h3 {
+    border-top-color: #444;
+  }
+  
+  .category-section,
+  .question-section {
+    background-color: rgba(42, 42, 42, 0.9);
+  }
+}
+
+/* Accordion grid layout */
+.accordion-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  position: relative;
+  overflow: visible !important;
+}
+
+/* Level-based accordion styles - make colors more subtle */
+.accordion-section.level-green {
+  background: linear-gradient(to bottom right, rgba(34, 197, 94, 0.02), rgba(34, 197, 94, 0.06));
+  border: 1px solid rgba(34, 197, 94, 0.06) !important;
+}
+
+.accordion-section.level-yellow {
+  background: linear-gradient(to bottom right, rgba(234, 179, 8, 0.02), rgba(234, 179, 8, 0.06));
+  border: 1px solid rgba(234, 179, 8, 0.06) !important;
+}
+
+.accordion-section.level-red {
+  background: linear-gradient(to bottom right, rgba(239, 68, 68, 0.02), rgba(239, 68, 68, 0.06));
+  border: 1px solid rgba(239, 68, 68, 0.06) !important;
+}
+
+/* Expanded accordion styles */
+.accordion-section[data-state="open"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 10;
+  height: auto !important;
+  min-height: auto !important;
+  padding: 0.75rem !important;
+  margin: 0 !important;
+  background: white;
+}
+
+.accordion-section[data-state="open"] .accordion-trigger {
+  margin-bottom: 0.5rem;
+}
+
+.accordion-section[data-state="open"] .accordion-trigger h3 {
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: normal;
+}
+
+/* Responsive grid */
+@media (max-width: 1024px) {
+  .accordion-grid {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .accordion-grid {
+    grid-template-columns: repeat(1, minmax(120px, 1fr));
+  }
+}
+
+/* Dark mode support for level colors */
+@media (prefers-color-scheme: dark) {
+  .accordion-section.level-green {
+    background: linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.3));
+    border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  }
+
+  .accordion-section.level-yellow {
+    background: linear-gradient(to bottom right, rgba(234, 179, 8, 0.2), rgba(234, 179, 8, 0.3));
+    border: 1px solid rgba(234, 179, 8, 0.3) !important;
+  }
+
+  .accordion-section.level-red {
+    background: linear-gradient(to bottom right, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.3));
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  }
+}
+
+/* Accordion content styles */
+@media (prefers-color-scheme: dark) {
+  .accordion-content {
+    background: rgba(42, 42, 42, 0.9);
   }
 } 

@@ -15,7 +15,10 @@ import {
   type SolutionProvider
 } from "@/lib/airtable";
 import { redirect } from "next/navigation";
-import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ResultsRadarChart } from "@/components/ResultsRadarChart";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface AssessmentResponse {
   questionId: string;
@@ -134,138 +137,204 @@ export default async function ResultsPage({
     }));
 
     return (
-      <main>
-        <h1>AI-valmiduse hindamine</h1>
-        <p className="intro-text">
-          Täname teid hindamise läbimise eest! Allpool leiate üksikasjaliku ülevaate tulemustest.
-        </p>
+      <main className="max-w-6xl mx-auto px-6">
+        <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamise tulemused</h1>
         
-        <div className="category-section">
-          <h2>Teie eesmärk</h2>
-          <p>{assessment.initialGoal}</p>
+        <div className="grid grid-cols-2 gap-6 mb-8">
+          <div className="flex items-center justify-center">
+            <ResultsRadarChart 
+              categories={categoryScores.map(cat => ({
+                name: cat.categoryText_et,
+                level: cat.maturityColor,
+                value: cat.score
+              }))}
+            />
+          </div>
+          
+          <div className="grid grid-rows-2 gap-4 h-[350px]">
+            <Card className="flex flex-col">
+              <CardHeader className="pb-2 flex-none">
+                <CardTitle>Teie eesmärk</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col justify-center items-center text-center px-6">
+                <p className="text-base text-muted-foreground">{assessment.initialGoal}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="flex flex-col">
+              <CardHeader className="pb-2 flex-none">
+                <CardTitle>Üldine tulemus</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col justify-center items-center text-center">
+                <div className="text-5xl font-bold text-tehnopol mb-2">45%</div>
+                <p className="text-base text-muted-foreground">Teie ettevõtte valmisolek</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
-        <div className="category-section">
-          <h2>Üldine tulemus</h2>
-          <p>Teie ettevõtte üldine küpsustase</p>
-          <div className="score-indicator">75%</div>
-          <p>Küpsustase</p>
-        </div>
+        <Card className="mb-8">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base text-tehnopol">Tagasiside tehisaru analüüsist</CardTitle>
+            <CardDescription className="mt-1 text-xs">
+              Teie ettevõte näitab tugevat potentsiaali mitmes valdkonnas. Eriti silmapaistev on teie sooritus kvaliteedijuhtimise ja innovatsiooni valdkonnas. Siiski on mõned võimalused edasisteks parandusteks, eriti seoses digitaliseerimise ja andmepõhise otsustamisega.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-green-600">
+                  <div className="h-1 w-1 rounded-full bg-green-600"></div>
+                  <h3 className="text-xs font-semibold">Peamised tugevused</h3>
+                </div>
+                <ul className="space-y-1 text-xs text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                    <span>Tugev strateegiline planeerimine</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                    <span>Efektiivne meeskonnatöö</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                    <span>Kliendikeskne lähenemine</span>
+                  </li>
+                </ul>
+              </div>
 
-        <div className="category-section">
-          <h2>Tagasiside tehisaru analüüsist</h2>
-          <p>
-            Teie ettevõte näitab tugevat potentsiaali mitmes valdkonnas. Eriti silmapaistev on teie sooritus kvaliteedijuhtimise ja innovatsiooni valdkonnas. Siiski on mõned võimalused edasisteks parandusteks, eriti seoses digitaliseerimise ja andmepõhise otsustamisega.
-          </p>
-          
-          <h3>Peamised tugevused</h3>
-          <ul>
-            <li>Tugev strateegiline planeerimine</li>
-            <li>Efektiivne meeskonnatöö</li>
-            <li>Kliendikeskne lähenemine</li>
-          </ul>
-          
-          <h3>Arendamist vajavad valdkonnad</h3>
-          <ul>
-            <li>Digitaalsete lahenduste integreerimine</li>
-            <li>Andmepõhine otsustusprotsess</li>
-            <li>Automatiseerimine ja protsesside optimeerimine</li>
-          </ul>
-          
-          <p className="note">
-            * See tagasiside on genereeritud tehisintellekti poolt, põhinedes teie vastustel hindamisküsimustele.
-          </p>
-        </div>
-
-        {categoryScores.map((category: CategoryScore) => (
-          <section key={category.id} className="category-section">
-            <h2>{category.categoryText_et}</h2>
-            <p>{category.categoryDescription_et}</p>
-            
-            <div className="score-indicator">{category.score}%</div>
-            <p>Vastatud: {category.answeredCount}/{category.questionCount}</p>
-            <p>Küpsustase: {category.maturityLevel}</p>
-
-            <div className="progress-bar">
-              <div
-                className="progress-indicator"
-                style={{ width: `${category.score}%` }}
-              />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-orange-600">
+                  <div className="h-1 w-1 rounded-full bg-orange-600"></div>
+                  <h3 className="text-xs font-semibold">Arendamist vajavad valdkonnad</h3>
+                </div>
+                <ul className="space-y-1 text-xs text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                    <span>Digitaalsete lahenduste integreerimine</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                    <span>Andmepõhine otsustusprotsess</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                    <span>Automatiseerimine ja protsesside optimeerimine</span>
+                  </li>
+                </ul>
+              </div>
             </div>
 
-            <h3>Soovitused</h3>
-            {category.recommendations.map((recommendation) => (
-              <article key={recommendation.id} className="question-section">
-                <h4>{recommendation.recommendationText_et}</h4>
-                <p>{recommendation.recommendationDescription_et}</p>
-                {recommendation.providers.length > 0 && (
-                  <>
-                    <h5>Teenusepakkujad</h5>
-                    <div className="providers-grid">
-                      {recommendation.providers.map((provider) => (
-                        <div key={provider.id} className="provider-card">
-                          {provider.providerLogo?.[0] && (
-                            <Image
-                              src={provider.providerLogo[0].thumbnails.small.url}
-                              alt={provider.providerName_et}
-                              width={provider.providerLogo[0].thumbnails.small.width}
-                              height={provider.providerLogo[0].thumbnails.small.height}
-                            />
-                          )}
-                          <h6>{provider.providerName_et}</h6>
-                          <p>{provider.providerDescription_et}</p>
-                          <a
-                            href={provider.providerUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Külasta veebilehte
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </article>
-            ))}
+            <div className="mt-4 text-[10px] text-muted-foreground italic border-t pt-2">
+              * See tagasiside on genereeritud tehisintellekti poolt, põhinedes teie vastustel hindamisküsimustele.
+            </div>
+          </CardContent>
+        </Card>
 
-            <h3>Näidislahendused</h3>
-            {category.solutions.map((solution) => (
-              <article key={solution.id} className="question-section">
-                <h4>{solution.exampleSolutionText_et}</h4>
-                <p>{solution.exampleSolutionDescription_et}</p>
-                {solution.providers.length > 0 && (
-                  <>
-                    <h5>Teenusepakkujad</h5>
-                    <div className="providers-grid">
-                      {solution.providers.map((provider) => (
-                        <div key={provider.id} className="provider-card">
-                          {provider.providerLogo?.[0] && (
-                            <Image
-                              src={provider.providerLogo[0].thumbnails.small.url}
-                              alt={provider.providerName_et}
-                              width={provider.providerLogo[0].thumbnails.small.width}
-                              height={provider.providerLogo[0].thumbnails.small.height}
-                            />
-                          )}
-                          <h6>{provider.providerName_et}</h6>
-                          <p>{provider.providerDescription_et}</p>
-                          <a
-                            href={provider.providerUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Külasta veebilehte
-                          </a>
+        <div className="relative">
+          <div className="grid grid-cols-3 gap-2">
+            {categoryScores.map((category: CategoryScore) => {
+              const levelClass = category.maturityLevel === 'Roheline' 
+                ? 'level-green' 
+                : category.maturityLevel === 'Kollane' 
+                  ? 'level-yellow' 
+                  : 'level-red';
+                  
+              return (
+                <Dialog key={category.id}>
+                  <DialogTrigger asChild>
+                    <button 
+                      className={`accordion-section category-section ${levelClass} w-full text-left`}
+                    >
+                      <div className="w-full">
+                        <h3 className="text-xs">{category.categoryText_et}</h3>
+                      </div>
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="p-0 overflow-auto max-h-[80vh]">
+                    <DialogHeader className="p-6 pb-3 border-b">
+                      <DialogTitle className="text-center">{category.categoryText_et}</DialogTitle>
+                      <DialogDescription className="text-center">
+                        {category.categoryDescription_et}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="p-6 space-y-4">
+                      <p className="text-sm text-center mt-10">Vastatud: {category.answeredCount}/{category.questionCount}</p>
+
+                      {category.recommendations.length > 0 && (
+                        <div className="space-y-3 mt-10">
+                          <h4 className="text-sm font-semibold text-center">Soovitused</h4>
+                          {category.recommendations.map((recommendation) => (
+                            <article key={recommendation.id} className="bg-muted/50 rounded-lg p-4 mt-6">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <h5 className="text-sm font-medium text-center">{recommendation.recommendationText_et}</h5>
+                                  <p className="text-sm text-muted-foreground mt-4 text-center">{recommendation.recommendationDescription_et}</p>
+                                </div>
+                                {recommendation.providers.length > 0 && (
+                                  <div className="flex -space-x-2 shrink-0">
+                                    {recommendation.providers.map((provider) => (
+                                      <Avatar key={provider.id} className="border-2 border-white h-8 w-8">
+                                        {provider.providerLogo?.[0] ? (
+                                          <AvatarImage
+                                            src={provider.providerLogo[0].thumbnails.small.url}
+                                            alt={provider.providerName_et}
+                                          />
+                                        ) : (
+                                          <AvatarFallback className="text-xs">
+                                            {provider.providerName_et.substring(0, 2).toUpperCase()}
+                                          </AvatarFallback>
+                                        )}
+                                      </Avatar>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </article>
+                          ))}
                         </div>
-                      ))}
+                      )}
+
+                      {category.solutions.length > 0 && (
+                        <div className="space-y-3 mt-10">
+                          <h4 className="text-sm font-semibold text-center">Näidislahendused</h4>
+                          {category.solutions.map((solution) => (
+                            <article key={solution.id} className="bg-muted/50 rounded-lg p-4 mt-6">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <h5 className="text-sm font-medium text-center">{solution.exampleSolutionText_et}</h5>
+                                  <p className="text-sm text-muted-foreground mt-4 text-center">{solution.exampleSolutionDescription_et}</p>
+                                </div>
+                                {solution.providers.length > 0 && (
+                                  <div className="flex -space-x-2 shrink-0">
+                                    {solution.providers.map((provider) => (
+                                      <Avatar key={provider.id} className="border-2 border-white h-8 w-8">
+                                        {provider.providerLogo?.[0] ? (
+                                          <AvatarImage
+                                            src={provider.providerLogo[0].thumbnails.small.url}
+                                            alt={provider.providerName_et}
+                                          />
+                                        ) : (
+                                          <AvatarFallback className="text-xs">
+                                            {provider.providerName_et.substring(0, 2).toUpperCase()}
+                                          </AvatarFallback>
+                                        )}
+                                      </Avatar>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </>
-                )}
-              </article>
-            ))}
-          </section>
-        ))}
+                  </DialogContent>
+                </Dialog>
+              );
+            })}
+          </div>
+        </div>
       </main>
     );
   } catch (error) {

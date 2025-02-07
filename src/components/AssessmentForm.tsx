@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { type MethodCompanyType } from "@/lib/airtable";
 
 interface AssessmentFormProps {
@@ -45,9 +46,12 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="initialGoal">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <label
+          htmlFor="initialGoal"
+          className="text-sm font-medium text-muted-foreground"
+        >
           Mis on teie peamine äriline eesmärk seoses AI-ga?
         </label>
         <textarea
@@ -55,17 +59,22 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
           name="initialGoal"
           required
           rows={4}
+          className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
         />
       </div>
 
-      <div>
-        <label htmlFor="companyType">
+      <div className="space-y-2">
+        <label
+          htmlFor="companyType"
+          className="text-sm font-medium text-muted-foreground"
+        >
           Ettevõtte tüüp
         </label>
         <select
           id="companyType"
           name="companyType"
           required
+          className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="">Vali ettevõtte tüüp...</option>
           {companyTypes.map((type) => (
@@ -76,13 +85,13 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
         </select>
       </div>
 
-      <div className="nav-buttons">
-        <button
+      <div className="flex justify-end">
+        <Button
           type="submit"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Saadan..." : "Alusta hindamist"}
-        </button>
+        </Button>
       </div>
     </form>
   );
