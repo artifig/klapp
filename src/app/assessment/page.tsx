@@ -5,8 +5,8 @@ export default async function AssessmentPage() {
   const companyTypes = await getActiveCompanyTypes();
 
   return (
-    <main className="tehnopol-container-md tehnopol-section">
-      <div className="tehnopol-content-group-lg">
+    <main className="tehnopol-container-md">
+      <div className="tehnopol-stack">
         <h1 className="tehnopol-gradient-text text-3xl font-bold">
           Ettevõtte AI-valmiduse hindamine
         </h1>
