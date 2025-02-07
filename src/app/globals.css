@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import '../styles/tehnopol.css';
+@import '../styles/tehnopol-layout.css';
 
 @layer base {
   :root {
