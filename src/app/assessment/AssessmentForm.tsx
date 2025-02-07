@@ -48,28 +48,28 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
 
   return (
     <Form className="space-y-6" onSubmit={handleSubmit}>
-      <div>
-        <label className="block text-sm font-medium mb-2" htmlFor="initialGoal">
+      <div className="tehnopol-form-group">
+        <label className="tehnopol-form-label" htmlFor="initialGoal">
           Mis on teie peamine äriline eesmärk seoses AI-ga?
         </label>
         <textarea
           id="initialGoal"
           name="initialGoal"
           required
-          className="w-full p-2 border rounded-md"
+          className="tehnopol-textarea"
           rows={4}
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-2" htmlFor="companyType">
+      <div className="tehnopol-form-group">
+        <label className="tehnopol-form-label" htmlFor="companyType">
           Ettevõtte tüüp
         </label>
         <select
           id="companyType"
           name="companyType"
           required
-          className="w-full p-2 border rounded-md"
+          className="tehnopol-select"
         >
           <option value="">Vali ettevõtte tüüp...</option>
           {companyTypes.map((type) => (
@@ -83,7 +83,7 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+        className="tehnopol-btn tehnopol-btn-primary"
       >
         {isSubmitting ? "Saadan..." : "Alusta hindamist"}
       </button>

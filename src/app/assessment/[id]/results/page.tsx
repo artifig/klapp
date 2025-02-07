@@ -380,15 +380,15 @@ export default async function ResultsPage({
     console.error('Error loading results page:', error);
     return (
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-red-600">
+        <h1 className="tehnopol-heading text-3xl mb-6 text-red-600">
           Viga tulemuste laadimisel
         </h1>
-        <p className="text-lg mb-4">
+        <p className="tehnopol-text text-lg mb-4">
           Kahjuks tekkis tulemuste laadimisel viga. Palun proovige uuesti.
         </p>
         <a
           href="/assessment"
-          className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="tehnopol-btn tehnopol-btn-primary"
         >
           Tagasi hindamise algusesse
         </a>

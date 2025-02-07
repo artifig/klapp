@@ -28,13 +28,13 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
   // Check if categories array is empty
   if (!categories || categories.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-lg text-red-600 mb-4">
+      <div className="tehnopol-card text-center py-8">
+        <p className="tehnopol-text text-lg mb-4">
           Küsimusi ei leitud. Palun proovige uuesti.
         </p>
         <button
           onClick={() => router.push('/assessment')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="tehnopol-btn tehnopol-btn-primary"
         >
           Tagasi algusesse
         </button>
@@ -48,13 +48,13 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
   if (!currentCategory) {
     console.error('Current category is undefined:', { currentCategoryIndex, categoriesLength: categories.length });
     return (
-      <div className="text-center py-8">
-        <p className="text-lg text-red-600 mb-4">
+      <div className="tehnopol-card text-center py-8">
+        <p className="tehnopol-text text-lg mb-4">
           Viga kategooria laadimisel. Palun proovige uuesti.
         </p>
         <button
           onClick={() => router.push('/assessment')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="tehnopol-btn tehnopol-btn-primary"
         >
           Tagasi algusesse
         </button>
@@ -113,25 +113,25 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
       {/* Progress indicator */}
       <div className="mb-6">
         <div className="flex justify-between mb-2">
-          <span className="text-sm font-medium">
+          <span className="tehnopol-text-sm">
             Kategooria {currentCategoryIndex + 1} / {categories.length}
           </span>
-          <span className="text-sm font-medium">
+          <span className="tehnopol-text-sm">
             {Math.round(((currentCategoryIndex + 1) / categories.length) * 100)}%
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className="tehnopol-progress-bar">
           <div
-            className="bg-blue-600 h-2.5 rounded-full"
+            className="tehnopol-progress-indicator"
             style={{ width: `${((currentCategoryIndex + 1) / categories.length) * 100}%` }}
           />
         </div>
       </div>
 
       {/* Category header */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg mb-6">
-        <h2 className="text-2xl font-bold mb-2">{currentCategory.categoryText_et}</h2>
-        <p className="text-gray-600 dark:text-gray-300">
+      <div className="tehnopol-card">
+        <h2 className="tehnopol-heading text-2xl mb-2">{currentCategory.categoryText_et}</h2>
+        <p className="tehnopol-text">
           {currentCategory.categoryDescription_et}
         </p>
       </div>
@@ -139,21 +139,21 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
       {/* Questions */}
       <div className="space-y-8">
         {currentCategory.questions.map((question) => (
-          <div key={question.id} className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-4">{question.questionText_et}</h3>
+          <div key={question.id} className="tehnopol-card">
+            <h3 className="tehnopol-heading text-xl mb-4">{question.questionText_et}</h3>
             {question.questionDescription_et && (
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="tehnopol-text mb-4">
                 {question.questionDescription_et}
               </p>
             )}
-            <div className="space-y-3">
+            <div className="tehnopol-radio-group">
               {question.answers.map((answer) => (
                 <label
                   key={answer.id}
-                  className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                  className={`tehnopol-radio-label ${
                     responses.some(r => r.questionId === question.id && r.answerId === answer.id)
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900'
-                      : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                      ? 'tehnopol-radio-label-selected'
+                      : 'tehnopol-radio-label-unselected'
                   }`}
                 >
                   <input
@@ -166,7 +166,7 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
                     onChange={() => handleAnswerSelect(question.id, answer.id)}
                     className="sr-only"
                   />
-                  <span className="ml-2">{answer.answerText_et}</span>
+                  <span className="tehnopol-text">{answer.answerText_et}</span>
                 </label>
               ))}
             </div>
@@ -179,10 +179,10 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
         <button
           onClick={() => setCurrentCategoryIndex(prev => prev - 1)}
           disabled={currentCategoryIndex === 0}
-          className={`px-6 py-2 rounded-lg font-medium ${
+          className={`tehnopol-btn ${
             currentCategoryIndex === 0
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'opacity-50 cursor-not-allowed'
+              : 'tehnopol-btn-secondary'
           }`}
         >
           Eelmine
@@ -191,10 +191,10 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
           <button
             onClick={handleSubmit}
             disabled={!isCurrentCategoryComplete() || isSubmitting}
-            className={`px-6 py-2 rounded-lg font-medium ${
+            className={`tehnopol-btn ${
               !isCurrentCategoryComplete() || isSubmitting
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                ? 'opacity-50 cursor-not-allowed'
+                : 'tehnopol-btn-primary'
             }`}
           >
             {isSubmitting ? 'Salvestamine...' : 'Lõpeta hindamine'}
@@ -203,10 +203,10 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
           <button
             onClick={handleNext}
             disabled={!isCurrentCategoryComplete()}
-            className={`px-6 py-2 rounded-lg font-medium ${
+            className={`tehnopol-btn ${
               !isCurrentCategoryComplete()
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                ? 'opacity-50 cursor-not-allowed'
+                : 'tehnopol-btn-primary'
             }`}
           >
             Järgmine

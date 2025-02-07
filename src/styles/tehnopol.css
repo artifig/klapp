@@ -1,13 +1,16 @@
 /* Tehnopol specific components */
 .tehnopol-btn {
-  @apply inline-flex items-center justify-center rounded px-4 py-2 text-sm font-medium 
+  @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium 
          transition-colors focus-visible:outline-none focus-visible:ring-2 
          focus-visible:ring-tehnopol focus-visible:ring-offset-2 
          disabled:pointer-events-none disabled:opacity-50;
+  /* Brand angle for buttons */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%);
 }
 
 .tehnopol-btn-primary {
   @apply bg-tehnopol text-white hover:bg-tehnopol-dark;
+  background-image: linear-gradient(135deg, #FF6600, #EB8B00);
 }
 
 .tehnopol-btn-secondary {
@@ -18,26 +21,31 @@
   @apply border border-tehnopol text-tehnopol hover:bg-tehnopol/10;
 }
 
-/* Typography */
+/* Typography - Following Helvetica Neue hierarchy */
 .tehnopol-heading {
-  @apply font-condensed text-tehnopol-gray dark:text-gray-100;
+  @apply font-sans font-bold text-tehnopol-gray dark:text-gray-100;
+}
+
+.tehnopol-heading-condensed {
+  @apply font-condensed font-bold text-tehnopol-gray dark:text-gray-100;
 }
 
 .tehnopol-text {
-  @apply text-tehnopol-gray dark:text-gray-300;
+  @apply font-sans text-tehnopol-gray dark:text-gray-300;
 }
 
 .tehnopol-text-sm {
-  @apply text-sm text-tehnopol-gray dark:text-gray-300;
+  @apply font-sans text-sm text-tehnopol-gray dark:text-gray-300;
 }
 
 .tehnopol-link {
   @apply text-tehnopol hover:text-tehnopol-dark transition-colors;
 }
 
-/* Cards */
+/* Cards - With brand angular corners */
 .tehnopol-card {
-  @apply relative bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg overflow-hidden;
+  @apply relative bg-white dark:bg-gray-900 p-6 shadow-lg overflow-hidden;
+  /* Brand angle for cards - 135° corner cut */
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%);
 }
 
@@ -45,16 +53,19 @@
   @apply tehnopol-card bg-muted/30;
 }
 
-/* Progress */
+/* Progress indicators */
 .tehnopol-progress-bar {
-  @apply w-full bg-muted rounded h-2.5 dark:bg-muted/30;
+  @apply w-full bg-muted rounded-sm h-2.5 dark:bg-muted/30;
+  /* Brand angle for progress bar */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2px), calc(100% - 2px) 100%, 0 100%);
 }
 
 .tehnopol-progress-indicator {
-  @apply h-2.5 rounded transition-all duration-500;
+  @apply h-2.5 rounded-sm transition-all duration-500;
+  background-image: linear-gradient(135deg, #FF6600, #EB8B00, #FFCC00);
 }
 
-/* Status colors */
+/* Status colors - Using brand colors */
 .tehnopol-status-red {
   @apply text-red-600 dark:text-red-400;
 }
@@ -64,33 +75,62 @@
 }
 
 .tehnopol-status-green {
-  @apply text-green-600 dark:text-green-400;
+  @apply text-tehnopol-green;
 }
 
 /* Lists */
 .tehnopol-list {
-  @apply list-disc list-inside text-tehnopol-gray dark:text-gray-300;
+  @apply list-disc list-inside text-tehnopol-gray dark:text-gray-300 space-y-2;
 }
 
-/* Forms */
+/* Forms - Clean, minimal design */
+.tehnopol-form-group {
+  @apply space-y-2 mb-6;
+}
+
+.tehnopol-form-label {
+  @apply block text-sm font-medium mb-2 text-tehnopol-gray dark:text-gray-200;
+}
+
 .tehnopol-input {
-  @apply w-full rounded border border-input bg-background px-3 py-2 text-sm 
+  @apply w-full rounded-sm border border-input bg-background px-3 py-2 text-sm 
          ring-offset-background placeholder:text-muted-foreground 
          focus-visible:outline-none focus-visible:ring-2 
          focus-visible:ring-tehnopol focus-visible:ring-offset-2;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2px), calc(100% - 2px) 100%, 0 100%);
 }
 
 .tehnopol-select {
-  @apply tehnopol-input;
+  @apply tehnopol-input appearance-none bg-no-repeat bg-[right_0.5rem_center];
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23666666'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
 }
 
 .tehnopol-textarea {
-  @apply tehnopol-input;
+  @apply tehnopol-input min-h-[100px];
+}
+
+.tehnopol-radio-group {
+  @apply space-y-3;
+}
+
+.tehnopol-radio-label {
+  @apply flex items-center p-4 rounded border-2 cursor-pointer transition-colors;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%);
+}
+
+.tehnopol-radio-label-selected {
+  @apply border-tehnopol bg-tehnopol/10 dark:border-tehnopol dark:bg-tehnopol/20;
+}
+
+.tehnopol-radio-label-unselected {
+  @apply border-gray-200 hover:border-tehnopol/50 dark:border-gray-700 dark:hover:border-tehnopol/50;
 }
 
 /* Progress steps */
 .tehnopol-steps {
-  @apply flex items-center justify-center space-x-4;
+  @apply flex items-center space-x-4;
 }
 
 .tehnopol-step {
@@ -99,6 +139,10 @@
 
 .tehnopol-step-active {
   @apply text-tehnopol;
+  background-image: linear-gradient(135deg, #FF6600, #EB8B00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .tehnopol-step-completed {
@@ -109,11 +153,24 @@
   @apply text-tehnopol-gray;
 }
 
-/* Utilities */
+/* Brand-specific utilities */
 .tehnopol-diagonal-corner {
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%);
 }
 
 .tehnopol-gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-tehnopol-dark via-tehnopol to-tehnopol-light;
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(135deg, #FF6600, #EB8B00, #FFCC00);
+}
+
+/* Section dividers */
+.tehnopol-divider {
+  @apply relative h-1 w-full overflow-hidden;
+  transform: skewY(-3deg);
+  background-image: linear-gradient(135deg, #FF6600, #EB8B00, #FFCC00);
+}
+
+/* White space utilities */
+.tehnopol-section {
+  @apply py-12 px-6 md:py-16 md:px-8;
 } 
