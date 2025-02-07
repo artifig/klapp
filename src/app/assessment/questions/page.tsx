@@ -1,5 +1,5 @@
 import { getAssessmentResponse, getCategories, getQuestions, getAnswers } from "@/lib/airtable";
-import { QuestionForm } from "./question-form";
+import { QuestionForm } from "@/components/QuestionForm";
 import { redirect } from "next/navigation";
 
 interface PageProps {

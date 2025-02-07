@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss";
-import { tehnopolTheme } from "./src/styles/tehnopol-theme";
 
 const config: Config = {
   darkMode: ["class"],
@@ -17,8 +16,14 @@ const config: Config = {
       },
     },
     extend: {
-      ...tehnopolTheme.extend,
       colors: {
+        tehnopol: {
+          DEFAULT: "#EB8B00", // Primary Orange - Pantone 144 C
+          dark: "#FF6600",    // Dark Orange - Pantone 1665 C
+          light: "#FFCC00",   // Light Orange - Pantone 130 C
+          gray: "#4D4D4D",    // Gray - Pantone Cool Gray 11 C
+          green: "#70AF34",   // Green - Pantone 3529C
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -52,12 +57,33 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        ...tehnopolTheme.extend.colors,
+      },
+      fontFamily: {
+        sans: [
+          "Helvetica Neue",
+          "Arial",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "sans-serif",
+        ],
+        condensed: [
+          "Helvetica Neue Condensed",
+          "Arial Narrow",
+          "Arial",
+          "sans-serif",
+        ],
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backgroundImage: {
+        'tehnopol-gradient': 'linear-gradient(135deg, #FF6600, #EB8B00, #FFCC00)',
       },
     },
   },

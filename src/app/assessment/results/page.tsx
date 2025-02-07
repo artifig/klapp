@@ -1,4 +1,5 @@
 import { getRecommendations, getExampleSolutions } from '@/lib/airtable';
+import { InfoSection } from '@/components/InfoSection';
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
@@ -23,43 +24,36 @@ export default async function ResultsPage({
   const recommendations = await getRecommendations(categoryScores);
   const exampleSolutions = await getExampleSolutions(categoryScores);
 
+  // Transform recommendations and solutions to match InfoItem interface
+  const recommendationItems = recommendations.map(rec => ({
+    id: rec.id,
+    title: rec.recommendationText_et,
+    description: rec.recommendationDescription_et
+  }));
+
+  const solutionItems = exampleSolutions.map(solution => ({
+    id: solution.id,
+    title: solution.exampleSolutionText_et,
+    description: solution.exampleSolutionDescription_et
+  }));
+
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">
+      <h1 className="tehnopol-gradient-text text-3xl font-bold mb-6">
         Hindamise tulemused
       </h1>
       
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Soovitused</h2>
-        {recommendations.length > 0 ? (
-          <ul className="space-y-4">
-            {recommendations.map(rec => (
-              <li key={rec.id} className="bg-white p-4 rounded-lg shadow">
-                <h3 className="font-medium">{rec.recommendationText_et}</h3>
-                <p className="text-gray-600 mt-2">{rec.recommendationDescription_et}</p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-600">Soovitusi ei leitud.</p>
-        )}
-      </section>
+      <InfoSection
+        title="Soovitused"
+        items={recommendationItems}
+        emptyMessage="Soovitusi ei leitud."
+      />
 
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Näidislahendused</h2>
-        {exampleSolutions.length > 0 ? (
-          <ul className="space-y-4">
-            {exampleSolutions.map(solution => (
-              <li key={solution.id} className="bg-white p-4 rounded-lg shadow">
-                <h3 className="font-medium">{solution.exampleSolutionText_et}</h3>
-                <p className="text-gray-600 mt-2">{solution.exampleSolutionDescription_et}</p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-600">Näidislahendusi ei leitud.</p>
-        )}
-      </section>
+      <InfoSection
+        title="Näidislahendused"
+        items={solutionItems}
+        emptyMessage="Näidislahendusi ei leitud."
+      />
     </main>
   );
 }

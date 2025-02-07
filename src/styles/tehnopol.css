@@ -93,10 +93,11 @@
 }
 
 .tehnopol-input {
-  @apply w-full rounded-sm border border-input bg-background px-3 py-2 text-sm 
-         ring-offset-background placeholder:text-muted-foreground 
-         focus-visible:outline-none focus-visible:ring-2 
-         focus-visible:ring-tehnopol focus-visible:ring-offset-2;
+  @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm 
+         ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium 
+         placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 
+         focus-visible:ring-tehnopol focus-visible:ring-offset-2 
+         disabled:cursor-not-allowed disabled:opacity-50;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2px), calc(100% - 2px) 100%, 0 100%);
 }
 
@@ -173,4 +174,64 @@
 /* White space utilities */
 .tehnopol-section {
   @apply py-12 px-6 md:py-16 md:px-8;
+}
+
+/* Layout Components */
+.tehnopol-layout {
+  @apply min-h-screen bg-background relative;
+}
+
+.tehnopol-layout-diagonal-overlay {
+  @apply absolute top-0 right-0 w-1/2 h-96 overflow-hidden pointer-events-none;
+}
+
+.tehnopol-layout-diagonal-overlay-inner {
+  @apply absolute inset-0 opacity-10;
+  background: linear-gradient(135deg, #FF6600, #EB8B00, #FFCC00);
+  transform: skewY(-135deg) translateY(-50%);
+}
+
+.tehnopol-layout-content {
+  @apply container relative mx-auto px-4 py-12 md:py-16;
+}
+
+.tehnopol-layout-bottom-accent {
+  @apply fixed bottom-0 left-0 w-full h-2 overflow-hidden;
+}
+
+.tehnopol-layout-bottom-accent-inner {
+  @apply absolute inset-0;
+  background: linear-gradient(135deg, #FF6600, #EB8B00, #FFCC00);
+  transform: skewY(-3deg) translateY(50%);
+}
+
+/* Container Layouts */
+.tehnopol-container {
+  @apply max-w-4xl mx-auto;
+}
+
+.tehnopol-container-sm {
+  @apply max-w-2xl mx-auto;
+}
+
+.tehnopol-container-lg {
+  @apply max-w-6xl mx-auto;
+}
+
+/* Grid Layouts */
+.tehnopol-grid {
+  @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+}
+
+.tehnopol-grid-2 {
+  @apply grid gap-6 md:grid-cols-2;
+}
+
+/* Flex Layouts */
+.tehnopol-flex-between {
+  @apply flex flex-col md:flex-row md:items-center justify-between gap-6;
+}
+
+.tehnopol-flex-center {
+  @apply flex items-center justify-center;
 } 

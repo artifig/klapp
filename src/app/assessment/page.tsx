@@ -1,5 +1,5 @@
 import { getActiveCompanyTypes } from "@/lib/airtable";
-import AssessmentForm from "./AssessmentForm";
+import AssessmentForm from "@/components/AssessmentForm";
 
 export default async function AssessmentPage() {
   const companyTypes = await getActiveCompanyTypes();
