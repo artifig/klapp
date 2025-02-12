@@ -166,6 +166,44 @@ export default async function ResultsPage({
       categoryScores.reduce((sum, cat) => sum + cat.score, 0) / categoryScores.length
     );
 
+    // Get top 3 most occurring providers
+    const getTopProviders = (categoryScores: CategoryScore[]) => {
+      const providerCounts = new Map<string, { count: number; provider: SolutionProvider }>();
+      
+      categoryScores.forEach(category => {
+        // Count providers from recommendations
+        category.recommendations.forEach(rec => {
+          rec.providers.forEach(provider => {
+            const existing = providerCounts.get(provider.id);
+            if (existing) {
+              existing.count += 1;
+            } else {
+              providerCounts.set(provider.id, { count: 1, provider });
+            }
+          });
+        });
+        
+        // Count providers from solutions
+        category.solutions.forEach(solution => {
+          solution.providers.forEach(provider => {
+            const existing = providerCounts.get(provider.id);
+            if (existing) {
+              existing.count += 1;
+            } else {
+              providerCounts.set(provider.id, { count: 1, provider });
+            }
+          });
+        });
+      });
+
+      return Array.from(providerCounts.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3)
+        .map(item => item.provider);
+    };
+
+    const topProviders = getTopProviders(categoryScores);
+
     return (
       <main>
         <h1>AI-valmiduse hindamise tulemused</h1>
@@ -200,6 +238,43 @@ export default async function ResultsPage({
                 <p>Teie ettevõtte valmisolek</p>
               </CardContent>
             </Card>
+
+            {topProviders.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Soovitatud teenusepakkujad</CardTitle>
+                  <CardDescription>
+                    Teie ettevõtte vajadustele kõige paremini vastavad teenusepakkujad
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div>
+                    {topProviders.map((provider) => (
+                      <a
+                        key={provider.id}
+                        href={provider.providerUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Avatar>
+                          <AvatarImage 
+                            src={provider.providerLogo?.[0]?.url} 
+                            alt={provider.providerName_et} 
+                          />
+                          <AvatarFallback>
+                            {provider.providerName_et.substring(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h4>{provider.providerName_et}</h4>
+                          <p>{provider.providerDescription_et}</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
