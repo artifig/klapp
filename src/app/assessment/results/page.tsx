@@ -10,31 +10,19 @@ import {
   type MethodCategory,
   type MethodQuestion,
   type MethodAnswer,
-  type MethodRecommendation,
-  type MethodExampleSolution,
   type SolutionProvider
 } from "@/lib/airtable";
 import { redirect } from "next/navigation";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/UiAvatar";
-import { ResultsChart } from "@/components/assessment/ResultsChart";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/UiCard";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/UiDialog";
-import { Button } from "@/components/ui/UiButton";
+import { ResultsSummary } from "@/components/assessment/ResultsSummary";
+import { AiFeedback } from "@/components/assessment/AiFeedback";
+import { DetailedAnalysis } from "@/components/assessment/DetailedAnalysis";
 import { ExportForm } from "@/components/assessment/ExportForm";
+import type { CategoryScore } from "@/lib/types";
 
 interface AssessmentResponse {
   questionId: string;
   answerId: string;
-}
-
-interface CategoryScore extends MethodCategory {
-  score: number;
-  questionCount: number;
-  answeredCount: number;
-  maturityLevel: string;
-  maturityColor: 'red' | 'yellow' | 'green';
-  recommendations: (MethodRecommendation & { providers: SolutionProvider[] })[];
-  solutions: (MethodExampleSolution & { providers: SolutionProvider[] })[];
 }
 
 export default async function ResultsPage({
@@ -209,243 +197,22 @@ export default async function ResultsPage({
       <main>
         <h1>AI-valmiduse hindamise tulemused</h1>
         
-        <div>
-          <div>
-            <ResultsChart 
-              categories={categoryScores.map(cat => ({
-                name: cat.categoryText_et,
-                level: cat.maturityColor,
-                value: cat.score
-              }))}
-            />
-          </div>
-          
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Teie eesmärk</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>{assessment.initialGoal}</p>
-              </CardContent>
-            </Card>
+        <ResultsSummary 
+          initialGoal={assessment.initialGoal}
+          overallScore={overallScore}
+          categories={categoryScores.map(cat => ({
+            name: cat.categoryText_et,
+            level: cat.maturityColor,
+            value: cat.score
+          }))}
+          topProviders={topProviders}
+        />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Üldine tulemus</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div>{overallScore}%</div>
-                <p>Teie ettevõtte valmisolek</p>
-              </CardContent>
-            </Card>
+        <AiFeedback />
 
-            {topProviders.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Soovitatud teenusepakkujad</CardTitle>
-                  <CardDescription>
-                    Teie ettevõtte vajadustele kõige paremini vastavad teenusepakkujad
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div>
-                    {topProviders.map((provider) => (
-                      <a
-                        key={provider.id}
-                        href={provider.providerUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Avatar>
-                          <AvatarImage 
-                            src={provider.providerLogo?.[0]?.url} 
-                            alt={provider.providerName_et} 
-                          />
-                          <AvatarFallback>
-                            {provider.providerName_et.substring(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h4>{provider.providerName_et}</h4>
-                          <p>{provider.providerDescription_et}</p>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+        <DetailedAnalysis categoryScores={categoryScores} />
 
-            <ExportForm assessmentId={id} />
-          </div>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Tagasiside tehisaru analüüsist</CardTitle>
-            <CardDescription>
-              Teie ettevõte näitab tugevat potentsiaali mitmes valdkonnas. Eriti silmapaistev on teie sooritus kvaliteedijuhtimise ja innovatsiooni valdkonnas. Siiski on mõned võimalused edasisteks parandusteks, eriti seoses digitaliseerimise ja andmepõhise otsustamisega.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div>
-              <div>
-                <div>
-                  <div></div>
-                  <h3>Peamised tugevused</h3>
-                </div>
-                <ul>
-                  <li>
-                    <span></span>
-                    <span>Tugev strateegiline planeerimine</span>
-                  </li>
-                  <li>
-                    <span></span>
-                    <span>Efektiivne meeskonnatöö</span>
-                  </li>
-                  <li>
-                    <span></span>
-                    <span>Kliendikeskne lähenemine</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <div>
-                  <div></div>
-                  <h3>Arendamist vajavad valdkonnad</h3>
-                </div>
-                <ul>
-                  <li>
-                    <span></span>
-                    <span>Digitaalsete lahenduste integreerimine</span>
-                  </li>
-                  <li>
-                    <span></span>
-                    <span>Andmepõhine otsustusprotsess</span>
-                  </li>
-                  <li>
-                    <span></span>
-                    <span>Automatiseerimine ja protsesside optimeerimine</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div>
-              * See tagasiside on genereeritud tehisintellekti poolt, põhinedes teie vastustel hindamisküsimustele.
-            </div>
-          </CardContent>
-        </Card>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              Vaata täielikku analüüsi
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Täielik AI-valmiduse analüüs</DialogTitle>
-              <DialogDescription>
-                Detailne ülevaade kõikidest valdkondadest koos soovituste ja lahendustega
-              </DialogDescription>
-            </DialogHeader>
-            <div>
-              {categoryScores.map((category: CategoryScore) => (
-                <div key={category.id}>
-                  <h3>{category.categoryText_et}</h3>
-                  <div>
-                    <span>{category.score}%</span>
-                    <span>{category.maturityLevel}</span>
-                  </div>
-                  <p>{category.categoryDescription_et}</p>
-                  
-                  <div>
-                    <h4>Soovitused</h4>
-                    <ul>
-                      {category.recommendations.map((rec) => (
-                        <li key={rec.id}>
-                          <div>
-                            <h5>{rec.recommendationText_et}</h5>
-                            <p>{rec.recommendationDescription_et}</p>
-                          </div>
-                          {rec.providers.length > 0 && (
-                            <div>
-                              <p>Teenusepakkujad:</p>
-                              <div>
-                                {rec.providers.map((provider) => (
-                                  <a
-                                    key={provider.id}
-                                    href={provider.providerUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <Avatar>
-                                      <AvatarImage 
-                                        src={provider.providerLogo?.[0]?.url} 
-                                        alt={provider.providerName_et} 
-                                      />
-                                      <AvatarFallback>
-                                        {provider.providerName_et.substring(0, 2)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    {provider.providerName_et}
-                                  </a>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-
-                    {category.solutions.length > 0 && (
-                      <div>
-                        <h4>Näidislahendused</h4>
-                        <ul>
-                          {category.solutions.map((solution) => (
-                            <li key={solution.id}>
-                              {solution.exampleSolutionText_et}
-                              <p>{solution.exampleSolutionDescription_et}</p>
-                              {solution.providers.length > 0 && (
-                                <div>
-                                  <p>Teenusepakkujad:</p>
-                                  <div>
-                                    {solution.providers.map((provider) => (
-                                      <a
-                                        key={provider.id}
-                                        href={provider.providerUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                      >
-                                        <Avatar>
-                                          <AvatarImage 
-                                            src={provider.providerLogo?.[0]?.url} 
-                                            alt={provider.providerName_et} 
-                                          />
-                                          <AvatarFallback>
-                                            {provider.providerName_et.substring(0, 2)}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        {provider.providerName_et}
-                                      </a>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ExportForm assessmentId={id} />
       </main>
     );
   } catch (error) {
