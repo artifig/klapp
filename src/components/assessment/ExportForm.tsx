@@ -31,13 +31,29 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isDataSaved, setIsDataSaved] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+
+  const validateField = (name: string, value: string) => {
+    switch (name) {
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value) ? '' : 'Palun sisestage korrektne e-posti aadress';
+      case 'organisationRegNumber':
+        const regNumberRegex = /^\d{8}$/;
+        return value === '' || regNumberRegex.test(value) ? '' : 'Registrikood peab olema 8-kohaline number';
+      case 'name':
+        return value.trim().length > 0 ? '' : 'Nimi on kohustuslik';
+      default:
+        return '';
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     
     if (name === 'organisationRegNumber') {
-      // Only allow numbers
-      const numberValue = value.replace(/[^0-9]/g, '');
+      // Only allow numbers and format them
+      const numberValue = value.replace(/[^0-9]/g, '').slice(0, 8);
       setFormData(prev => ({
         ...prev,
         [name]: numberValue
@@ -48,22 +64,41 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
         [name]: type === 'checkbox' ? checked : value
       }));
     }
+
+    // Validate the field
+    if (type !== 'checkbox') {
+      const fieldError = validateField(name, type === 'checkbox' ? checked.toString() : value);
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: fieldError
+      }));
+    }
     
     setError(null);
-    setIsDataSaved(false); // Reset saved state when form changes
+    setIsDataSaved(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.email || !formData.name) {
-      setError('Palun täitke kõik kohustuslikud väljad');
+
+    // Validate all fields
+    const errors: { [key: string]: string } = {};
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key !== 'wantsContact') {
+        const error = validateField(key, value.toString());
+        if (error) errors[key] = error;
+      }
+    });
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Palun täitke kõik kohustuslikud väljad korrektselt');
       return;
     }
 
     setIsSubmitting(true);
     setError(null);
     try {
-      // Save the form data first
       await exportAssessment(assessmentId, formData);
       setIsDataSaved(true);
     } catch (error) {
@@ -133,8 +168,11 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
           {error && <div role="alert" className="error">{error}</div>}
           {isDataSaved && <div role="status" className="success">Andmed on salvestatud</div>}
 
-          <div>
-            <label htmlFor="name">Nimi *</label>
+          <div className="form-group">
+            <label htmlFor="name">
+              Nimi *
+              <span className="helper-text">Teie täisnimi</span>
+            </label>
             <input
               type="text"
               id="name"
@@ -142,11 +180,19 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
               value={formData.name}
               onChange={handleInputChange}
               required
+              className={fieldErrors.name ? 'error' : ''}
+              aria-describedby="name-error"
             />
+            {fieldErrors.name && (
+              <div id="name-error" className="error-text">{fieldErrors.name}</div>
+            )}
           </div>
 
-          <div>
-            <label htmlFor="email">E-post *</label>
+          <div className="form-group">
+            <label htmlFor="email">
+              E-post *
+              <span className="helper-text">Kasutatakse tulemuste saatmiseks</span>
+            </label>
             <input
               type="email"
               id="email"
@@ -154,22 +200,35 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
               value={formData.email}
               onChange={handleInputChange}
               required
+              className={fieldErrors.email ? 'error' : ''}
+              aria-describedby="email-error"
+              placeholder="nimi@ettevote.ee"
             />
+            {fieldErrors.email && (
+              <div id="email-error" className="error-text">{fieldErrors.email}</div>
+            )}
           </div>
 
-          <div>
-            <label htmlFor="organisationName">Organisatsiooni nimi</label>
+          <div className="form-group">
+            <label htmlFor="organisationName">
+              Organisatsiooni nimi
+              <span className="helper-text">Ettevõtte või asutuse ametlik nimi</span>
+            </label>
             <input
               type="text"
               id="organisationName"
               name="organisationName"
               value={formData.organisationName}
               onChange={handleInputChange}
+              placeholder="Ettevõte OÜ"
             />
           </div>
 
-          <div>
-            <label htmlFor="organisationRegNumber">Registrikood</label>
+          <div className="form-group">
+            <label htmlFor="organisationRegNumber">
+              Registrikood
+              <span className="helper-text">8-kohaline äriregistri kood</span>
+            </label>
             <input
               type="text"
               id="organisationRegNumber"
@@ -180,10 +239,15 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
               inputMode="numeric"
               maxLength={8}
               placeholder="12345678"
+              className={fieldErrors.organisationRegNumber ? 'error' : ''}
+              aria-describedby="reg-number-error"
             />
+            {fieldErrors.organisationRegNumber && (
+              <div id="reg-number-error" className="error-text">{fieldErrors.organisationRegNumber}</div>
+            )}
           </div>
 
-          <div>
+          <div className="form-group checkbox-group">
             <label>
               <input
                 type="checkbox"
@@ -191,11 +255,12 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
                 checked={formData.wantsContact}
                 onChange={handleInputChange}
               />
-              Soovin, et minuga võetaks ühendust AI-lahenduste juurutamiseks
+              <span>Soovin, et minuga võetaks ühendust AI-lahenduste juurutamiseks</span>
+              <span className="helper-text">Võimaldab meil teiega ühendust võtta sobivate lahenduste osas</span>
             </label>
           </div>
 
-          <div>
+          <div className="button-group">
             <Button
               type="submit"
               disabled={isSubmitting}
