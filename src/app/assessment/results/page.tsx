@@ -20,6 +20,7 @@ import { ResultsChart } from "@/components/assessment/ResultsChart";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/UiCard";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/UiDialog";
 import { Button } from "@/components/ui/UiButton";
+import { ExportForm } from "@/components/assessment/ExportForm";
 
 interface AssessmentResponse {
   questionId: string;
@@ -275,6 +276,8 @@ export default async function ResultsPage({
                 </CardContent>
               </Card>
             )}
+
+            <ExportForm assessmentId={id} />
           </div>
         </div>
 
