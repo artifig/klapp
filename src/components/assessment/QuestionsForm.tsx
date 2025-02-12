@@ -1,10 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/UiButton";
 import type { MethodCategory, MethodQuestion, MethodAnswer } from "@/lib/airtable";
 import { Card, CardContent } from "@/components/ui/UiCard";
+
+// Shuffle array function using Fisher-Yates algorithm
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 interface QuestionWithAnswers extends MethodQuestion {
   answers: MethodAnswer[];
@@ -29,6 +39,13 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentCategory = categories[currentCategoryIndex];
+  const currentQuestion = currentCategory?.questions[currentQuestionIndex];
+  
+  // Memoize shuffled answers for the current question
+  const shuffledAnswers = useMemo(
+    () => currentQuestion ? shuffleArray(currentQuestion.answers) : [],
+    [currentQuestion]
+  );
   
   if (!categories || categories.length === 0) {
     return (
@@ -53,7 +70,17 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
     );
   }
 
-  const currentQuestion = currentCategory.questions[currentQuestionIndex];
+  if (!currentQuestion) {
+    return (
+      <div>
+        <p>Viga küsimuse laadimisel. Palun proovige uuesti.</p>
+        <Button onClick={() => router.push('/assessment')}>
+          Tagasi algusesse
+        </Button>
+      </div>
+    );
+  }
+
   const isLastCategory = currentCategoryIndex === categories.length - 1;
   const isLastQuestionInCategory = currentQuestionIndex === currentCategory.questions.length - 1;
 
@@ -141,7 +168,7 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
               <p>{currentQuestion.questionDescription_et}</p>
             )}
             <div>
-              {currentQuestion.answers.map((answer) => (
+              {shuffledAnswers.map((answer) => (
                 <label key={answer.id}>
                   <input
                     type="radio"
