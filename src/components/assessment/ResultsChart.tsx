@@ -1,7 +1,7 @@
 "use client"
 
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, PolarRadiusAxis } from "recharts"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/UiCard"
 
 interface CategoryScore {
   name: string;
@@ -15,36 +15,28 @@ const levelToValue = {
   green: 100,
 };
 
-interface ResultsRadarChartProps {
+interface ResultsChartProps {
   categories: CategoryScore[];
 }
 
-export function ResultsRadarChart({ categories }: ResultsRadarChartProps) {
+export function ResultsChart({ categories }: ResultsChartProps) {
   const chartData = categories.map(cat => ({
     category: cat.name,
     value: levelToValue[cat.level],
   }));
 
   return (
-    <Card className="w-full h-[350px]">
-      <CardContent className="p-4 h-full">
-        <div className="w-full h-full flex items-center justify-center">
+    <Card>
+      <CardContent>
+        <div>
           <RadarChart width={400} height={300} data={chartData}>
             <PolarGrid 
               gridType="circle"
               radialLines={false}
               polarRadius={[33, 66, 100]}
-              stroke="#ddd"
-              strokeWidth={0.5}
             />
             <PolarAngleAxis
               dataKey="category"
-              tick={{ 
-                fontSize: 8,
-                fill: '#666',
-                dy: 3
-              }}
-              tickLine={{ stroke: '#ddd', strokeWidth: 0.5 }}
             />
             <PolarRadiusAxis
               domain={[0, 100]}
@@ -55,9 +47,6 @@ export function ResultsRadarChart({ categories }: ResultsRadarChartProps) {
             <Radar
               name="Maturity Level"
               dataKey="value"
-              stroke="#FF6600"
-              fill="#FF6600"
-              fillOpacity={0.5}
             />
           </RadarChart>
         </div>

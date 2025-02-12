@@ -15,10 +15,10 @@ import {
   type SolutionProvider
 } from "@/lib/airtable";
 import { redirect } from "next/navigation";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ResultsRadarChart } from "@/components/ResultsRadarChart";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/UiAvatar";
+import { ResultsChart } from "@/components/assessment/ResultsChart";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/UiCard";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/UiDialog";
 
 interface AssessmentResponse {
   questionId: string;
@@ -105,44 +105,73 @@ export default async function ResultsPage({
         scoreLevel = 'green';
       }
 
-      const [recommendations, solutions] = await Promise.all([
-        getRecommendationsForCategory(category.id, scoreLevel, companyType),
-        getExampleSolutionsForCategory(category.id, scoreLevel, companyType)
-      ]);
+      try {
+        const [recommendations, solutions] = await Promise.all([
+          getRecommendationsForCategory(category.id, scoreLevel, companyType),
+          getExampleSolutionsForCategory(category.id, scoreLevel, companyType)
+        ]);
 
-      const recommendationsWithProviders = await Promise.all(
-        recommendations.map(async (rec) => {
-          const providers = await getProvidersForRecommendation(rec.id);
-          return { ...rec, providers };
-        })
-      );
+        const recommendationsWithProviders = await Promise.all(
+          recommendations.map(async (rec) => {
+            try {
+              const providers = await getProvidersForRecommendation(rec.id);
+              return { ...rec, providers };
+            } catch (error) {
+              console.error('Error fetching providers for recommendation:', rec.id, error);
+              return { ...rec, providers: [] };
+            }
+          })
+        );
 
-      const solutionsWithProviders = await Promise.all(
-        solutions.map(async (sol) => {
-          const providers = await getProvidersForExampleSolution(sol.id);
-          return { ...sol, providers };
-        })
-      );
+        const solutionsWithProviders = await Promise.all(
+          solutions.map(async (sol) => {
+            try {
+              const providers = await getProvidersForExampleSolution(sol.id);
+              return { ...sol, providers };
+            } catch (error) {
+              console.error('Error fetching providers for solution:', sol.id, error);
+              return { ...sol, providers: [] };
+            }
+          })
+        );
 
-      return {
-        ...category,
-        score: averageScore,
-        questionCount: categoryQuestions.length,
-        answeredCount: categoryResponses.length,
-        maturityLevel,
-        maturityColor,
-        recommendations: recommendationsWithProviders,
-        solutions: solutionsWithProviders
-      };
+        return {
+          ...category,
+          score: averageScore,
+          questionCount: categoryQuestions.length,
+          answeredCount: categoryResponses.length,
+          maturityLevel,
+          maturityColor,
+          recommendations: recommendationsWithProviders,
+          solutions: solutionsWithProviders
+        };
+      } catch (error) {
+        console.error('Error processing recommendations/solutions for category:', category.id, error);
+        return {
+          ...category,
+          score: averageScore,
+          questionCount: categoryQuestions.length,
+          answeredCount: categoryResponses.length,
+          maturityLevel,
+          maturityColor,
+          recommendations: [],
+          solutions: []
+        };
+      }
     }));
 
+    // Calculate overall score
+    const overallScore = Math.round(
+      categoryScores.reduce((sum, cat) => sum + cat.score, 0) / categoryScores.length
+    );
+
     return (
-      <main className="max-w-6xl mx-auto px-6">
-        <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamise tulemused</h1>
+      <main>
+        <h1>AI-valmiduse hindamise tulemused</h1>
         
-        <div className="grid grid-cols-2 gap-6 mb-8">
-          <div className="flex items-center justify-center">
-            <ResultsRadarChart 
+        <div>
+          <div>
+            <ResultsChart 
               categories={categoryScores.map(cat => ({
                 name: cat.categoryText_et,
                 level: cat.maturityColor,
@@ -151,188 +180,198 @@ export default async function ResultsPage({
             />
           </div>
           
-          <div className="grid grid-rows-2 gap-4 h-[350px]">
-            <Card className="flex flex-col">
-              <CardHeader className="pb-2 flex-none">
+          <div>
+            <Card>
+              <CardHeader>
                 <CardTitle>Teie eesmärk</CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-center items-center text-center px-6">
-                <p className="text-base text-muted-foreground">{assessment.initialGoal}</p>
+              <CardContent>
+                <p>{assessment.initialGoal}</p>
               </CardContent>
             </Card>
 
-            <Card className="flex flex-col">
-              <CardHeader className="pb-2 flex-none">
+            <Card>
+              <CardHeader>
                 <CardTitle>Üldine tulemus</CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-center items-center text-center">
-                <div className="text-5xl font-bold text-tehnopol mb-2">45%</div>
-                <p className="text-base text-muted-foreground">Teie ettevõtte valmisolek</p>
+              <CardContent>
+                <div>{overallScore}%</div>
+                <p>Teie ettevõtte valmisolek</p>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        <Card className="mb-8">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base text-tehnopol">Tagasiside tehisaru analüüsist</CardTitle>
-            <CardDescription className="mt-1 text-xs">
+        <Card>
+          <CardHeader>
+            <CardTitle>Tagasiside tehisaru analüüsist</CardTitle>
+            <CardDescription>
               Teie ettevõte näitab tugevat potentsiaali mitmes valdkonnas. Eriti silmapaistev on teie sooritus kvaliteedijuhtimise ja innovatsiooni valdkonnas. Siiski on mõned võimalused edasisteks parandusteks, eriti seoses digitaliseerimise ja andmepõhise otsustamisega.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-green-600">
-                  <div className="h-1 w-1 rounded-full bg-green-600"></div>
-                  <h3 className="text-xs font-semibold">Peamised tugevused</h3>
+          <CardContent>
+            <div>
+              <div>
+                <div>
+                  <div></div>
+                  <h3>Peamised tugevused</h3>
                 </div>
-                <ul className="space-y-1 text-xs text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                <ul>
+                  <li>
+                    <span></span>
                     <span>Tugev strateegiline planeerimine</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                  <li>
+                    <span></span>
                     <span>Efektiivne meeskonnatöö</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                  <li>
+                    <span></span>
                     <span>Kliendikeskne lähenemine</span>
                   </li>
                 </ul>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-orange-600">
-                  <div className="h-1 w-1 rounded-full bg-orange-600"></div>
-                  <h3 className="text-xs font-semibold">Arendamist vajavad valdkonnad</h3>
+              <div>
+                <div>
+                  <div></div>
+                  <h3>Arendamist vajavad valdkonnad</h3>
                 </div>
-                <ul className="space-y-1 text-xs text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                <ul>
+                  <li>
+                    <span></span>
                     <span>Digitaalsete lahenduste integreerimine</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                  <li>
+                    <span></span>
                     <span>Andmepõhine otsustusprotsess</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1 h-0.5 w-0.5 rounded-full bg-muted-foreground/30"></span>
+                  <li>
+                    <span></span>
                     <span>Automatiseerimine ja protsesside optimeerimine</span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div className="mt-4 text-[10px] text-muted-foreground italic border-t pt-2">
+            <div>
               * See tagasiside on genereeritud tehisintellekti poolt, põhinedes teie vastustel hindamisküsimustele.
             </div>
           </CardContent>
         </Card>
 
-        <div className="relative">
-          <div className="grid grid-cols-3 gap-2">
-            {categoryScores.map((category: CategoryScore) => {
-              const levelClass = category.maturityLevel === 'Roheline' 
-                ? 'level-green' 
-                : category.maturityLevel === 'Kollane' 
-                  ? 'level-yellow' 
-                  : 'level-red';
-                  
-              return (
-                <Dialog key={category.id}>
-                  <DialogTrigger asChild>
-                    <button 
-                      className={`accordion-section category-section ${levelClass} w-full text-left`}
-                    >
-                      <div className="w-full">
-                        <h3 className="text-xs">{category.categoryText_et}</h3>
+        <div>
+          <div>
+            {categoryScores.map((category: CategoryScore) => (
+              <Dialog key={category.id}>
+                <DialogTrigger asChild>
+                  <button>
+                    <div>
+                      <h3>{category.categoryText_et}</h3>
+                      <div>
+                        <span>{category.score}%</span>
+                        <span>
+                          {category.maturityLevel}
+                        </span>
                       </div>
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="p-0 overflow-auto max-h-[80vh]">
-                    <DialogHeader className="p-6 pb-3 border-b">
-                      <DialogTitle className="text-center">{category.categoryText_et}</DialogTitle>
-                      <DialogDescription className="text-center">
-                        {category.categoryDescription_et}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="p-6 space-y-4">
-                      <p className="text-sm text-center mt-10">Vastatud: {category.answeredCount}/{category.questionCount}</p>
-
-                      {category.recommendations.length > 0 && (
-                        <div className="space-y-3 mt-10">
-                          <h4 className="text-sm font-semibold text-center">Soovitused</h4>
-                          {category.recommendations.map((recommendation) => (
-                            <article key={recommendation.id} className="bg-muted/50 rounded-lg p-4 mt-6">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <h5 className="text-sm font-medium text-center">{recommendation.recommendationText_et}</h5>
-                                  <p className="text-sm text-muted-foreground mt-4 text-center">{recommendation.recommendationDescription_et}</p>
-                                </div>
-                                {recommendation.providers.length > 0 && (
-                                  <div className="flex -space-x-2 shrink-0">
-                                    {recommendation.providers.map((provider) => (
-                                      <Avatar key={provider.id} className="border-2 border-white h-8 w-8">
-                                        {provider.providerLogo?.[0] ? (
-                                          <AvatarImage
-                                            src={provider.providerLogo[0].thumbnails.small.url}
-                                            alt={provider.providerName_et}
-                                          />
-                                        ) : (
-                                          <AvatarFallback className="text-xs">
-                                            {provider.providerName_et.substring(0, 2).toUpperCase()}
-                                          </AvatarFallback>
-                                        )}
+                    </div>
+                  </button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{category.categoryText_et}</DialogTitle>
+                    <DialogDescription>
+                      {category.categoryDescription_et}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div>
+                    <div>
+                      <h4>Soovitused</h4>
+                      <ul>
+                        {category.recommendations.map((rec) => (
+                          <li key={rec.id}>
+                            <div>
+                              <h5>{rec.recommendationText_et}</h5>
+                              <p>{rec.recommendationDescription_et}</p>
+                            </div>
+                            {rec.providers.length > 0 && (
+                              <div>
+                                <p>
+                                  Teenusepakkujad:
+                                </p>
+                                <div>
+                                  {rec.providers.map((provider) => (
+                                    <a
+                                      key={provider.id}
+                                      href={provider.providerUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <Avatar>
+                                        <AvatarImage 
+                                          src={provider.providerLogo?.[0]?.url} 
+                                          alt={provider.providerName_et} 
+                                        />
+                                        <AvatarFallback>
+                                          {provider.providerName_et.substring(0, 2)}
+                                        </AvatarFallback>
                                       </Avatar>
-                                    ))}
-                                  </div>
-                                )}
+                                      {provider.providerName_et}
+                                    </a>
+                                  ))}
+                                </div>
                               </div>
-                            </article>
-                          ))}
-                        </div>
-                      )}
+                            )}
+                          </li>
+                        ))}
+                      </ul>
 
                       {category.solutions.length > 0 && (
-                        <div className="space-y-3 mt-10">
-                          <h4 className="text-sm font-semibold text-center">Näidislahendused</h4>
-                          {category.solutions.map((solution) => (
-                            <article key={solution.id} className="bg-muted/50 rounded-lg p-4 mt-6">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <h5 className="text-sm font-medium text-center">{solution.exampleSolutionText_et}</h5>
-                                  <p className="text-sm text-muted-foreground mt-4 text-center">{solution.exampleSolutionDescription_et}</p>
-                                </div>
+                        <div>
+                          <h4>Näidislahendused</h4>
+                          <ul>
+                            {category.solutions.map((solution) => (
+                              <li key={solution.id}>
+                                {solution.exampleSolutionText_et}
+                                <p>{solution.exampleSolutionDescription_et}</p>
                                 {solution.providers.length > 0 && (
-                                  <div className="flex -space-x-2 shrink-0">
-                                    {solution.providers.map((provider) => (
-                                      <Avatar key={provider.id} className="border-2 border-white h-8 w-8">
-                                        {provider.providerLogo?.[0] ? (
-                                          <AvatarImage
-                                            src={provider.providerLogo[0].thumbnails.small.url}
-                                            alt={provider.providerName_et}
-                                          />
-                                        ) : (
-                                          <AvatarFallback className="text-xs">
-                                            {provider.providerName_et.substring(0, 2).toUpperCase()}
-                                          </AvatarFallback>
-                                        )}
-                                      </Avatar>
-                                    ))}
+                                  <div>
+                                    <p>
+                                      Teenusepakkujad:
+                                    </p>
+                                    <div>
+                                      {solution.providers.map((provider) => (
+                                        <a
+                                          key={provider.id}
+                                          href={provider.providerUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          <Avatar>
+                                            <AvatarImage 
+                                              src={provider.providerLogo?.[0]?.url} 
+                                              alt={provider.providerName_et} 
+                                            />
+                                            <AvatarFallback>
+                                              {provider.providerName_et.substring(0, 2)}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          {provider.providerName_et}
+                                        </a>
+                                      ))}
+                                    </div>
                                   </div>
                                 )}
-                              </div>
-                            </article>
-                          ))}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       )}
                     </div>
-                  </DialogContent>
-                </Dialog>
-              );
-            })}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            ))}
           </div>
         </div>
       </main>
@@ -342,11 +381,19 @@ export default async function ResultsPage({
     return (
       <main>
         <h1>AI-valmiduse hindamine</h1>
-        <div className="category-section">
-          <h2>Viga tulemuste laadimisel</h2>
-          <p>Kahjuks tekkis tulemuste laadimisel viga. Palun proovige uuesti.</p>
-          <a href="/assessment">Tagasi algusesse</a>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Viga tulemuste laadimisel</CardTitle>
+            <CardDescription>
+              Kahjuks tekkis tulemuste laadimisel viga. Palun proovige uuesti.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <a href="/assessment">
+              Tagasi algusesse
+            </a>
+          </CardContent>
+        </Card>
       </main>
     );
   }

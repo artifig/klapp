@@ -1,7 +1,7 @@
 import { getAssessmentResponse, getCategories, getQuestions, getAnswers } from "@/lib/airtable";
-import { QuestionForm } from "@/components/QuestionForm";
+import { QuestionsForm } from "@/components/assessment/QuestionsForm";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/UiCard";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -33,26 +33,22 @@ export default async function QuestionsPage({
     const content = JSON.parse(assessment.responseContent);
     const { companyType, responses } = content;
     
-    console.log('Assessment:', { id, companyType, responses });
-
     // Fetch categories for the company type
     const categories = await getCategories(companyType);
-    console.log('Categories:', categories);
     
     if (!categories.length) {
-      console.error('No categories found for company type:', companyType);
       return (
-        <main className="max-w-6xl mx-auto px-6">
-          <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamine</h1>
+        <main>
+          <h1>AI-valmiduse hindamine</h1>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base text-tehnopol">Küsimusi ei leitud</CardTitle>
-              <CardDescription className="mt-1 text-xs">
+            <CardHeader>
+              <CardTitle>Küsimusi ei leitud</CardTitle>
+              <CardDescription>
                 Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <a href="/assessment" className="text-tehnopol hover:text-tehnopol-dark">
+              <a href="/assessment">
                 Tagasi hindamise algusesse
               </a>
             </CardContent>
@@ -63,11 +59,9 @@ export default async function QuestionsPage({
     
     // Fetch questions for all categories
     const questions = await getQuestions(categories.map(c => c.id));
-    console.log('Questions:', questions);
     
     // Fetch answers for all questions
     const answers = await getAnswers(questions.map(q => q.id));
-    console.log('Answers:', answers);
 
     // Group questions by category
     const questionsByCategory = categories.map(category => ({
@@ -80,21 +74,20 @@ export default async function QuestionsPage({
           selectedAnswer: responses.find((r: AssessmentResponse) => r.questionId === question.id)?.answerId
         }))
     }));
-    console.log('Questions by category:', questionsByCategory);
 
     if (!questionsByCategory.length) {
       return (
-        <main className="max-w-6xl mx-auto px-6">
-          <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamine</h1>
+        <main>
+          <h1>AI-valmiduse hindamine</h1>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base text-tehnopol">Küsimusi ei leitud</CardTitle>
-              <CardDescription className="mt-1 text-xs">
+            <CardHeader>
+              <CardTitle>Küsimusi ei leitud</CardTitle>
+              <CardDescription>
                 Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <a href="/assessment" className="text-tehnopol hover:text-tehnopol-dark">
+              <a href="/assessment">
                 Tagasi hindamise algusesse
               </a>
             </CardContent>
@@ -104,17 +97,17 @@ export default async function QuestionsPage({
     }
 
     return (
-      <main className="max-w-6xl mx-auto px-6">
-        <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamine</h1>
+      <main>
+        <h1>AI-valmiduse hindamine</h1>
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base text-tehnopol">Vastake küsimustele</CardTitle>
-            <CardDescription className="mt-1 text-xs">
+          <CardHeader>
+            <CardTitle>Vastake küsimustele</CardTitle>
+            <CardDescription>
               Palun vastake järgnevatele küsimustele, et hinnata oma ettevõtte valmisolekut.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <QuestionForm 
+            <QuestionsForm 
               assessmentId={id}
               categories={questionsByCategory}
               existingResponses={responses}
@@ -126,17 +119,17 @@ export default async function QuestionsPage({
   } catch (error) {
     console.error('Error loading questions page:', error);
     return (
-      <main className="max-w-6xl mx-auto px-6">
-        <h1 className="text-3xl font-bold mb-8">AI-valmiduse hindamine</h1>
+      <main>
+        <h1>AI-valmiduse hindamine</h1>
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base text-tehnopol">Viga küsimuste laadimisel</CardTitle>
-            <CardDescription className="mt-1 text-xs">
+          <CardHeader>
+            <CardTitle>Viga küsimuste laadimisel</CardTitle>
+            <CardDescription>
               Kahjuks tekkis küsimuste laadimisel viga. Palun proovige uuesti.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <a href="/assessment" className="text-tehnopol hover:text-tehnopol-dark">
+            <a href="/assessment">
               Tagasi algusesse
             </a>
           </CardContent>

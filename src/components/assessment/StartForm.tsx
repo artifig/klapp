@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/UiButton";
 import { type MethodCompanyType } from "@/lib/airtable";
 
-interface AssessmentFormProps {
+interface StartFormProps {
   companyTypes: MethodCompanyType[];
 }
 
-export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
+export default function StartForm({ companyTypes }: StartFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -46,12 +46,9 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <label
-          htmlFor="initialGoal"
-          className="text-sm font-medium text-muted-foreground"
-        >
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="initialGoal">
           Mis on teie peamine äriline eesmärk seoses AI-ga?
         </label>
         <textarea
@@ -59,22 +56,17 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
           name="initialGoal"
           required
           rows={4}
-          className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
         />
       </div>
 
-      <div className="space-y-2">
-        <label
-          htmlFor="companyType"
-          className="text-sm font-medium text-muted-foreground"
-        >
+      <div>
+        <label htmlFor="companyType">
           Ettevõtte tüüp
         </label>
         <select
           id="companyType"
           name="companyType"
           required
-          className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="">Vali ettevõtte tüüp...</option>
           {companyTypes.map((type) => (
@@ -85,7 +77,7 @@ export default function AssessmentForm({ companyTypes }: AssessmentFormProps) {
         </select>
       </div>
 
-      <div className="flex justify-end">
+      <div>
         <Button
           type="submit"
           disabled={isSubmitting}

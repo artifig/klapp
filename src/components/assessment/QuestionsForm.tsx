@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/UiButton";
 import type { MethodCategory, MethodQuestion, MethodAnswer } from "@/lib/airtable";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/UiCard";
 
 interface QuestionWithAnswers extends MethodQuestion {
   answers: MethodAnswer[];
@@ -15,13 +15,13 @@ interface CategoryWithQuestions extends MethodCategory {
   questions: QuestionWithAnswers[];
 }
 
-interface QuestionFormProps {
+interface QuestionsFormProps {
   assessmentId: string;
   categories: CategoryWithQuestions[];
   existingResponses: Array<{ questionId: string; answerId: string; }>;
 }
 
-export function QuestionForm({ assessmentId, categories, existingResponses }: QuestionFormProps) {
+export function QuestionsForm({ assessmentId, categories, existingResponses }: QuestionsFormProps) {
   const router = useRouter();
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -30,31 +30,23 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
 
   const currentCategory = categories[currentCategoryIndex];
   
-  // Check if categories array is empty
   if (!categories || categories.length === 0) {
     return (
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground mb-4">Küsimusi ei leitud. Palun proovige uuesti.</p>
-        <Button 
-          variant="default" 
-          onClick={() => router.push('/assessment')}
-        >
+      <div>
+        <p>Küsimusi ei leitud. Palun proovige uuesti.</p>
+        <Button onClick={() => router.push('/assessment')}>
           Tagasi algusesse
         </Button>
       </div>
     );
   }
 
-  // Check if current category exists
   if (!currentCategory) {
     console.error('Current category is undefined:', { currentCategoryIndex, categoriesLength: categories.length });
     return (
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground mb-4">Viga kategooria laadimisel. Palun proovige uuesti.</p>
-        <Button 
-          variant="default" 
-          onClick={() => router.push('/assessment')}
-        >
+      <div>
+        <p>Viga kategooria laadimisel. Palun proovige uuesti.</p>
+        <Button onClick={() => router.push('/assessment')}>
           Tagasi algusesse
         </Button>
       </div>
@@ -65,7 +57,6 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
   const isLastCategory = currentCategoryIndex === categories.length - 1;
   const isLastQuestionInCategory = currentQuestionIndex === currentCategory.questions.length - 1;
 
-  // Calculate total questions and current question number across all categories
   const totalQuestions = categories.reduce((sum, cat) => sum + cat.questions.length, 0);
   const currentQuestionNumber = categories.slice(0, currentCategoryIndex).reduce(
     (sum, cat) => sum + cat.questions.length, 0
@@ -130,38 +121,28 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col space-y-1.5">
-        <h2 className="text-sm font-medium text-muted-foreground">{currentCategory.categoryText_et}</h2>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+    <div>
+      <div>
+        <h2>{currentCategory.categoryText_et}</h2>
+        <div>
           <span>Küsimus {currentQuestionNumber} / {totalQuestions}</span>
           <span>{Math.round((currentQuestionNumber / totalQuestions) * 100)}%</span>
         </div>
-        <div className="h-1 w-full bg-muted overflow-hidden rounded-full">
-          <div 
-            className="h-full bg-gradient-to-r from-[#FF6600] to-[#EB8B00] transition-all duration-300"
-            style={{ width: `${(currentQuestionNumber / totalQuestions) * 100}%` }} 
-          />
+        <div>
+          <div />
         </div>
       </div>
 
-      <Card className="overflow-hidden">
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <h3 className="text-base font-medium">{currentQuestion.questionText_et}</h3>
+      <Card>
+        <CardContent>
+          <div>
+            <h3>{currentQuestion.questionText_et}</h3>
             {currentQuestion.questionDescription_et && (
-              <p className="text-sm text-muted-foreground">{currentQuestion.questionDescription_et}</p>
+              <p>{currentQuestion.questionDescription_et}</p>
             )}
-            <div className="grid gap-2">
+            <div>
               {currentQuestion.answers.map((answer) => (
-                <label 
-                  key={answer.id}
-                  className={`relative flex cursor-pointer rounded-lg border p-4 hover:border-tehnopol focus:outline-none ${
-                    responses.some(r => r.questionId === currentQuestion.id && r.answerId === answer.id)
-                      ? 'border-tehnopol bg-tehnopol/5'
-                      : 'border-muted'
-                  }`}
-                >
+                <label key={answer.id}>
                   <input
                     type="radio"
                     name={`question-${currentQuestion.id}`}
@@ -170,9 +151,8 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
                       r => r.questionId === currentQuestion.id && r.answerId === answer.id
                     )}
                     onChange={() => handleAnswerSelect(currentQuestion.id, answer.id)}
-                    className="sr-only"
                   />
-                  <span className="text-sm">{answer.answerText_et}</span>
+                  <span>{answer.answerText_et}</span>
                 </label>
               ))}
             </div>
@@ -180,9 +160,8 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
         </CardContent>
       </Card>
 
-      <div className="flex justify-between">
+      <div>
         <Button
-          variant="outline"
           onClick={handlePrevious}
           disabled={currentCategoryIndex === 0 && currentQuestionIndex === 0}
         >
@@ -190,7 +169,6 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
         </Button>
         {isLastCategory && isLastQuestionInCategory ? (
           <Button
-            variant="default"
             onClick={handleSubmit}
             disabled={!isCurrentQuestionAnswered() || isSubmitting}
           >
@@ -198,7 +176,6 @@ export function QuestionForm({ assessmentId, categories, existingResponses }: Qu
           </Button>
         ) : (
           <Button
-            variant="default"
             onClick={handleNext}
             disabled={!isCurrentQuestionAnswered()}
           >

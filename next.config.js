@@ -1,15 +1,5 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'v5.airtableusercontent.com',
-        port: '',
-        pathname: '/v3/u/**',
-      },
-    ],
-  }
-}
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
 
-module.exports = nextConfig 
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
