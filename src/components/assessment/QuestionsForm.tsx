@@ -1,34 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/UiButton";
-import type { MethodCategory, MethodQuestion, MethodAnswer } from "@/lib/airtable";
-import { Card, CardContent } from "@/components/ui/UiCard";
-
-// Shuffle array function using Fisher-Yates algorithm
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
-
-interface QuestionWithAnswers extends MethodQuestion {
-  answers: MethodAnswer[];
-  selectedAnswer?: string;
-}
-
-interface CategoryWithQuestions extends MethodCategory {
-  questions: QuestionWithAnswers[];
-}
+import type { ProcessedCategory, AssessmentResponse } from "@/lib/utils";
+import { QuestionDisplay } from "./QuestionDisplay";
 
 interface QuestionsFormProps {
   assessmentId: string;
-  categories: CategoryWithQuestions[];
-  existingResponses: Array<{ questionId: string; answerId: string; }>;
+  categories: ProcessedCategory[];
+  existingResponses: AssessmentResponse[];
 }
 
 export function QuestionsForm({ assessmentId, categories, existingResponses }: QuestionsFormProps) {
@@ -41,12 +22,6 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
   const currentCategory = categories[currentCategoryIndex];
   const currentQuestion = currentCategory?.questions[currentQuestionIndex];
   
-  // Memoize shuffled answers for the current question
-  const shuffledAnswers = useMemo(
-    () => currentQuestion ? shuffleArray(currentQuestion.answers) : [],
-    [currentQuestion]
-  );
-  
   if (!categories || categories.length === 0) {
     return (
       <div>
@@ -58,22 +33,15 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
     );
   }
 
-  if (!currentCategory) {
-    console.error('Current category is undefined:', { currentCategoryIndex, categoriesLength: categories.length });
+  if (!currentCategory || !currentQuestion) {
+    console.error('Current category or question is undefined:', { 
+      currentCategoryIndex, 
+      currentQuestionIndex,
+      categoriesLength: categories.length 
+    });
     return (
       <div>
-        <p>Viga kategooria laadimisel. Palun proovige uuesti.</p>
-        <Button onClick={() => router.push('/assessment')}>
-          Tagasi algusesse
-        </Button>
-      </div>
-    );
-  }
-
-  if (!currentQuestion) {
-    return (
-      <div>
-        <p>Viga küsimuse laadimisel. Palun proovige uuesti.</p>
+        <p>Viga küsimuste laadimisel. Palun proovige uuesti.</p>
         <Button onClick={() => router.push('/assessment')}>
           Tagasi algusesse
         </Button>
@@ -138,6 +106,8 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
     }
   };
 
+  const selectedAnswerId = responses.find(r => r.questionId === currentQuestion.id)?.answerId;
+
   return (
     <div>
       <div>
@@ -146,37 +116,13 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
           <span>Küsimus {currentQuestionNumber} / {totalQuestions}</span>
           <span>{Math.round((currentQuestionNumber / totalQuestions) * 100)}%</span>
         </div>
-        <div>
-          <div />
-        </div>
       </div>
 
-      <Card>
-        <CardContent>
-          <div>
-            <h3>{currentQuestion.questionText_et}</h3>
-            {currentQuestion.questionDescription_et && (
-              <p>{currentQuestion.questionDescription_et}</p>
-            )}
-            <div>
-              {shuffledAnswers.map((answer) => (
-                <label key={answer.id}>
-                  <input
-                    type="radio"
-                    name={`question-${currentQuestion.id}`}
-                    value={answer.id}
-                    checked={responses.some(
-                      r => r.questionId === currentQuestion.id && r.answerId === answer.id
-                    )}
-                    onChange={() => handleAnswerSelect(currentQuestion.id, answer.id)}
-                  />
-                  <span>{answer.answerText_et}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <QuestionDisplay
+        question={currentQuestion}
+        onAnswerSelect={handleAnswerSelect}
+        selectedAnswerId={selectedAnswerId}
+      />
 
       <div>
         {!isLastCategory || !isLastQuestionInCategory ? (

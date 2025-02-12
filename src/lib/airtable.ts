@@ -1,10 +1,11 @@
 import Airtable from 'airtable';
 import { FieldSet } from 'airtable/lib/field_set';
+import { config } from './config';
 
 // Initialize Airtable with Personal Access Token
 const base = new Airtable({
-  apiKey: process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN
-}).base(process.env.AIRTABLE_BASE_ID!);
+  apiKey: config.airtable.apiKey
+}).base(config.airtable.baseId);
 
 // Type definitions based on Airtable schema
 export interface MethodCompanyType {
