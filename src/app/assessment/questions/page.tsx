@@ -2,6 +2,7 @@ import { getAssessmentResponse, getCategories, getQuestions, getAnswers } from "
 import { QuestionsForm } from "@/components/assessment/QuestionsForm";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/UiCard";
+import { ErrorState } from "@/components/assessment/ErrorState";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -38,22 +39,10 @@ export default async function QuestionsPage({
     
     if (!categories.length) {
       return (
-        <main>
-          <h1>AI-valmiduse hindamine</h1>
-          <Card>
-            <CardHeader>
-              <CardTitle>Küsimusi ei leitud</CardTitle>
-              <CardDescription>
-                Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <a href="/assessment">
-                Tagasi hindamise algusesse
-              </a>
-            </CardContent>
-          </Card>
-        </main>
+        <ErrorState 
+          title="Küsimusi ei leitud"
+          description="Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga."
+        />
       );
     }
     
@@ -77,22 +66,10 @@ export default async function QuestionsPage({
 
     if (!questionsByCategory.length) {
       return (
-        <main>
-          <h1>AI-valmiduse hindamine</h1>
-          <Card>
-            <CardHeader>
-              <CardTitle>Küsimusi ei leitud</CardTitle>
-              <CardDescription>
-                Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <a href="/assessment">
-                Tagasi hindamise algusesse
-              </a>
-            </CardContent>
-          </Card>
-        </main>
+        <ErrorState 
+          title="Küsimusi ei leitud"
+          description="Valitud ettevõtte tüübi jaoks ei leitud küsimusi. Palun proovige uuesti või võtke ühendust administraatoriga."
+        />
       );
     }
 
@@ -119,22 +96,10 @@ export default async function QuestionsPage({
   } catch (error) {
     console.error('Error loading questions page:', error);
     return (
-      <main>
-        <h1>AI-valmiduse hindamine</h1>
-        <Card>
-          <CardHeader>
-            <CardTitle>Viga küsimuste laadimisel</CardTitle>
-            <CardDescription>
-              Kahjuks tekkis küsimuste laadimisel viga. Palun proovige uuesti.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <a href="/assessment">
-              Tagasi algusesse
-            </a>
-          </CardContent>
-        </Card>
-      </main>
+      <ErrorState 
+        title="Viga küsimuste laadimisel"
+        description="Kahjuks tekkis küsimuste laadimisel viga. Palun proovige uuesti."
+      />
     );
   }
 }
