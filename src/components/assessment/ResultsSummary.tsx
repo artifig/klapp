@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/UiCard";
 import { ResultsChart } from "@/components/assessment/ResultsChart";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/UiAvatar";
+import { ProviderList } from "@/components/ui/ProviderList";
 import type { SolutionProvider } from "@/lib/airtable";
 
 interface ResultsSummaryProps {
@@ -57,30 +57,7 @@ export function ResultsSummary({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div>
-                {topProviders.map((provider) => (
-                  <a
-                    key={provider.id}
-                    href={provider.providerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Avatar>
-                      <AvatarImage 
-                        src={provider.providerLogo?.[0]?.url} 
-                        alt={provider.providerName_et} 
-                      />
-                      <AvatarFallback>
-                        {provider.providerName_et.substring(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h4>{provider.providerName_et}</h4>
-                      <p>{provider.providerDescription_et}</p>
-                    </div>
-                  </a>
-                ))}
-              </div>
+              <ProviderList providers={topProviders} showDescription />
             </CardContent>
           </Card>
         )}
