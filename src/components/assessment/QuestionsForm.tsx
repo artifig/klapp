@@ -97,15 +97,8 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
       }
       return [...prev, { questionId, answerId }];
     });
-  };
 
-  const isCurrentQuestionAnswered = () => {
-    return responses.some(r => r.questionId === currentQuestion.id);
-  };
-
-  const handleNext = () => {
-    if (!isCurrentQuestionAnswered()) return;
-
+    // Automatically advance to next question after selection
     if (isLastQuestionInCategory) {
       if (!isLastCategory) {
         setCurrentCategoryIndex(prev => prev + 1);
@@ -126,8 +119,6 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
   };
 
   const handleSubmit = async () => {
-    if (!isCurrentQuestionAnswered()) return;
-
     setIsSubmitting(true);
     try {
       const res = await fetch(`/api/assessment/${assessmentId}/responses`, {
@@ -188,26 +179,28 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
       </Card>
 
       <div>
-        <Button
-          onClick={handlePrevious}
-          disabled={currentCategoryIndex === 0 && currentQuestionIndex === 0}
-        >
-          Eelmine
-        </Button>
-        {isLastCategory && isLastQuestionInCategory ? (
+        {!isLastCategory || !isLastQuestionInCategory ? (
           <Button
-            onClick={handleSubmit}
-            disabled={!isCurrentQuestionAnswered() || isSubmitting}
+            onClick={handlePrevious}
+            disabled={currentCategoryIndex === 0 && currentQuestionIndex === 0}
           >
-            {isSubmitting ? 'Salvestamine...' : 'Lõpeta hindamine'}
+            Eelmine
           </Button>
         ) : (
-          <Button
-            onClick={handleNext}
-            disabled={!isCurrentQuestionAnswered()}
-          >
-            Järgmine
-          </Button>
+          <div>
+            <Button
+              onClick={handlePrevious}
+              disabled={currentCategoryIndex === 0 && currentQuestionIndex === 0}
+            >
+              Eelmine
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Salvestamine...' : 'Lõpeta hindamine'}
+            </Button>
+          </div>
         )}
       </div>
     </div>
