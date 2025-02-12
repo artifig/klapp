@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from "@/components/ui/UiButton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/UiCard";
 import { exportAssessment, sendAssessmentEmail } from '@/lib/api';
@@ -22,24 +22,38 @@ const initialFormData: FormData = {
   email: '',
   organisationName: '',
   organisationRegNumber: '',
-  wantsContact: false
+  wantsContact: true
 };
 
 export function ExportForm({ assessmentId }: ExportFormProps) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [isDataSaved, setIsDataSaved] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    
+    if (name === 'organisationRegNumber') {
+      // Only allow numbers
+      const numberValue = value.replace(/[^0-9]/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [name]: numberValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
+    
     setError(null);
+    setIsDataSaved(false); // Reset saved state when form changes
   };
 
-  const handleDownloadPDF = async (e: React.MouseEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.email || !formData.name) {
       setError('Palun täitke kõik kohustuslikud väljad');
@@ -48,6 +62,27 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
 
     setIsSubmitting(true);
     setError(null);
+    try {
+      // Save the form data first
+      await exportAssessment(assessmentId, formData);
+      setIsDataSaved(true);
+    } catch (error) {
+      console.error('Error saving form data:', error);
+      setError('Viga andmete salvestamisel. Palun proovige uuesti.');
+      setIsSubmitting(false);
+      return;
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleDownloadPDF = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!isDataSaved && formRef.current) {
+      formRef.current.dispatchEvent(new Event('submit', { cancelable: true }));
+      if (error) return;
+    }
+
+    setIsSubmitting(true);
     try {
       const blob = await exportAssessment(assessmentId, formData);
       const url = window.URL.createObjectURL(blob);
@@ -68,13 +103,12 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
 
   const handleSendEmail = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!formData.email || !formData.name) {
-      setError('Palun täitke kõik kohustuslikud väljad');
-      return;
+    if (!isDataSaved && formRef.current) {
+      formRef.current.dispatchEvent(new Event('submit', { cancelable: true }));
+      if (error) return;
     }
 
     setIsSubmitting(true);
-    setError(null);
     try {
       await sendAssessmentEmail(assessmentId, formData);
       alert('Hindamise tulemused on saadetud teie e-posti aadressile.');
@@ -95,8 +129,9 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
+        <form ref={formRef} onSubmit={handleSubmit}>
           {error && <div role="alert" className="error">{error}</div>}
+          {isDataSaved && <div role="status" className="success">Andmed on salvestatud</div>}
 
           <div>
             <label htmlFor="name">Nimi *</label>
@@ -141,6 +176,10 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
               name="organisationRegNumber"
               value={formData.organisationRegNumber}
               onChange={handleInputChange}
+              pattern="[0-9]*"
+              inputMode="numeric"
+              maxLength={8}
+              placeholder="12345678"
             />
           </div>
 
@@ -157,6 +196,12 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
           </div>
 
           <div>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Salvestan...' : 'Salvesta'}
+            </Button>
             <Button
               onClick={handleDownloadPDF}
               disabled={isSubmitting || !formData.email || !formData.name}

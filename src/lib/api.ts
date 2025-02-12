@@ -4,7 +4,7 @@
  * This file contains all server-side API functions
  */
 
-import { createAssessmentResponse } from './airtable';
+import { createAssessmentResponse, updateAssessmentContact } from './airtable';
 
 export async function createAssessment(data: { initialGoal: string; companyType: string }) {
   try {
@@ -35,9 +35,18 @@ export async function exportAssessment(assessmentId: string, data: {
   email: string;
   organisationName: string;
   organisationRegNumber: string;
-  wantsContact: boolean;
+  wantsContact: boolean; // Controls isActive in Airtable - if false, assessment will be marked as inactive
 }): Promise<Blob> {
   try {
+    // First save the contact information and update active status
+    await updateAssessmentContact(assessmentId, {
+      contactName: data.name,
+      contactEmail: data.email,
+      companyName: data.organisationName,
+      companyRegistrationNumber: data.organisationRegNumber,
+      wantsContact: data.wantsContact // This will set isActive in Airtable
+    });
+
     // TODO: Implement direct PDF generation
     console.log(`Generating PDF for assessment ${assessmentId} with data:`, data);
     // For now, return an empty PDF blob to fix the type error
@@ -53,9 +62,18 @@ export async function sendAssessmentEmail(assessmentId: string, data: {
   email: string;
   organisationName: string;
   organisationRegNumber: string;
-  wantsContact: boolean;
+  wantsContact: boolean; // Controls isActive in Airtable - if false, assessment will be marked as inactive
 }) {
   try {
+    // First save the contact information and update active status
+    await updateAssessmentContact(assessmentId, {
+      contactName: data.name,
+      contactEmail: data.email,
+      companyName: data.organisationName,
+      companyRegistrationNumber: data.organisationRegNumber,
+      wantsContact: data.wantsContact // This will set isActive in Airtable
+    });
+
     // TODO: Implement direct email sending
     console.log(`Sending email for assessment ${assessmentId} to ${data.email}`);
     throw new Error('Not implemented');

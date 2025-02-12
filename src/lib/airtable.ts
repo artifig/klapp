@@ -696,3 +696,25 @@ export async function getProvidersForExampleSolution(solutionId: string): Promis
     return [];
   }
 }
+
+export async function updateAssessmentContact(assessmentId: string, data: {
+  companyName?: string;
+  contactName: string;
+  contactEmail: string;
+  companyRegistrationNumber?: string;
+  wantsContact: boolean;
+}) {
+  try {
+    await base('AssessmentResponses').update(assessmentId, {
+      companyName: data.companyName,
+      contactName: data.contactName,
+      contactEmail: data.contactEmail,
+      companyRegistrationNumber: data.companyRegistrationNumber ? parseInt(data.companyRegistrationNumber, 10) : undefined,
+      isActive: data.wantsContact, // If they want to be contacted, keep the assessment active
+      responseStatus: 'Completed' // Mark the assessment as completed when contact details are saved
+    });
+  } catch (error) {
+    console.error('Error updating assessment contact:', error);
+    throw error;
+  }
+}
