@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/UiButton";
 import type { ProcessedCategory, AssessmentResponse } from "@/lib/utils";
 import { QuestionDisplay } from "./QuestionDisplay";
+import { saveResponses } from "@/lib/api";
 
 interface QuestionsFormProps {
   assessmentId: string;
@@ -18,6 +19,7 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState(existingResponses);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const currentCategory = categories[currentCategoryIndex];
   const currentQuestion = currentCategory?.questions[currentQuestionIndex];
@@ -58,6 +60,7 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
   ) + currentQuestionIndex + 1;
 
   const handleAnswerSelect = (questionId: string, answerId: string) => {
+    setError(null);
     setResponses(prev => {
       const existing = prev.find(r => r.questionId === questionId);
       if (existing) {
@@ -78,6 +81,7 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
   };
 
   const handlePrevious = () => {
+    setError(null);
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
     } else if (currentCategoryIndex > 0) {
@@ -88,19 +92,13 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setError(null);
     try {
-      const res = await fetch(`/api/assessment/${assessmentId}/responses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ responses }),
-      });
-
-      if (!res.ok) throw new Error('Failed to save responses');
-
+      await saveResponses(assessmentId, responses);
       router.push(`/assessment/results?id=${assessmentId}`);
     } catch (error) {
       console.error('Error saving responses:', error);
-      alert('Viga vastuste salvestamisel. Palun proovige uuesti.');
+      setError('Viga vastuste salvestamisel. Palun proovige uuesti.');
     } finally {
       setIsSubmitting(false);
     }
@@ -117,6 +115,8 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
           <span>{Math.round((currentQuestionNumber / totalQuestions) * 100)}%</span>
         </div>
       </div>
+
+      {error && <div role="alert">{error}</div>}
 
       <QuestionDisplay
         question={currentQuestion}

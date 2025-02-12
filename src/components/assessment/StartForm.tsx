@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/UiButton";
 import { type MethodCompanyType } from "@/lib/airtable";
+import { createAssessment } from "@/lib/api";
 
 interface StartFormProps {
   companyTypes: MethodCompanyType[];
@@ -11,35 +12,26 @@ interface StartFormProps {
 
 export default function StartForm({ companyTypes }: StartFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     const formData = new FormData(event.currentTarget);
     const data = {
-      initialGoal: formData.get("initialGoal"),
-      companyType: formData.get("companyType"),
+      initialGoal: formData.get("initialGoal") as string,
+      companyType: formData.get("companyType") as string,
     };
 
     try {
-      const response = await fetch("/api/assessment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        router.push(`/assessment/questions?id=${result.id}`);
-      } else {
-        console.error("Failed to create assessment");
-      }
+      const result = await createAssessment(data);
+      router.push(`/assessment/questions?id=${result.id}`);
     } catch (error) {
       console.error("Error submitting form:", error);
+      setError("Viga hindamise alustamisel. Palun proovige uuesti.");
     } finally {
       setIsSubmitting(false);
     }
@@ -47,6 +39,8 @@ export default function StartForm({ companyTypes }: StartFormProps) {
 
   return (
     <form onSubmit={handleSubmit}>
+      {error && <div role="alert">{error}</div>}
+
       <div>
         <label htmlFor="initialGoal">
           Mis on teie peamine äriline eesmärk seoses AI-ga?

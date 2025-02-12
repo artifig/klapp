@@ -3,20 +3,32 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/UiButton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/UiCard";
+import { exportAssessment, sendAssessmentEmail } from '@/lib/api';
 
 interface ExportFormProps {
   assessmentId: string;
 }
 
+interface FormData {
+  name: string;
+  email: string;
+  organisationName: string;
+  organisationRegNumber: string;
+  wantsContact: boolean;
+}
+
+const initialFormData: FormData = {
+  name: '',
+  email: '',
+  organisationName: '',
+  organisationRegNumber: '',
+  wantsContact: false
+};
+
 export function ExportForm({ assessmentId }: ExportFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    organisationName: '',
-    organisationRegNumber: '',
-    wantsContact: false
-  });
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -24,23 +36,20 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    setError(null);
   };
 
   const handleDownloadPDF = async (e: React.MouseEvent) => {
     e.preventDefault();
+    if (!formData.email || !formData.name) {
+      setError('Palun täitke kõik kohustuslikud väljad');
+      return;
+    }
+
     setIsSubmitting(true);
+    setError(null);
     try {
-      const response = await fetch(`/api/assessment/${assessmentId}/export`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw new Error('Failed to generate PDF');
-
-      const blob = await response.blob();
+      const blob = await exportAssessment(assessmentId, formData);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -51,7 +60,7 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      alert('Viga PDF-i allalaadimisel. Palun proovige uuesti.');
+      setError('Viga PDF-i allalaadimisel. Palun proovige uuesti.');
     } finally {
       setIsSubmitting(false);
     }
@@ -59,22 +68,19 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
 
   const handleSendEmail = async (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      const response = await fetch(`/api/assessment/${assessmentId}/send-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+    if (!formData.email || !formData.name) {
+      setError('Palun täitke kõik kohustuslikud väljad');
+      return;
+    }
 
-      if (!response.ok) throw new Error('Failed to send email');
-      
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await sendAssessmentEmail(assessmentId, formData);
       alert('Hindamise tulemused on saadetud teie e-posti aadressile.');
     } catch (error) {
       console.error('Error sending email:', error);
-      alert('Viga e-kirja saatmisel. Palun proovige uuesti.');
+      setError('Viga e-kirja saatmisel. Palun proovige uuesti.');
     } finally {
       setIsSubmitting(false);
     }
@@ -90,8 +96,10 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
       </CardHeader>
       <CardContent>
         <form>
+          {error && <div role="alert" className="error">{error}</div>}
+
           <div>
-            <label htmlFor="name">Nimi</label>
+            <label htmlFor="name">Nimi *</label>
             <input
               type="text"
               id="name"
@@ -103,7 +111,7 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
           </div>
 
           <div>
-            <label htmlFor="email">E-post</label>
+            <label htmlFor="email">E-post *</label>
             <input
               type="email"
               id="email"
@@ -122,7 +130,6 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
               name="organisationName"
               value={formData.organisationName}
               onChange={handleInputChange}
-              required
             />
           </div>
 
@@ -134,7 +141,6 @@ export function ExportForm({ assessmentId }: ExportFormProps) {
               name="organisationRegNumber"
               value={formData.organisationRegNumber}
               onChange={handleInputChange}
-              required
             />
           </div>
 
