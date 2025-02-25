@@ -87,7 +87,7 @@ export const embedClient = {
     window.parent.postMessage({
       type: 'INITIALIZE',
       payload: { initialized: true }
-    }, mergedConfig.targetOrigin);
+    }, mergedConfig.targetOrigin || '*');
 
     // Auto-resize if enabled
     if (mergedConfig.autoResize) {
@@ -96,7 +96,7 @@ export const embedClient = {
         window.parent.postMessage({
           type: 'RESIZE_HEIGHT',
           payload: { height }
-        }, mergedConfig.targetOrigin);
+        }, mergedConfig.targetOrigin || '*');
       }, 500);
     }
   },

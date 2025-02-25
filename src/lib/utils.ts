@@ -4,8 +4,11 @@ import type { CategoryScore } from "./types";
 import type { SolutionProvider, MethodCategory } from "./airtable";
 import { getAssessmentResponse, getCategories, getQuestions, getAnswers } from "./airtable";
 
+/**
+ * Combines multiple class values and merges Tailwind classes efficiently.
+ * Uses clsx for conditional classes and tailwind-merge to handle conflicting classes.
+ */
 export function cn(...inputs: ClassValue[]) {
-  // Merge class names
   return twMerge(clsx(inputs));
 }
 
@@ -148,4 +151,56 @@ export async function fetchQuestionsData(assessmentId: string): Promise<{
   }
 
   return { assessment, questionsByCategory, responses };
+}
+
+/**
+ * Formats a number as currency
+ */
+export function formatCurrency(value: number, currency = 'EUR', locale = 'et-EE') {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+  }).format(value);
+}
+
+/**
+ * Debounce function to limit how often a function can be called
+ */
+export function debounce<T extends (...args: any[]) => any>(
+  fn: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  
+  return function(...args: Parameters<T>) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+}
+
+/**
+ * Truncates a string if it's longer than the specified length
+ */
+export function truncateString(str: string, length: number): string {
+  if (str.length <= length) return str;
+  return str.slice(0, length) + '...';
+}
+
+/**
+ * Parse URL search params into an object
+ */
+export function parseSearchParams(search: string): Record<string, string> {
+  return Object.fromEntries(new URLSearchParams(search));
+}
+
+/**
+ * Gets a nested value from an object using a path string
+ * Example: getNestedValue(obj, 'user.profile.name')
+ */
+export function getNestedValue<T>(obj: any, path: string, defaultValue?: T): T | undefined {
+  try {
+    return path.split('.').reduce((a, b) => a[b], obj) as T;
+  } catch (e) {
+    return defaultValue;
+  }
 }

@@ -1,14 +1,33 @@
-if (!process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN) {
-  throw new Error('AIRTABLE_PERSONAL_ACCESS_TOKEN is not set in environment variables');
-}
+import { airtableEnv } from './env';
 
-if (!process.env.AIRTABLE_BASE_ID) {
-  throw new Error('AIRTABLE_BASE_ID is not set in environment variables');
-}
-
+/**
+ * Application configuration
+ * Uses safe environment variable access via the env utility
+ */
 export const config = {
   airtable: {
-    apiKey: process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN,
-    baseId: process.env.AIRTABLE_BASE_ID,
+    // Only try to get the API key if we're on the server or during build
+    apiKey: typeof window === 'undefined' 
+      ? airtableEnv.accessToken 
+      : '', // Empty string on client side
+    
+    baseId: airtableEnv.baseId,
   },
-} as const; 
+} as const;
+
+/**
+ * Check if Airtable is properly configured
+ */
+export function isAirtableConfigured(): boolean {
+  if (typeof window !== 'undefined') {
+    // On client side, don't check (we shouldn't be making direct Airtable calls)
+    return false;
+  }
+  
+  try {
+    return airtableEnv.isConfigured();
+  } catch (_) {
+    console.warn('Airtable environment variables not configured properly');
+    return false;
+  }
+} 

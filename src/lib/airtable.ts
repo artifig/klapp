@@ -1,11 +1,35 @@
 import Airtable from 'airtable';
 import { FieldSet } from 'airtable/lib/field_set';
-import { config } from './config';
+import { config, isAirtableConfigured } from './config';
 
-// Initialize Airtable with Personal Access Token
-const base = new Airtable({
-  apiKey: config.airtable.apiKey
-}).base(config.airtable.baseId);
+// Global flag to track if Airtable is properly configured
+const airtableConfigured = isAirtableConfigured();
+
+// Initialize Airtable with Personal Access Token only if properly configured
+let base: Airtable.Base;
+
+try {
+  if (airtableConfigured) {
+    base = new Airtable({
+      apiKey: config.airtable.apiKey
+    }).base(config.airtable.baseId);
+  } else {
+    // Create a mock base for client-side that will throw helpful errors
+    base = new Proxy({} as Airtable.Base, {
+      get: () => {
+        throw new Error('Airtable is not properly configured. Make sure AIRTABLE_PERSONAL_ACCESS_TOKEN and AIRTABLE_BASE_ID are set in environment variables.');
+      }
+    });
+  }
+} catch (error) {
+  console.error('Error initializing Airtable:', error);
+  // Create a mock base that will throw helpful errors
+  base = new Proxy({} as Airtable.Base, {
+    get: () => {
+      throw new Error('Failed to initialize Airtable client. Check your environment variables.');
+    }
+  });
+}
 
 // Type definitions based on Airtable schema
 export interface MethodCompanyType {
