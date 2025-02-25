@@ -17,30 +17,41 @@ export interface Brand {
     accent?: string;          // Accent color
     background?: string;      // Background color
     foreground?: string;      // Text color
+    gradient1?: string;       // Dark orange for gradient
+    gradient2?: string;       // Primary orange for gradient
+    gradient3?: string;       // Light orange for gradient
+    success?: string;         // Success color
   };
   fonts?: {                   // Optional custom fonts
     headings?: string;        // Font for headings
     body?: string;            // Font for body text
+    condensed?: string;       // Font for condensed bold text
   };
-  // Add more brand properties as needed
+  slogan?: string;            // Brand slogan
 }
 
 /**
- * Default brand configuration
+ * Default brand configuration based on the new brand identity
  */
 export const defaultBrand: Brand = {
-  name: 'AI Readiness',
+  name: 'Tehnopol',
   logo: {
     src: '/logo.svg',
-    alt: 'AI Readiness Logo',
+    alt: 'Tehnopol Logo',
     width: 120,
     height: 40,
   },
   colors: {
-    primary: '#0070f3',
-    secondary: '#7928ca',
-    accent: '#f59e0b',
+    primary: '#EB8B00',         // Primary Orange
+    secondary: '#FF6600',       // Dark Orange (Tumeoranž)
+    accent: '#FFCC00',          // Light Orange (Heleoranž)
+    foreground: '#4D4D4D',      // Gray (Hall)
+    success: '#70AF34',         // Green (Roheline)
+    gradient1: '#FF6600',       // Dark orange
+    gradient2: '#EB8B00',       // Primary orange
+    gradient3: '#FFCC00',       // Light orange
   },
+  slogan: 'UNLOCKING THE POTENTIAL',
 };
 
 /**
@@ -68,60 +79,89 @@ export function createBrandTheme(brand: Partial<Brand> = {}): Theme {
       secondary: mergedBrand.colors.secondary ?? defaultBrand.colors.secondary as string,
       accent: mergedBrand.colors.accent ?? defaultBrand.colors.accent as string,
       background: mergedBrand.colors.background ?? '#ffffff',
-      foreground: mergedBrand.colors.foreground ?? '#000000',
+      foreground: mergedBrand.colors.foreground ?? '#4D4D4D',
       muted: '#f3f4f6',
       mutedForeground: '#6b7280',
       border: '#e5e7eb',
       input: '#e5e7eb',
-      success: '#10b981',
-      warning: '#f59e0b',
-      error: '#ef4444',
+      success: mergedBrand.colors.success ?? '#70AF34',
+      warning: '#FFCC00',
+      error: '#FF6600',
+      gradient1: mergedBrand.colors.gradient1 ?? '#FF6600',
+      gradient2: mergedBrand.colors.gradient2 ?? '#EB8B00',
+      gradient3: mergedBrand.colors.gradient3 ?? '#FFCC00',
     },
     // Custom font family if provided
-    ...(mergedBrand.fonts && {
-      fontFamily: {
-        sans: mergedBrand.fonts.body || 'var(--font-geist-sans)',
-        mono: 'var(--font-geist-mono)',
-      },
-    }),
+    fontFamily: {
+      sans: mergedBrand.fonts?.body || '"Helvetica Neue", Arial, "Helvetica", sans-serif',
+      mono: 'var(--font-geist-mono)',
+      condensed: mergedBrand.fonts?.condensed || '"Helvetica Neue Condensed Bold", "Arial Narrow Bold", sans-serif',
+    },
   });
 }
 
 /**
- * Example brand configurations
+ * Example brand configurations based on the brand identity
  */
 export const brandConfigurations = {
   default: defaultBrand,
   
-  // Example brand: Blue theme
-  blue: {
-    name: 'Blue Theme',
+  // Modern Orange Theme (Primary Brand)
+  modern: {
+    name: 'Modern Orange',
     logo: {
-      src: '/blue-logo.svg',
-      alt: 'Blue Theme Logo',
+      src: '/orange-logo.svg',
+      alt: 'Modern Orange Logo',
       width: 120,
       height: 40,
     },
     colors: {
-      primary: '#2563eb',
-      secondary: '#4f46e5',
-      accent: '#0ea5e9',
+      primary: '#EB8B00',      // Primary Orange
+      secondary: '#FF6600',    // Dark Orange
+      accent: '#FFCC00',       // Light Orange
+      foreground: '#4D4D4D',   // Gray
+      success: '#70AF34',      // Green
     },
+    slogan: 'UNLOCKING THE POTENTIAL',
   },
   
-  // Example brand: Green theme
-  green: {
-    name: 'Green Theme',
+  // Dark Theme with Orange Accents
+  dark: {
+    name: 'Dark Theme',
     logo: {
-      src: '/green-logo.svg',
-      alt: 'Green Theme Logo',
+      src: '/dark-logo.svg',
+      alt: 'Dark Theme Logo',
       width: 120,
       height: 40,
     },
     colors: {
-      primary: '#10b981',
-      secondary: '#059669',
-      accent: '#84cc16',
+      primary: '#EB8B00',      // Primary Orange
+      secondary: '#FF6600',    // Dark Orange
+      accent: '#FFCC00',       // Light Orange
+      background: '#1A1A1A',   // Dark background
+      foreground: '#FFFFFF',   // White text
+      success: '#70AF34',      // Green
     },
+    slogan: 'UNLOCKING THE POTENTIAL',
+  },
+  
+  // Light Theme with Minimal Orange
+  light: {
+    name: 'Light Theme',
+    logo: {
+      src: '/light-logo.svg',
+      alt: 'Light Theme Logo',
+      width: 120,
+      height: 40,
+    },
+    colors: {
+      primary: '#EB8B00',      // Primary Orange
+      secondary: '#FF6600',    // Dark Orange  
+      accent: '#FFCC00',       // Light Orange
+      background: '#F5F5F5',   // Light Gray background
+      foreground: '#4D4D4D',   // Gray text
+      success: '#70AF34',      // Green
+    },
+    slogan: 'UNLOCKING THE POTENTIAL',
   },
 } as const; 

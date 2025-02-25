@@ -22,6 +22,9 @@ export default {
         success: "var(--success)",
         warning: "var(--warning)",
         error: "var(--error)",
+        gradient1: "var(--gradient1)",
+        gradient2: "var(--gradient2)",
+        gradient3: "var(--gradient3)",
       },
       borderRadius: {
         sm: defaultTheme.borderRadius.sm,
@@ -36,7 +39,38 @@ export default {
         xl: defaultTheme.breakpoints.xl,
         "2xl": defaultTheme.breakpoints["2xl"],
       },
+      fontFamily: {
+        sans: ['"Helvetica Neue"', 'Arial', 'Helvetica', 'sans-serif'],
+        condensed: ['"Helvetica Neue Condensed Bold"', '"Arial Narrow Bold"', 'sans-serif'],
+      },
+      clipPath: {
+        'diagonal-bottom': 'polygon(0 0, 100% 0, 100% 90%, 0 100%)',
+        'diagonal-top': 'polygon(0 10%, 100% 0, 100% 100%, 0 100%)',
+        'diagonal-card': 'polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%)',
+      },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(135deg, var(--gradient1), var(--gradient2), var(--gradient3))',
+      },
+      boxShadow: {
+        'modern': '0 4px 20px rgba(0, 0, 0, 0.05)',
+        'modern-hover': '0 10px 25px rgba(0, 0, 0, 0.1)',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addUtilities }: { addUtilities: Function }) {
+      const newUtilities = {
+        '.clip-diagonal-bottom': {
+          clipPath: 'polygon(0 0, 100% 0, 100% 90%, 0 100%)',
+        },
+        '.clip-diagonal-top': {
+          clipPath: 'polygon(0 10%, 100% 0, 100% 100%, 0 100%)',
+        },
+        '.clip-diagonal-card': {
+          clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%)',
+        },
+      };
+      addUtilities(newUtilities);
+    }
+  ],
 } satisfies Config;

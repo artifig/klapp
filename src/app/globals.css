@@ -3,28 +3,37 @@
 @tailwind utilities;
 
 :root {
-  /* Base theme variables - will be overridden by ThemeProvider */
+  /* Base theme variables from the brand identity */
   --background: #ffffff;
-  --foreground: #171717;
-  --primary: #0070f3;
-  --secondary: #7928ca;
-  --accent: #f59e0b;
+  --foreground: #4D4D4D;
+  --primary: #EB8B00;
+  --secondary: #FF6600;
+  --accent: #FFCC00;
   --muted: #f3f4f6;
   --muted-foreground: #6b7280;
   --border: #e5e7eb;
   --input: #e5e7eb;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --success: #70AF34;
+  --warning: #FFCC00;
+  --error: #FF6600;
+  
+  /* Gradient colors */
+  --gradient1: #FF6600;
+  --gradient2: #EB8B00;
+  --gradient3: #FFCC00;
+  
+  /* Brand angles */
+  --brand-angle1: 135deg;
+  --brand-angle2: 90deg;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #1A1A1A;
     --foreground: #ededed;
-    --primary: #3b82f6;
-    --secondary: #a855f7;
-    --accent: #f97316;
+    --primary: #EB8B00;
+    --secondary: #FF6600;
+    --accent: #FFCC00;
     --muted: #1f2937;
     --muted-foreground: #9ca3af;
     --border: #374151;
@@ -32,10 +41,63 @@
   }
 }
 
+/* Typography setup - Using Helvetica Neue with Arial fallback */
+@font-face {
+  font-family: 'Helvetica Neue Condensed Bold';
+  src: local('Helvetica Neue Condensed Bold'), 
+       local('HelveticaNeue-CondensedBold');
+  font-weight: bold;
+  font-style: normal;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-geist-sans, Arial, Helvetica, sans-serif);
+  font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+h1, h2 {
+  font-family: 'Helvetica Neue Condensed Bold', 'Arial Narrow Bold', Arial, sans-serif;
+}
+
+/* Brand gradient */
+.brand-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+}
+
+.brand-gradient-text {
+  background: linear-gradient(135deg, var(--gradient1), var(--gradient2), var(--gradient3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Diagonal elements */
+.diagonal-top {
+  position: relative;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 85%);
+}
+
+.diagonal-bottom {
+  position: relative;
+  padding-top: 4rem;
+  padding-bottom: 2rem;
+  clip-path: polygon(0 0, 100% 15%, 100% 100%, 0 100%);
+}
+
+.diagonal-card {
+  border-radius: 0.5rem;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%);
+  overflow: hidden;
 }
 
 /* Embedded mode styles */
@@ -44,6 +106,61 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+}
+
+/* Modern card styling */
+.modern-card {
+  background: var(--background);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  position: relative;
+}
+
+.modern-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modern-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(135deg, var(--gradient1), var(--gradient2), var(--gradient3));
+}
+
+/* Buttons with brand styling */
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary);
+  transform: translateY(-2px);
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.2);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  z-index: -1;
 }
 
 /* Helper classes for responsive design */
@@ -79,6 +196,16 @@ body {
   }
 }
 
+/* Brand slogan styling */
+.brand-slogan {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+}
+
 /* Animation utilities */
 .fadeIn {
   animation: fadeIn 0.3s ease-in-out;
@@ -93,4 +220,96 @@ body {
 *:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* White space emphasis */
+.section {
+  margin: 2rem 0;
+  padding: 2rem 0;
+}
+
+.content-area {
+  padding: 2rem;
+}
+
+/* Navigation styling */
+.nav-link {
+  position: relative;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary);
+  transition: width 0.2s ease-in-out;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* Brand-specific design elements */
+.bg-brand-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+}
+
+.font-condensed {
+  font-family: 'Helvetica Neue Condensed', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.shadow-modern {
+  box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.2);
+}
+
+/* Gradient backgrounds */
+.bg-gradient1 {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+}
+
+.bg-gradient2 {
+  background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+}
+
+.bg-gradient3 {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+}
+
+/* Add card diagonal cut corner styling */
+[data-diagonal="true"] {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-diagonal="true"]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background-color: var(--primary);
+  transform: rotate(45deg) translate(12px, -12px);
+}
+
+/* Brand button diagonal styling */
+.button-diagonal {
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 97% 100%, 0 100%);
+}
+
+/* Brand component styling */
+@media (prefers-reduced-motion: no-preference) {
+  .card-hover-effect:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+  }
 }

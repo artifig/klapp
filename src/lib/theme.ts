@@ -14,22 +14,34 @@ export type ThemeColors = {
   success: string;
   warning: string;
   error: string;
+  gradient1: string; // Dark orange
+  gradient2: string; // Primary orange
+  gradient3: string; // Light orange
 };
 
-// Default theme colors
+// Default theme colors based on the provided brand identity
 export const defaultColors: ThemeColors = {
-  primary: '#0070f3',
-  secondary: '#7928ca',
-  accent: '#f59e0b',
+  // Primary brand color - Orange
+  primary: '#EB8B00',
+  // Dark Orange (Tumeoranž)
+  secondary: '#FF6600',
+  // Light Orange (Heleoranž)
+  accent: '#FFCC00',
   background: '#ffffff',
-  foreground: '#171717',
+  // Gray (Hall)
+  foreground: '#4D4D4D',
   muted: '#f3f4f6',
   mutedForeground: '#6b7280',
   border: '#e5e7eb',
   input: '#e5e7eb',
-  success: '#10b981',
-  warning: '#f59e0b',
-  error: '#ef4444',
+  // Green (Roheline)
+  success: '#70AF34',
+  warning: '#FFCC00',
+  error: '#FF6600',
+  // Gradient colors
+  gradient1: '#FF6600', // Dark orange
+  gradient2: '#EB8B00', // Primary orange
+  gradient3: '#FFCC00', // Light orange
 };
 
 // Theme configuration
@@ -40,6 +52,7 @@ export type Theme = {
     md: string;
     lg: string;
     full: string;
+    diagonal: string; // New diagonal cut for brand identity
   };
   fontSize: {
     xs: string;
@@ -53,6 +66,7 @@ export type Theme = {
   fontFamily: {
     sans: string;
     mono: string;
+    condensed: string; // For condensed bold headers
   };
   spacing: {
     [key: string]: string;
@@ -64,9 +78,13 @@ export type Theme = {
     xl: string;
     '2xl': string;
   };
+  angles: {
+    brand1: string; // 135 degree angle
+    brand2: string; // 90 degree angle
+  };
 };
 
-// Default theme configuration
+// Default theme configuration based on the provided brand identity
 export const defaultTheme: Theme = {
   colors: defaultColors,
   borderRadius: {
@@ -74,6 +92,7 @@ export const defaultTheme: Theme = {
     md: '0.375rem',
     lg: '0.5rem',
     full: '9999px',
+    diagonal: 'polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%)', // Diagonal corner cut
   },
   fontSize: {
     xs: '0.75rem',
@@ -85,8 +104,9 @@ export const defaultTheme: Theme = {
     '3xl': '1.875rem',
   },
   fontFamily: {
-    sans: 'var(--font-geist-sans)',
+    sans: '"Helvetica Neue", Arial, "Helvetica", sans-serif',
     mono: 'var(--font-geist-mono)',
+    condensed: '"Helvetica Neue Condensed Bold", "Arial Narrow Bold", sans-serif',
   },
   spacing: {
     '0': '0',
@@ -109,6 +129,10 @@ export const defaultTheme: Theme = {
     xl: '1280px',
     '2xl': '1536px',
   },
+  angles: {
+    brand1: '135deg',
+    brand2: '90deg',
+  }
 };
 
 // Function to merge custom theme with default theme

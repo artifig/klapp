@@ -65,6 +65,9 @@ type ResponsiveLayoutProps = {
   sidebar?: React.ReactNode;
   containerSize?: ContainerSize;
   className?: string;
+  withDiagonalHeader?: boolean;
+  withDiagonalFooter?: boolean;
+  withBrandGradient?: boolean;
 };
 
 export function ResponsiveLayout({
@@ -74,6 +77,9 @@ export function ResponsiveLayout({
   sidebar,
   containerSize = 'lg',
   className = '',
+  withDiagonalHeader = false,
+  withDiagonalFooter = false,
+  withBrandGradient = false,
 }: ResponsiveLayoutProps) {
   const { isEmbedded } = useTheme();
   
@@ -81,7 +87,11 @@ export function ResponsiveLayout({
   if (isEmbedded) {
     return (
       <div className={`flex flex-col min-h-screen ${className}`}>
-        {header && <div className="py-2">{header}</div>}
+        {header && 
+          <div className={`py-2 ${withBrandGradient ? 'bg-brand-gradient text-white' : ''}`}>
+            {header}
+          </div>
+        }
         <main className="flex-grow">
           <ResponsiveContainer size={containerSize}>
             {children}
@@ -95,7 +105,11 @@ export function ResponsiveLayout({
   // Standalone layout with sidebar if provided
   return (
     <div className={`flex flex-col min-h-screen ${className}`}>
-      {header && <div className="py-4">{header}</div>}
+      {header && (
+        <div className={`relative ${withDiagonalHeader ? 'diagonal-top' : 'py-4'} ${withBrandGradient ? 'bg-brand-gradient text-white' : ''}`}>
+          {header}
+        </div>
+      )}
       <div className="flex flex-grow">
         {sidebar && (
           <aside className="hidden md:block w-64 shrink-0 border-r border-border bg-muted">
@@ -108,7 +122,11 @@ export function ResponsiveLayout({
           </ResponsiveContainer>
         </main>
       </div>
-      {footer && <div className="py-4">{footer}</div>}
+      {footer && (
+        <div className={`relative ${withDiagonalFooter ? 'diagonal-bottom' : 'py-4'} ${withBrandGradient ? 'bg-brand-gradient text-white' : ''}`}>
+          {footer}
+        </div>
+      )}
     </div>
   );
 } 

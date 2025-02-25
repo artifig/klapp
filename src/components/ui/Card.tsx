@@ -7,7 +7,7 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 
 // Card variants
 const cardVariants = cva(
-  "rounded-lg shadow-sm overflow-hidden",
+  "overflow-hidden shadow-sm transition-all duration-200",
   {
     variants: {
       variant: {
@@ -15,6 +15,7 @@ const cardVariants = cva(
         elevated: "bg-background shadow-md",
         outlined: "bg-transparent border border-border",
         filled: "bg-muted",
+        gradient: "bg-brand-gradient text-white border-none",
       },
       size: {
         sm: "p-3",
@@ -22,13 +23,18 @@ const cardVariants = cva(
         lg: "p-6",
       },
       interactive: {
-        true: "transition-all duration-200 hover:shadow-md",
+        true: "hover:shadow-modern hover:-translate-y-1 card-hover-effect",
+      },
+      diagonal: {
+        true: "",
+        false: "rounded-lg",
       }
     },
     defaultVariants: {
       variant: "default",
       size: "default",
       interactive: false,
+      diagonal: false,
     },
   }
 );
@@ -53,7 +59,7 @@ const CardTitle = forwardRef<
 >(({ className, as: Component = "h3", ...props }, ref) => (
   <Component
     ref={ref}
-    className={cn("text-lg font-semibold text-foreground", className)}
+    className={cn("text-lg font-bold text-foreground", className)}
     {...props}
   />
 ));
@@ -107,18 +113,20 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     variant, 
     size, 
     interactive,
+    diagonal,
     as: Component = "div",
     ...props 
   }, ref) => {
     const { isEmbedded } = useTheme();
     
     // Adjust styling when embedded
-    const embeddedClass = isEmbedded ? 'embedded-card max-w-full' : '';
+    const embeddedClass = isEmbedded ? 'embedded-card max-w-full shadow-none' : '';
     
     return (
       <Component
         ref={ref}
-        className={cn(cardVariants({ variant, size, interactive }), embeddedClass, className)}
+        className={cn(cardVariants({ variant, size, interactive, diagonal }), embeddedClass, className)}
+        data-diagonal={diagonal}
         {...props}
       />
     );
