@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Card, CardContent } from "@/components/ui/UiCard";
+import { Card, CardContent } from "@/components/ui/Card";
 import type { Question, QuestionAnswer } from '@/lib/utils';
 
 interface QuestionDisplayProps {

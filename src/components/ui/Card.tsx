@@ -7,11 +7,11 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 
 // Card variants
 const cardVariants = cva(
-  "overflow-hidden shadow-sm transition-all duration-200",
+  "overflow-hidden transition-all duration-300 relative",
   {
     variants: {
       variant: {
-        default: "bg-background border border-border",
+        default: "bg-background border border-border shadow-sm",
         elevated: "bg-background shadow-md",
         outlined: "bg-transparent border border-border",
         filled: "bg-muted",
@@ -23,7 +23,7 @@ const cardVariants = cva(
         lg: "p-6",
       },
       interactive: {
-        true: "hover:shadow-modern hover:-translate-y-1 card-hover-effect",
+        true: "hover:shadow-modern hover:-translate-y-1 card-hover-effect cursor-pointer transform",
       },
       diagonal: {
         true: "",
@@ -59,7 +59,7 @@ const CardTitle = forwardRef<
 >(({ className, as: Component = "h3", ...props }, ref) => (
   <Component
     ref={ref}
-    className={cn("text-lg font-bold text-foreground", className)}
+    className={cn("text-lg font-bold leading-tight tracking-tight text-foreground", className)}
     {...props}
   />
 ));
@@ -100,11 +100,31 @@ const CardFooter = forwardRef<
 ));
 CardFooter.displayName = "CardFooter";
 
+// Card Image - New component
+const CardImage = forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { src: string; alt: string }
+>(({ className, src, alt, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("w-full overflow-hidden", className)}
+    {...props}
+  >
+    <img 
+      src={src} 
+      alt={alt} 
+      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+    />
+  </div>
+));
+CardImage.displayName = "CardImage";
+
 // Main Card Component
 export interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof cardVariants> {
   as?: React.ElementType;
+  withHoverEffect?: boolean;
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -115,6 +135,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     interactive,
     diagonal,
     as: Component = "div",
+    withHoverEffect = false,
     ...props 
   }, ref) => {
     const { isEmbedded } = useTheme();
@@ -125,7 +146,12 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     return (
       <Component
         ref={ref}
-        className={cn(cardVariants({ variant, size, interactive, diagonal }), embeddedClass, className)}
+        className={cn(
+          cardVariants({ variant, size, interactive, diagonal }), 
+          embeddedClass, 
+          withHoverEffect && "group",
+          className
+        )}
         data-diagonal={diagonal}
         {...props}
       />
@@ -134,4 +160,4 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
 );
 Card.displayName = "Card";
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }; 
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, CardImage }; 

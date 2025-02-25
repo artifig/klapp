@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ThemeProvider } from './ThemeProvider';
+import { ToastProvider } from '../ui/Toast';
 import { Theme } from '@/lib/theme';
 
 // Add more providers as needed (e.g. AuthProvider, NotificationProvider, etc.)
@@ -18,8 +19,10 @@ interface ProvidersProps {
 export function Providers({ children, initialTheme }: ProvidersProps) {
   return (
     <ThemeProvider initialTheme={initialTheme}>
-      {/* Add additional providers here */}
-      {children}
+      <ToastProvider>
+        {/* Add additional providers here */}
+        {children}
+      </ToastProvider>
     </ThemeProvider>
   );
 } 

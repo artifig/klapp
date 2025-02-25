@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/UiButton";
+import { Button } from "@/components/ui/Button";
 import type { ProcessedCategory, AssessmentResponse } from "@/lib/utils";
 import { QuestionDisplay } from "./QuestionDisplay";
 import { saveResponses } from "@/lib/api";
