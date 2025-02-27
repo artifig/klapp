@@ -135,25 +135,33 @@ export default async function ResultsPage({
     const topProviders = getTopProviders(categoryScores);
 
     return (
-      <main>
-        <h1>AI-valmiduse hindamise tulemused</h1>
-        
-        <ResultsSummary 
-          initialGoal={assessment.initialGoal}
-          overallScore={overallScore}
-          categories={categoryScores.map(cat => ({
-            name: cat.categoryText_et,
-            level: cat.maturityColor,
-            value: cat.score
-          }))}
-          topProviders={topProviders}
-        />
-
-        <AiFeedback />
-
-        <DetailedAnalysis categoryScores={categoryScores} />
-
-        <ExportForm assessmentId={id} />
+      <main className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="space-y-6">
+          <ResultsSummary 
+            initialGoal={assessment.initialGoal}
+            overallScore={overallScore}
+            categories={categoryScores.map(cat => ({
+              name: cat.categoryText_et,
+              level: cat.maturityColor,
+              value: cat.score
+            }))}
+            topProviders={topProviders}
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <AiFeedback />
+            </div>
+            <div>
+              <DetailedAnalysis categoryScores={categoryScores} />
+            </div>
+          </div>
+          
+          <div className="mt-8 bg-accent/30 rounded-lg p-6">
+            <h3 className="text-xl font-semibold mb-4">Salvesta tulemused</h3>
+            <ExportForm assessmentId={id} />
+          </div>
+        </div>
       </main>
     );
   } catch (error) {
