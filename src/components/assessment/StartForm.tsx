@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/UiButton";
 import { type MethodCompanyType } from "@/lib/airtable";
 import { createAssessment } from "@/lib/api";
-import { Card, CardContent } from "@/components/ui/UiCard";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface StartFormProps {
   companyTypes: MethodCompanyType[];
@@ -84,81 +85,79 @@ export default function StartForm({ companyTypes }: StartFormProps) {
 
   return (
     <Card>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && <div role="alert" className="error">{error}</div>}
-
-          <div className="form-group">
-            <label htmlFor="initialGoal">
-              Mis on teie peamine äriline eesmärk seoses AI-ga? *
-              <span className="helper-text">
-                Kirjeldage, mida soovite AI abil oma ettevõttes saavutada
-              </span>
-            </label>
-            <textarea
-              id="initialGoal"
-              name="initialGoal"
-              required
-              rows={4}
-              maxLength={500}
-              value={formData.initialGoal}
-              onChange={handleInputChange}
-              placeholder="Näiteks: Soovin automatiseerida klienditeenindust, et pakkuda 24/7 teenindust..."
-              className={fieldErrors.initialGoal ? 'error' : ''}
-              aria-describedby="initialGoal-error initialGoal-counter"
-            />
-            <div className="input-footer">
-              {fieldErrors.initialGoal && (
-                <div id="initialGoal-error" className="error-text">
-                  {fieldErrors.initialGoal}
-                </div>
-              )}
-              <div id="initialGoal-counter" className="char-counter">
-                {remainingChars} tähemärki järel
-              </div>
-            </div>
+      <form onSubmit={handleSubmit} className="space-y-6 p-6">
+        {error && (
+          <div role="alert" className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-none">
+            {error}
           </div>
+        )}
 
-          <div className="form-group">
-            <label htmlFor="companyType">
-              Ettevõtte tüüp *
-              <span className="helper-text">
-                Valige oma ettevõtte tüüp, et saada täpsemaid soovitusi
-              </span>
-            </label>
-            <select
-              id="companyType"
-              name="companyType"
-              required
-              value={formData.companyType}
-              onChange={handleInputChange}
-              className={fieldErrors.companyType ? 'error' : ''}
-              aria-describedby="companyType-error"
-            >
-              <option value="">Vali ettevõtte tüüp...</option>
-              {companyTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.companyTypeText_et}
-                </option>
-              ))}
-            </select>
-            {fieldErrors.companyType && (
-              <div id="companyType-error" className="error-text">
-                {fieldErrors.companyType}
-              </div>
-            )}
+        <div className="space-y-2">
+          <label htmlFor="initialGoal" className="block text-sm font-medium">
+            Mis on teie peamine äriline eesmärk seoses AI-ga? <Badge variant="primary">Nõutud</Badge>
+          </label>
+          <p className="text-xs text-muted-foreground mb-2">
+            Kirjeldage, mida soovite AI abil oma ettevõttes saavutada
+          </p>
+          <textarea
+            id="initialGoal"
+            name="initialGoal"
+            value={formData.initialGoal}
+            onChange={handleInputChange}
+            rows={5}
+            maxLength={500}
+            className={`w-full p-3 border ${
+              fieldErrors.initialGoal ? 'border-red-300' : 'border-border'
+            } rounded-none focus:outline-none focus:ring-2 focus:ring-primary`}
+            placeholder="Kirjeldage oma eesmärki..."
+          />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span className={fieldErrors.initialGoal ? 'text-red-600' : ''}>
+              {fieldErrors.initialGoal || ''}
+            </span>
+            <span>{remainingChars} tähemärki jäänud</span>
           </div>
+        </div>
 
-          <div className="button-group">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Saadan..." : "Alusta hindamist"}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
+        <div className="space-y-2">
+          <label htmlFor="companyType" className="block text-sm font-medium">
+            Ettevõtte tüüp <Badge variant="primary">Nõutud</Badge>
+          </label>
+          <p className="text-xs text-muted-foreground mb-2">
+            Valige teie ettevõtet kõige paremini kirjeldav tüüp
+          </p>
+          <select
+            id="companyType"
+            name="companyType"
+            value={formData.companyType}
+            onChange={handleInputChange}
+            className={`w-full p-3 border ${
+              fieldErrors.companyType ? 'border-red-300' : 'border-border'
+            } rounded-none bg-white focus:outline-none focus:ring-2 focus:ring-primary`}
+          >
+            <option value="">Valige ettevõtte tüüp</option>
+            {companyTypes.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.companyTypeText_et}
+              </option>
+            ))}
+          </select>
+          {fieldErrors.companyType && (
+            <span className="text-xs text-red-600">{fieldErrors.companyType}</span>
+          )}
+        </div>
+
+        <div className="pt-4">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            isLoading={isSubmitting}
+            className="w-full"
+          >
+            Alusta hindamist
+          </Button>
+        </div>
+      </form>
     </Card>
   );
 } 

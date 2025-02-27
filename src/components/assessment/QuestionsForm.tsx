@@ -26,9 +26,9 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
   
   if (!categories || categories.length === 0) {
     return (
-      <div>
-        <p>Küsimusi ei leitud. Palun proovige uuesti.</p>
-        <Button onClick={() => router.push('/assessment')}>
+      <div className="text-center py-8">
+        <p className="text-gray-700 mb-4">Küsimusi ei leitud. Palun proovige uuesti.</p>
+        <Button variant="primary" onClick={() => router.push('/assessment')}>
           Tagasi algusesse
         </Button>
       </div>
@@ -42,9 +42,9 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
       categoriesLength: categories.length 
     });
     return (
-      <div>
-        <p>Viga küsimuste laadimisel. Palun proovige uuesti.</p>
-        <Button onClick={() => router.push('/assessment')}>
+      <div className="text-center py-8">
+        <p className="text-gray-700 mb-4">Viga küsimuste laadimisel. Palun proovige uuesti.</p>
+        <Button variant="primary" onClick={() => router.push('/assessment')}>
           Tagasi algusesse
         </Button>
       </div>
@@ -59,14 +59,14 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
     (sum, cat) => sum + cat.questions.length, 0
   ) + currentQuestionIndex + 1;
 
-  const handleAnswerSelect = (questionId: string, answerId: string) => {
+  const handleAnswerSelect = (answerId: string) => {
     setError(null);
     setResponses(prev => {
-      const existing = prev.find(r => r.questionId === questionId);
+      const existing = prev.find(r => r.questionId === currentQuestion.id);
       if (existing) {
-        return prev.map(r => r.questionId === questionId ? { ...r, answerId } : r);
+        return prev.map(r => r.questionId === currentQuestion.id ? { ...r, answerId } : r);
       }
-      return [...prev, { questionId, answerId }];
+      return [...prev, { questionId: currentQuestion.id, answerId }];
     });
 
     // Automatically advance to next question after selection
@@ -105,18 +105,31 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
   };
 
   const selectedAnswerId = responses.find(r => r.questionId === currentQuestion.id)?.answerId;
+  const progressPercentage = Math.round((currentQuestionNumber / totalQuestions) * 100);
 
   return (
-    <div>
-      <div>
-        <h2>{currentCategory.categoryText_et}</h2>
-        <div>
-          <span>Küsimus {currentQuestionNumber} / {totalQuestions}</span>
-          <span>{Math.round((currentQuestionNumber / totalQuestions) * 100)}%</span>
+    <div className="space-y-8">
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-secondary">{currentCategory.categoryText_et}</h2>
+          <div className="text-sm text-gray-600">
+            Küsimus {currentQuestionNumber} / {totalQuestions}
+          </div>
+        </div>
+        
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div 
+            className="bg-primary h-2.5 rounded-full transition-all duration-300" 
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
         </div>
       </div>
 
-      {error && <div role="alert">{error}</div>}
+      {error && (
+        <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg" role="alert">
+          {error}
+        </div>
+      )}
 
       <QuestionDisplay
         question={currentQuestion}
@@ -124,29 +137,25 @@ export function QuestionsForm({ assessmentId, categories, existingResponses }: Q
         selectedAnswerId={selectedAnswerId}
       />
 
-      <div>
-        {!isLastCategory || !isLastQuestionInCategory ? (
+      <div className="flex justify-between pt-6 border-t border-gray-200 mt-8">
+        <Button
+          variant="secondary"
+          onClick={handlePrevious}
+          disabled={currentCategoryIndex === 0 && currentQuestionIndex === 0}
+          className="px-6"
+        >
+          Eelmine
+        </Button>
+        
+        {isLastCategory && isLastQuestionInCategory && (
           <Button
-            onClick={handlePrevious}
-            disabled={currentCategoryIndex === 0 && currentQuestionIndex === 0}
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="px-6"
           >
-            Eelmine
+            {isSubmitting ? 'Salvestamine...' : 'Lõpeta hindamine'}
           </Button>
-        ) : (
-          <div>
-            <Button
-              onClick={handlePrevious}
-              disabled={currentCategoryIndex === 0 && currentQuestionIndex === 0}
-            >
-              Eelmine
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Salvestamine...' : 'Lõpeta hindamine'}
-            </Button>
-          </div>
         )}
       </div>
     </div>

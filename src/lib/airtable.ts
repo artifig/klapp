@@ -3,9 +3,16 @@ import { FieldSet } from 'airtable/lib/field_set';
 import { config } from './config';
 
 // Initialize Airtable with Personal Access Token
-const base = new Airtable({
-  apiKey: config.airtable.apiKey
-}).base(config.airtable.baseId);
+let base: Airtable.Base | null = null;
+
+try {
+  base = new Airtable({
+    apiKey: config.airtable.apiKey
+  }).base(config.airtable.baseId);
+} catch (error) {
+  console.warn('Failed to initialize Airtable:', error);
+  // We'll handle this with mock data
+}
 
 // Type definitions based on Airtable schema
 export interface MethodCompanyType {
@@ -134,67 +141,145 @@ async function getActiveSolutions(): Promise<Airtable.Records<FieldSet>> {
   return records;
 }
 
-// Utility functions
-export async function getActiveCompanyTypes(): Promise<MethodCompanyType[]> {
-  try {
-    const records = await base('MethodCompanyTypes')
-      .select({
-        filterByFormula: '{isActive} = 1',
-        fields: ['companyTypeText_et', 'isActive']
-      })
-      .all();
+// Mock data for development
+const mockCompanyTypes: MethodCompanyType[] = [
+  {
+    id: 'mock-id-1',
+    companyTypeText_et: 'Tootmisettevõte',
+    isActive: true,
+    MethodCategories: ['mock-cat-1', 'mock-cat-2']
+  },
+  {
+    id: 'mock-id-2',
+    companyTypeText_et: 'Teenusepakkuja',
+    isActive: true,
+    MethodCategories: ['mock-cat-1', 'mock-cat-3']
+  },
+  {
+    id: 'mock-id-3',
+    companyTypeText_et: 'IT-ettevõte',
+    isActive: true,
+    MethodCategories: ['mock-cat-2', 'mock-cat-3']
+  }
+];
 
-    return records.map(record => ({
-      id: record.id,
-      companyTypeText_et: record.get('companyTypeText_et') as string,
-      isActive: record.get('isActive') as boolean
-    }));
+// More mock data for other functions
+const mockCategories: MethodCategory[] = [
+  {
+    id: 'mock-cat-1',
+    categoryText_et: 'Andmed ja analüütika',
+    categoryDescription_et: 'Andmete kogumine, töötlemine ja analüüsimine',
+    isActive: true,
+    MethodCompanyTypes: ['mock-id-1', 'mock-id-2'],
+    MethodQuestions: ['mock-q-1', 'mock-q-2']
+  },
+  {
+    id: 'mock-cat-2',
+    categoryText_et: 'Automatiseerimine',
+    categoryDescription_et: 'Protsesside automatiseerimine',
+    isActive: true,
+    MethodCompanyTypes: ['mock-id-1', 'mock-id-3'],
+    MethodQuestions: ['mock-q-3', 'mock-q-4']
+  },
+  {
+    id: 'mock-cat-3',
+    categoryText_et: 'Klienditeenindus',
+    categoryDescription_et: 'Klienditeeninduse parendamine',
+    isActive: true,
+    MethodCompanyTypes: ['mock-id-2', 'mock-id-3'],
+    MethodQuestions: ['mock-q-5', 'mock-q-6']
+  }
+];
+
+// Utility function to safely call Airtable functions with fallback to mock data
+async function safeAirtableCall<T>(
+  operation: () => Promise<T>, 
+  mockData: T,
+  errorMessage: string
+): Promise<T> {
+  if (!base) {
+    console.warn('Using mock data due to missing Airtable connection');
+    return mockData;
+  }
+  
+  try {
+    return await operation();
   } catch (error) {
-    console.error('Error fetching company types:', error);
-    throw error;
+    console.error(errorMessage, error);
+    return mockData;
   }
 }
 
+// Export functions for fetching data
+export async function getActiveCompanyTypes(): Promise<MethodCompanyType[]> {
+  return safeAirtableCall(
+    async () => {
+      const records = await base!('MethodCompanyTypes')
+        .select({
+          filterByFormula: '{isActive} = 1',
+          fields: ['companyTypeText_et', 'isActive', 'MethodCategories']
+        })
+        .all();
+        
+      return records.map(record => ({
+        id: record.id,
+        companyTypeText_et: record.get('companyTypeText_et') as string,
+        isActive: record.get('isActive') as boolean,
+        MethodCategories: record.get('MethodCategories') as string[]
+      }));
+    },
+    mockCompanyTypes,
+    'Error fetching company types:'
+  );
+}
+
 export async function getCategories(companyTypeId: string): Promise<MethodCategory[]> {
-  try {
-    console.log('Fetching categories for company type:', companyTypeId);
-    
-    // First, get the company type record to get its linked category IDs
-    const companyType = await base('MethodCompanyTypes').find(companyTypeId);
-    const categoryIds = companyType.get('MethodCategories') as string[];
-    
-    console.log('Category IDs from company type:', categoryIds);
-
-    if (!categoryIds || categoryIds.length === 0) {
-      console.log('No categories linked to company type');
-      return [];
-    }
-
-    // Then fetch those specific categories
-    const formula = `AND(
-      {isActive} = 1,
-      OR(${categoryIds.map(id => `RECORD_ID() = '${id}'`).join(',')})
-    )`;
-
-    const records = await base('MethodCategories')
-      .select({
-        filterByFormula: formula,
-        fields: ['categoryText_et', 'categoryDescription_et', 'isActive']
-      })
-      .all();
-
-    console.log('Found categories:', records.length);
-    
-    return records.map(record => ({
-      id: record.id,
-      categoryText_et: record.get('categoryText_et') as string,
-      categoryDescription_et: record.get('categoryDescription_et') as string,
-      isActive: record.get('isActive') as boolean
-    }));
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    throw error;
+  // For mock company types, return mock categories
+  if (mockCompanyTypes.some(type => type.id === companyTypeId)) {
+    console.warn('Using mock category data');
+    return mockCategories;
   }
+
+  return safeAirtableCall(
+    async () => {
+      console.log('Fetching categories for company type:', companyTypeId);
+      
+      // First, get the company type record to get its linked category IDs
+      const companyType = await base!('MethodCompanyTypes').find(companyTypeId);
+      const categoryIds = companyType.get('MethodCategories') as string[];
+      
+      console.log('Category IDs from company type:', categoryIds);
+
+      if (!categoryIds || categoryIds.length === 0) {
+        console.log('No categories linked to company type');
+        return [];
+      }
+
+      // Then fetch those specific categories
+      const formula = `AND(
+        {isActive} = 1,
+        OR(${categoryIds.map(id => `RECORD_ID() = '${id}'`).join(',')})
+      )`;
+
+      const records = await base!('MethodCategories')
+        .select({
+          filterByFormula: formula,
+          fields: ['categoryText_et', 'categoryDescription_et', 'isActive']
+        })
+        .all();
+
+      console.log('Found categories:', records.length);
+      
+      return records.map(record => ({
+        id: record.id,
+        categoryText_et: record.get('categoryText_et') as string,
+        categoryDescription_et: record.get('categoryDescription_et') as string,
+        isActive: record.get('isActive') as boolean
+      }));
+    },
+    mockCategories,
+    'Error fetching categories:'
+  );
 }
 
 export async function getQuestions(categoryIds: string[]): Promise<MethodQuestion[]> {

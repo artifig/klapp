@@ -1,20 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { Header } from "@/components/ui/header";
+import { Footer } from "@/components/ui/footer";
 
 export const metadata: Metadata = {
-  title: "AI-valmiduse hindamine",
-  description: "Ettevõtte AI-valmiduse hindamise tööriist",
+  title: "AI-valmiduse hindamine | Tehnopol",
+  description: "Tehnopoli AI-valmiduse hindamistööriist aitab ettevõtetel hinnata oma valmisolekut AI-lahenduste kasutamiseks",
 };
 
 export default function RootLayout({
@@ -23,11 +14,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="et">
+      <body className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );

@@ -135,34 +135,58 @@ export default async function ResultsPage({
     const topProviders = getTopProviders(categoryScores);
 
     return (
-      <main>
-        <h1>AI-valmiduse hindamise tulemused</h1>
+      <div className="container mx-auto py-10 px-4 md:px-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-secondary mb-2">AI-valmiduse hindamise tulemused</h1>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Teie ettevõtte AI-valmiduse hindamise tulemused ja soovitused edasisteks sammudeks
+          </p>
+        </div>
         
-        <ResultsSummary 
-          initialGoal={assessment.initialGoal}
-          overallScore={overallScore}
-          categories={categoryScores.map(cat => ({
-            name: cat.categoryText_et,
-            level: cat.maturityColor,
-            value: cat.score
-          }))}
-          topProviders={topProviders}
-        />
-
-        <AiFeedback />
-
-        <DetailedAnalysis categoryScores={categoryScores} />
-
-        <ExportForm assessmentId={id} />
-      </main>
+        <div className="max-w-5xl mx-auto space-y-12">
+          <ResultsSummary 
+            initialGoal={assessment.initialGoal}
+            overallScore={overallScore}
+            categories={categoryScores.map(cat => ({
+              name: cat.categoryText_et,
+              level: cat.maturityColor,
+              value: cat.score
+            }))}
+            topProviders={topProviders}
+          />
+          
+          <AiFeedback 
+            assessmentId={id}
+            initialCompanyType={companyType}
+            initialGoal={assessment.initialGoal}
+            overallScore={overallScore}
+          />
+          
+          <DetailedAnalysis 
+            categoryScores={categoryScores}
+          />
+          
+          <ExportForm 
+            assessmentId={id}
+          />
+        </div>
+      </div>
     );
   } catch (error) {
     console.error('Error loading results page:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
     return (
-      <ErrorState 
-        title="Viga tulemuste laadimisel"
-        description="Kahjuks tekkis tulemuste laadimisel viga. Palun proovige uuesti."
-      />
+      <div className="container mx-auto py-10 px-4 md:px-6">
+        <ErrorState 
+          title="Viga tulemuste laadimisel"
+          description={
+            errorMessage === 'Assessment not found or inactive' ? 
+              'Hindamist ei leitud või see pole aktiivne.' :
+              'Kahjuks tekkis tulemuste laadimisel viga. Palun proovige uuesti.'
+          }
+        />
+      </div>
     );
   }
 }
