@@ -1,6 +1,6 @@
 'use client';
 
-import { ProviderList } from "@/components/assessment/ProviderList";
+import { ProviderList } from "@/components/assessment/provider-list";
 import type { CategoryScore } from "@/lib/types";
 
 interface CategoryDetailsProps {

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CategoryDetails } from "@/components/assessment/CategoryDetails";
+import { CategoryDetails } from "@/components/assessment/category-details";
 import type { CategoryScore } from "@/lib/types";
 
 interface DetailedAnalysisProps {

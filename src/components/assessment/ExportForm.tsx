@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Button } from "@/components/ui/UiButton";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/UiCard";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { exportAssessment, sendAssessmentEmail } from '@/lib/api';
 
 interface ExportFormProps {

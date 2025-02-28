@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from "@/components/ui/UiButton";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 interface ErrorStateProps {
