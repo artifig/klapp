@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/UiCard";
+import { Card, CardContent } from "@/components/ui/card";
 import { QuestionsForm } from "@/components/assessment/QuestionsForm";
 import { ErrorState } from "@/components/assessment/ErrorState";
 import { fetchQuestionsData } from "@/lib/utils";

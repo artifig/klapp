@@ -1,7 +1,7 @@
 "use client"
 
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, PolarRadiusAxis } from "recharts"
-import { Card, CardContent } from "@/components/ui/UiCard"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface CategoryScore {
   name: string;

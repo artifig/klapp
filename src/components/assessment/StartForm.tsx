@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/UiButton";
+import { Button } from "@/components/ui/button";
 import { type MethodCompanyType } from "@/lib/airtable";
 import { createAssessment } from "@/lib/api";
-import { Card, CardContent } from "@/components/ui/UiCard";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface StartFormProps {
   companyTypes: MethodCompanyType[];

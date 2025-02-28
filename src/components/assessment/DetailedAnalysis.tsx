@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from "@/components/ui/UiButton";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/UiDialog";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CategoryDetails } from "@/components/assessment/CategoryDetails";
 import type { CategoryScore } from "@/lib/types";
 

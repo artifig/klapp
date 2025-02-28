@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/UiAvatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { SolutionProvider } from "@/lib/airtable";
 
 interface ProviderListProps {
