@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ResultsChart } from "@/components/assessment/ResultsChart";
-import { ProviderList } from "@/components/ui/ProviderList";
+import { ProviderList } from "@/components/assessment/ProviderList";
 import type { SolutionProvider } from "@/lib/airtable";
 
 interface ResultsSummaryProps {
